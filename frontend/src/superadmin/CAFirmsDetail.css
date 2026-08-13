@@ -1,0 +1,281 @@
+/* frontend/src/components/CAFirmsDetail.css */
+
+.firm-details-container {
+  font-family: 'Roboto', sans-serif;
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.firm-details-actions-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.back-list-btn {
+  border-color: #e8f0eb !important;
+  color: #52796f !important;
+  font-weight: 700 !important;
+  text-transform: none !important;
+  font-size: 0.8rem !important;
+  border-radius: 10px !important;
+  padding: 6px 16px !important;
+}
+
+.back-list-btn:hover {
+  background-color: #f8faf8 !important;
+  border-color: #c7dcd0 !important;
+}
+
+.action-buttons-group {
+  display: flex;
+  gap: 10px;
+}
+
+.action-btn {
+  font-weight: 700 !important;
+  text-transform: none !important;
+  font-size: 0.8rem !important;
+  border-radius: 8px !important;
+  padding: 6px 14px !important;
+}
+
+/* Details Paper structure */
+.details-paper {
+  border-radius: 16px !important;
+  border: 1px solid #e8f0eb !important;
+  box-shadow: 0 4px 12px rgba(45, 106, 79, 0.04) !important;
+  background-color: #ffffff !important;
+}
+
+.details-section-title {
+  font-weight: 800 !important;
+  color: #1b4332 !important;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.05rem !important;
+}
+
+.details-section-title svg {
+  color: #2d6a4f;
+  font-size: 1.3rem;
+}
+
+.info-grid {
+  margin-top: 5px;
+}
+
+.info-label {
+  font-weight: 700;
+  color: #748c82;
+  font-size: 0.82rem;
+}
+
+.info-value {
+  color: #1b4332;
+  font-size: 0.82rem;
+}
+
+.info-value.text-code {
+  font-family: monospace;
+  font-weight: 700;
+  color: #2d6a4f;
+  letter-spacing: 0.5px;
+}
+
+.status-chip-val {
+  font-weight: 700 !important;
+  font-size: 0.72rem !important;
+  border-radius: 6px !important;
+}
+
+.status-chip-val.active {
+  background-color: #d8f3dc !important;
+  color: #1b4332 !important;
+}
+
+.status-chip-val.suspended {
+  background-color: #fff0f3 !important;
+  color: #b7094c !important;
+}
+
+.resend-activation-btn {
+  background-color: #cca000 !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  text-transform: none !important;
+  font-size: 0.8rem !important;
+  border-radius: 10px !important;
+  padding: 8px 18px !important;
+  box-shadow: 0 4px 12px rgba(204, 160, 0, 0.2) !important;
+  transition: all 0.2s ease !important;
+}
+
+.resend-activation-btn:hover {
+  background-color: #b38c00 !important;
+  transform: translateY(-1.5px);
+}
+
+.add-sub-btn {
+  border-color: #2d6a4f !important;
+  color: #2d6a4f !important;
+  font-weight: 700 !important;
+  text-transform: none !important;
+  font-size: 0.78rem !important;
+  border-radius: 8px !important;
+  padding: 4px 10px !important;
+  transition: all 0.2s ease !important;
+}
+
+.add-sub-btn:hover {
+  background-color: #f4fcf6 !important;
+}
+
+.empty-subs-box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  background-color: #f8faf8;
+  border: 1px dashed #c7dcd0;
+  border-radius: 12px;
+}
+
+/* Subscription details cards */
+.sub-list-card {
+  border-color: #e8f0eb !important;
+  background-color: #ffffff !important;
+  box-shadow: none !important;
+  transition: border-color 0.2s ease;
+}
+
+.sub-list-card:hover {
+  border-color: #b7e4c7 !important;
+}
+
+.sub-card-body {
+  padding: 16px !important;
+}
+
+.sub-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.sub-card-name {
+  font-weight: 800 !important;
+  color: #1b4332 !important;
+  font-size: 0.92rem !important;
+}
+
+.status-chip-sub {
+  font-weight: 700 !important;
+  font-size: 0.68rem !important;
+  border-radius: 6px !important;
+}
+
+.status-chip-sub.active {
+  background-color: #e9f5ed !important;
+  color: #2d6a4f !important;
+}
+
+.status-chip-sub.expired {
+  background-color: #fff0f3 !important;
+  color: #b7094c !important;
+}
+
+.sub-card-plan {
+  font-size: 0.8rem;
+  color: #52796f;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.sub-card-dates {
+  font-size: 0.74rem;
+  color: #748c82;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 500;
+}
+
+.sub-card-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+.sub-action-btn-item {
+  font-weight: 700 !important;
+  text-transform: none !important;
+  font-size: 0.74rem !important;
+  padding: 2px 6px !important;
+}
+
+.sub-action-btn-item.edit {
+  color: #2d6a4f !important;
+}
+
+.sub-action-btn-item.cancel {
+  color: #b7094c !important;
+}
+
+/* Subscription Dialog Modal details */
+.sub-dialog .MuiDialog-paper {
+  border-radius: 16px !important;
+  padding: 10px;
+}
+
+.dialog-title-text {
+  font-weight: 800 !important;
+  color: #1b4332 !important;
+  font-size: 1.1rem !important;
+}
+
+.sub-dialog .MuiOutlinedInput-root {
+  border-radius: 8px !important;
+}
+
+.sub-dialog .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: #2d6a4f !important;
+}
+
+.dialog-cancel-btn {
+  color: #748c82 !important;
+  font-weight: 700 !important;
+  text-transform: none !important;
+}
+
+.dialog-action-btn-save {
+  background-color: #2d6a4f !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  text-transform: none !important;
+  border-radius: 8px !important;
+  padding: 6px 16px !important;
+}
+
+.dialog-action-btn-save:hover {
+  background-color: #1b4332 !important;
+}
+
+.dialog-action-btn-cancel {
+  background-color: #b7094c !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  text-transform: none !important;
+  border-radius: 8px !important;
+  padding: 6px 16px !important;
+}
+
+.dialog-action-btn-cancel:hover {
+  background-color: #8c0638 !important;
+}

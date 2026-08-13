@@ -1,0 +1,275 @@
+/* frontend/src/components/SuperAdminDashboard.css */
+
+.dashboard-content {
+  font-family: 'Roboto', sans-serif;
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.dashboard-welcome {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.welcome-title {
+  font-weight: 800 !important;
+  color: #1b4332 !important;
+  letter-spacing: -0.4px;
+}
+
+.welcome-subtitle {
+  color: #52796f;
+  margin-top: 4px;
+}
+
+.edition-badge {
+  background-color: #1b4332 !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  font-size: 0.72rem !important;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+/* Metric Cards */
+.metric-card {
+  border-radius: 16px !important;
+  background: #ffffff !important;
+  border: 1px solid #e8f0eb !important;
+  box-shadow: 0 4px 12px rgba(45, 106, 79, 0.04) !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.metric-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(45, 106, 79, 0.08) !important;
+}
+
+.metric-card-content {
+  padding: 20px !important;
+}
+
+.card-header-box {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.icon-wrapper {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-main {
+  font-size: 1.35rem !important;
+}
+
+/* Background Color utilities for card icons */
+.bg-green-light { background-color: #d8f3dc; }
+.bg-mint-light { background-color: #f4fcf6; }
+.bg-gold-light { background-color: #fefae0; }
+.bg-emerald-light { background-color: #e9f5ed; }
+
+.text-green { color: #2d6a4f; }
+.text-mint { color: #40916c; }
+.text-gold { color: #cca000; }
+.text-emerald { color: #1b4332; }
+
+/* Trend Badge colors */
+.trend-badge {
+  font-weight: 700 !important;
+  font-size: 0.72rem !important;
+}
+
+.badge-up {
+  background-color: #d8f3dc !important;
+  color: #1b4332 !important;
+}
+
+.badge-ratio {
+  background-color: #e9f5ed !important;
+  color: #2d6a4f !important;
+}
+
+.chip-arrow {
+  font-size: 0.75rem !important;
+  margin-right: -2px !important;
+  color: inherit !important;
+}
+
+.plans-summary-tag {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #2d6a4f;
+  background: #d8f3dc;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.plans-summary-tag svg {
+  font-size: 0.85rem;
+}
+
+.metric-label {
+  font-size: 0.8rem !important;
+  color: #748c82 !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.1px;
+}
+
+.metric-value {
+  font-size: 1.65rem !important;
+  font-weight: 800 !important;
+  color: #1b4332 !important;
+  margin: 2px 0 6px 0 !important;
+}
+
+.metric-subtext {
+  font-size: 0.72rem !important;
+  color: #52796f !important;
+  font-weight: 500;
+}
+
+/* Dashboard Papers */
+.dashboard-paper {
+  border-radius: 16px !important;
+  border: 1px solid #e8f0eb !important;
+  box-shadow: 0 4px 12px rgba(45, 106, 79, 0.04) !important;
+  padding: 24px !important;
+  background: #ffffff !important;
+}
+
+.paper-header {
+  border-bottom: 1px solid #f8faf8;
+  padding-bottom: 12px;
+}
+
+.paper-title {
+  font-size: 0.95rem !important;
+  font-weight: 800 !important;
+  color: #1b4332 !important;
+}
+
+.paper-subtitle {
+  font-size: 0.76rem !important;
+  color: #748c82 !important;
+  margin-top: 2px !important;
+}
+
+/* Plan Progress Bar distribution list */
+.plan-item-box {
+  display: flex;
+  flex-direction: column;
+}
+
+.plan-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.plan-item-name {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #1b4332;
+}
+
+.plan-item-count {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #2d6a4f;
+}
+
+.plan-progress-bar {
+  height: 6px !important;
+  border-radius: 4px !important;
+  background-color: #f1f5f2 !important;
+}
+
+.plan-progress-bar .MuiLinearProgress-bar {
+  background-color: var(--bar-color) !important;
+  border-radius: 4px !important;
+}
+
+.plan-item-footer {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  color: #748c82;
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+/* Subscriptions Table styling */
+.subscriptions-table th {
+  background-color: #f8faf8 !important;
+  color: #1b4332 !important;
+  font-weight: 700 !important;
+  font-size: 0.76rem !important;
+  border-bottom: 1px solid #e8f0eb !important;
+  padding: 12px 16px !important;
+}
+
+.subscriptions-table td {
+  border-bottom: 1px solid #f4f7f5 !important;
+  font-size: 0.8rem !important;
+  padding: 10px 16px !important;
+}
+
+.cell-id {
+  font-weight: 700 !important;
+  color: #2d6a4f !important;
+}
+
+.cell-firm {
+  font-weight: 700 !important;
+  color: #1b4332 !important;
+}
+
+.cell-owner {
+  color: #52796f !important;
+}
+
+.cell-plan {
+  font-weight: 600 !important;
+  color: #1b4332 !important;
+}
+
+.cell-amount {
+  font-weight: 700 !important;
+  color: #1b4332 !important;
+}
+
+.cell-date {
+  color: #748c82 !important;
+}
+
+.status-chip {
+  font-weight: 700 !important;
+  font-size: 0.7rem !important;
+  border-radius: 6px !important;
+}
+
+.chip-active {
+  background-color: #d8f3dc !important;
+  color: #1b4332 !important;
+}
+
+.chip-expired {
+  background-color: #fff0f3 !important;
+  color: #b7094c !important;
+}

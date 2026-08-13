@@ -1,0 +1,116 @@
+// frontend/src/redux/slices/moduleSlice.js
+
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
+import axios from 'axios'
+import { toast } from 'react-toastify'
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
+
+// Async thunks
+export const fetchModules = createAsyncThunk(
+  'module/fetchModules',
+  async (_, { rejectWithValue }) => {
+    try {
+      const token = sessionStorage.getItem('access_token')
+      const response = await axios.get(`${API_URL}/modules/`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      return response.data
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch modules')
+    }
+  }
+)
+
+export const fetchFirmModules = createAsyncThunk(
+  'module/fetchFirmModules',
+  async (firmId, { rejectWithValue }) => {
+    try {
+      const token = sessionStorage.getItem('access_token')
+      const response = await axios.get(`${API_URL}/firms/${firmId}/modules/`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      return response.data
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch firm modules')
+    }
+  }
+)
+
+export const assignModule = createAsyncThunk(
+  'module/assignModule',
+  async ({ firmId, moduleData }, { rejectWithValue }) => {
+    try {
+      const token = sessionStorage.getItem('access_token')
+      const response = await axios.post(`${API_URL}/firms/${firmId}/modules/`, moduleData, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      toast.success('Module assigned successfully!')
+      return response.data
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to assign module'
+      toast.error(message)
+      return rejectWithValue(message)
+    }
+  }
+)
+
+const initialState = {
+  modules: [],
+  firmModules: [],
+  currentModule: null,
+  loading: false,
+  error: null
+}
+
+const moduleSlice = createSlice({
+  name: 'module',
+  initialState,
+  reducers: {
+    clearModuleError: (state) => {
+      state.error = null
+    },
+    setCurrentModule: (state, action) => {
+      state.currentModule = action.payload
+    },
+    clearCurrentModule: (state) => {
+      state.currentModule = null
+    }
+  },
+  extraReducers: (builder) => {
+    builder
+      // Fetch modules
+      .addCase(fetchModules.pending, (state) => {
+        state.loading = true
+        state.error = null
+      })
+      .addCase(fetchModules.fulfilled, (state, action) => {
+        state.loading = false
+        state.modules = action.payload.results || action.payload
+      })
+      .addCase(fetchModules.rejected, (state, action) => {
+        state.loading = false
+        state.error = action.payload
+      })
+      // Fetch firm modules
+      .addCase(fetchFirmModules.pending, (state) => {
+        state.loading = true
+        state.error = null
+      })
+      .addCase(fetchFirmModules.fulfilled, (state, action) => {
+        state.loading = false
+        state.firmModules = action.payload.results || action.payload
+      })
+      .addCase(fetchFirmModules.rejected, (state, action) => {
+        state.loading = false
+        state.error = action.payload
+      })
+      // Assign module
+      .addCase(assignModule.fulfilled, (state, action) => {
+        state.firmModules.push(action.payload)
+      })
+  }
+})
+
+export const { clearModuleError, setCurrentModule, clearCurrentModule } = moduleSlice.actions
+export default moduleSlice.reducer

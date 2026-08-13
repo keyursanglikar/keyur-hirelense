@@ -1,0 +1,214 @@
+/* frontend/src/components/ActivateAccount.css */
+
+.activation-page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+  background-color: #f8faf8;
+  font-family: 'Roboto', sans-serif;
+}
+
+/* Background animated glow spheres */
+.activation-page .glass-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  z-index: 1;
+  opacity: 0.35;
+}
+
+.activation-page .blob-1 {
+  width: 300px;
+  height: 300px;
+  background: #52b788;
+  top: -50px;
+  left: -50px;
+}
+
+.activation-page .blob-2 {
+  width: 300px;
+  height: 300px;
+  background: #2d6a4f;
+  bottom: -50px;
+  right: -50px;
+}
+
+.activation-paper {
+  position: relative;
+  z-index: 10;
+  padding: 30px 32px !important;
+  border-radius: 20px !important;
+  background: rgba(255, 255, 255, 0.94) !important;
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.8) !important;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2), 
+              0 0 40px rgba(45, 106, 79, 0.1) !important;
+  max-width: 400px;
+  width: 100%;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.activation-header {
+  text-align: center;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.activation-logo {
+  width: 70px;
+  height: 70px;
+  margin-bottom: 8px;
+}
+
+.activation-title {
+  color: #1b4332 !important;
+  font-weight: 800 !important;
+  margin-bottom: 4px !important;
+  font-size: 1.35rem !important;
+  letter-spacing: -0.3px;
+}
+
+.activation-subtitle {
+  color: #52796f !important;
+  font-size: 0.76rem !important;
+  line-height: 1.35 !important;
+  max-width: 280px;
+}
+
+.activation-error {
+  border-radius: 6px !important;
+  font-size: 0.8rem !important;
+  padding: 4px 10px !important;
+}
+
+.disabled-field .MuiOutlinedInput-root {
+  background-color: #f1f5f2 !important;
+}
+
+.disabled-field input {
+  color: #748c82 !important;
+  -webkit-text-fill-color: #748c82 !important;
+}
+
+/* Form fields customization */
+.activation-paper .MuiOutlinedInput-root {
+  border-radius: 8px !important;
+  font-size: 0.88rem !important;
+}
+
+.activation-paper .MuiOutlinedInput-input {
+  padding: 10px 14px !important;
+}
+
+.activation-paper .MuiInputLabel-root {
+  font-size: 0.82rem !important;
+  transform: translate(14px, 12px) scale(1);
+}
+
+.activation-paper .MuiInputLabel-root.MuiInputLabel-shrink {
+  transform: translate(14px, -6px) scale(0.75);
+}
+
+.activation-paper .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: #2d6a4f !important;
+  border-width: 1.5px !important;
+}
+
+.activation-paper .MuiInputLabel-root.Mui-focused {
+  color: #2d6a4f !important;
+}
+
+.activation-paper .MuiInputAdornment-root svg {
+  font-size: 1.15rem !important;
+}
+
+.activate-submit-btn {
+  background: linear-gradient(135deg, #2d6a4f 0%, #1b4332 100%) !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  font-size: 0.82rem !important;
+  letter-spacing: 0.8px !important;
+  border-radius: 8px !important;
+  padding: 10px !important;
+  box-shadow: 0 3px 10px rgba(45, 106, 79, 0.2) !important;
+  transition: all 0.3s ease !important;
+  margin-bottom: 15px !important;
+}
+
+.activate-submit-btn:hover {
+  transform: translateY(-1.5px);
+  box-shadow: 0 6px 18px rgba(45, 106, 79, 0.35) !important;
+  background: linear-gradient(135deg, #40916c 0%, #2d6a4f 100%) !important;
+}
+
+.success-container {
+  text-align: center;
+  padding: 10px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.success-icon {
+  font-size: 3.5rem !important;
+  color: #2d6a4f;
+  margin-bottom: 12px;
+}
+
+.success-title {
+  font-weight: 800 !important;
+  color: #1b4332 !important;
+  margin-bottom: 6px !important;
+}
+
+.success-desc {
+  font-size: 0.8rem;
+  color: #52796f;
+  line-height: 1.4;
+  margin-bottom: 25px !important;
+}
+
+.login-redirect-btn {
+  background: linear-gradient(135deg, #2d6a4f 0%, #1b4332 100%) !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  text-transform: none !important;
+  font-size: 0.85rem !important;
+  border-radius: 8px !important;
+  padding: 10px !important;
+  box-shadow: 0 3px 10px rgba(45, 106, 79, 0.2) !important;
+}
+
+.login-redirect-btn:hover {
+  background: linear-gradient(135deg, #40916c 0%, #2d6a4f 100%) !important;
+}
+
+.activation-footer {
+  text-align: center;
+  margin-top: 15px;
+  border-top: 1px solid #e8f0eb;
+  padding-top: 10px;
+}
+
+.activation-footer .footer-text {
+  font-size: 0.72rem !important;
+  color: #748c82 !important;
+  font-weight: 500;
+  margin-bottom: 1px !important;
+}
+
+.activation-footer .footer-version {
+  font-size: 0.65rem !important;
+  color: #52796f !important;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}

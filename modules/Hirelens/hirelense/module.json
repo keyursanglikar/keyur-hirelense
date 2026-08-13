@@ -1,0 +1,12 @@
+﻿{
+  "name": "Hirelens",
+  "slug": "hirelens",
+  "version": "1.0.0",
+  "description": "Recruitment and hiring platform for CA Firms.",
+  "author": "NZ Solutions",
+  "routes": {
+    "frontend_entry": "/frontend/src/index.js",
+    "backend_apps": ["backend/api"]
+  },
+  "dependencies": []
+}

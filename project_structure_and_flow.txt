@@ -1,0 +1,98 @@
+=========================================================
+CA SAAS PLATFORM & HIRELENS - PROJECT STRUCTURE AND FLOW
+=========================================================
+Date: August 2026
+Unified Frontend Port: 5173
+Unified Backend Port: 8000
+=========================================================
+
+1. HIGH-LEVEL ARCHITECTURE OVERVIEW
+---------------------------------------------------------
+This project is a centralized multi-tenant Software-as-a-Service (SaaS) platform built for Chartered Accountant (CA) firms, featuring a modular architecture. 
+Recently, the "Hirelens" module (an AI-driven recruitment and candidate evaluation tool) was fully integrated into the main platform. 
+
+Now, everything runs as a unified full-stack application:
+- ONE React Frontend (Vite) running on localhost:5173
+- ONE Django Backend running on localhost:8000
+
+
+2. DIRECTORY STRUCTURE
+---------------------------------------------------------
+ca-saas-platform/
+│
+├── backend/                             <-- Main Unified Django Backend (Runs on 8000)
+│   ├── .env                             <-- Contains all active backend secrets (DB, Gemini API, etc.)
+│   ├── .env.example                     <-- Reference template for environment variables
+│   ├── manage.py                        <-- Django entry point
+│   ├── requirements.txt                 <-- Python dependencies
+│   │
+│   ├── saas_platform/                   <-- Core Django Project Settings & Routing
+│   │   ├── settings.py                  <-- Contains INSTALLED_APPS (Includes hirelense_backend apps)
+│   │   └── urls.py                      <-- Master router (Routes /api/openings to hirelense_backend)
+│   │
+│   ├── accounts/                        <-- SuperAdmin App: Users, Roles, JWT Auth
+│   ├── firms/                           <-- SuperAdmin App: CA Firms Management
+│   ├── subscriptions/                   <-- SuperAdmin App: Subscription & Billing
+│   ├── module_registry/                 <-- SuperAdmin App: Manages dynamic SaaS modules
+│   │
+│   └── hirelense_backend/               <-- Integrated Hirelens Logic (Moved from modules/ folder)
+│       └── apps/
+│           ├── candidates/              <-- Handles invites, AI evaluation, scorecard processing
+│           ├── flows/                   <-- Interview flows and rounds
+│           ├── openings/                <-- Job openings creation
+│           └── scorecards/              <-- Thresholds and automated shortlisting logic
+│
+├── frontend/                            <-- Main Unified React Frontend (Runs on 5173)
+│   ├── .env                             <-- Active frontend variables (VITE_API_URL=http://localhost:8000/api)
+│   ├── .env.example                     <-- Reference frontend variables
+│   ├── package.json                     <-- Node dependencies
+│   ├── vite.config.js                   <-- Configured to allow importing from outside directories (allow: ['..'])
+│   │
+│   └── src/
+│       ├── App.jsx                      <-- Master Router (Routes /ca/* to SuperAdmin, /candidate-portal/* to Hirelens)
+│       ├── superadmin/                  <-- UI for SuperAdmin (managing CA firms)
+│       ├── ca/                          <-- UI for CA Firm Admins
+│       └── components/                  <-- Reusable UI components (EmailSettings, etc.)
+│
+└── modules/                             <-- External/Dynamically Loaded Frontend Modules
+    └── Hirelens/
+        └── hirelense/
+            └── frontend/                <-- Hirelens Specific React Components (Employer & Candidate Portals)
+                └── src/
+                    ├── apps/employer-portal/  <-- Dashboard for employers (integrated into main frontend router)
+                    └── apps/candidate-portal/ <-- Public interview portal for candidates
+
+
+3. DATA FLOW & LINKING
+---------------------------------------------------------
+
+A. FRONTEND TO BACKEND LINKING
+- The frontend runs on `http://localhost:5173`.
+- The frontend makes Axios API calls to `http://localhost:8000/api/...`.
+- `VITE_API_URL` in `frontend/.env` controls this connection.
+- Django's `CORS_ALLOWED_ORIGINS` in `backend/.env` permits traffic from `http://localhost:5173`.
+
+B. BACKEND API ROUTING FLOW
+1. A request hits `http://localhost:8000/api/openings/`.
+2. `backend/saas_platform/urls.py` intercepts this and routes it via `include('hirelense_backend.apps.openings.urls')`.
+3. The logic inside `hirelense_backend/apps/openings/views.py` executes and returns data.
+
+C. FRONTEND COMPONENT ROUTING FLOW
+1. A user visits `http://localhost:5173/candidate-portal/login`.
+2. `frontend/src/App.jsx` intercepts this path.
+3. Because `vite.config.js` allows parent directory imports, `App.jsx` dynamically imports the `HirelensApp` component from `../../modules/Hirelens/hirelense/frontend/src/App.jsx`.
+4. The user seamlessly interacts with the Hirelens Candidate Portal while remaining on port 5173.
+
+D. AUTOMATED SHORTLISTING FLOW (HIRELENS)
+1. Candidate completes the interview via the Candidate Portal (5173).
+2. Frontend submits answers to `POST /api/candidates/<id>/submit_interview/`.
+3. `hirelense_backend/apps/candidates/views.py` receives the submission.
+4. `CandidateEvaluationService` leverages the Gemini API to analyze the answers against the Job Opening's `Scorecard`.
+5. If the AI-generated score is >= the `auto_reject_threshold`, the candidate's status is automatically set to "Shortlisted". Otherwise, it is "Evaluated".
+6. In `EmployerPortal.jsx`, candidates with "Shortlisted" status have their manual "Shortlist" buttons disabled.
+
+E. EMAILJS INTEGRATION FLOW
+1. SuperAdmin inputs their EmailJS Public Key, Service ID, and Template ID into the platform UI.
+2. The credentials are saved to the `email_settings` table in the unified `NZ_Hirelens_db`.
+3. When creating a CA Firm or inviting a Candidate, the backend fetches these credentials (using `firm_id IS NULL` for SuperAdmin) and packages them into the API response.
+4. The frontend receives the response and triggers `emailjs.send()` using the provided credentials directly from the browser, bypassing the need for a backend SMTP server.

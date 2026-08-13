@@ -1,0 +1,282 @@
+/* frontend/src/components/FirmDashboard.css */
+
+.firm-dashboard-content {
+  font-family: 'Roboto', sans-serif;
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.dashboard-welcome {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.welcome-title {
+  font-weight: 800 !important;
+  color: #1b4332 !important;
+  letter-spacing: -0.4px;
+}
+
+.welcome-subtitle {
+  color: #52796f;
+  margin-top: 4px;
+}
+
+.role-badge-firm {
+  background-color: #e9f5ed !important;
+  color: #2d6a4f !important;
+  font-weight: 700 !important;
+}
+
+.expiring-banner-alert {
+  border-radius: 14px !important;
+}
+
+.alert-title-text {
+  font-weight: 800 !important;
+}
+
+.alert-list {
+  margin: 5px 0 0 0;
+  padding-left: 20px;
+  font-size: 0.85rem;
+}
+
+/* Metric Cards style overrides */
+.metric-card {
+  border-radius: 16px !important;
+  border: 1px solid #e8f0eb !important;
+  box-shadow: 0 4px 12px rgba(45, 106, 79, 0.04) !important;
+  background-color: #ffffff !important;
+  transition: all 0.3s ease !important;
+}
+
+.metric-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(45, 106, 79, 0.08) !important;
+}
+
+.metric-card-content {
+  padding: 20px !important;
+}
+
+.card-header-box {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.icon-wrapper {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.icon-main {
+  font-size: 1.4rem !important;
+}
+
+.bg-emerald-light {
+  background-color: #e9f5ed;
+}
+
+.text-emerald {
+  color: #2d6a4f;
+}
+
+.bg-mint-light {
+  background-color: #f0fdf4;
+}
+
+.text-mint {
+  color: #52b788;
+}
+
+.summary-pill {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+.modules-pill {
+  background-color: #d8f3dc;
+  color: #1b4332;
+}
+
+.staff-pill {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.storage-pill {
+  background-color: #e0f2f1;
+  color: #00695c;
+}
+
+.metric-label {
+  color: #748c82 !important;
+  font-size: 0.8rem !important;
+  font-weight: 700 !important;
+}
+
+.metric-value {
+  color: #1b4332 !important;
+  font-size: 1.8rem !important;
+  font-weight: 800 !important;
+  line-height: 1.2 !important;
+  margin: 2px 0 !important;
+}
+
+.metric-subtext {
+  color: #52796f !important;
+  font-size: 0.72rem !important;
+  font-weight: 500 !important;
+}
+
+.dashboard-section-title {
+  font-weight: 800 !important;
+  color: #1b4332 !important;
+  letter-spacing: -0.3px;
+}
+
+/* Subscribed Modules Card display */
+.firm-module-card {
+  border-radius: 16px !important;
+  border: 1px solid #e8f0eb !important;
+  background-color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(45, 106, 79, 0.03) !important;
+  transition: all 0.3s ease !important;
+  height: 100%;
+}
+
+.firm-module-card:hover {
+  transform: translateY(-2px);
+  border-color: #b7e4c7 !important;
+  box-shadow: 0 8px 24px rgba(45, 106, 79, 0.08) !important;
+}
+
+.firm-module-card.expired-card {
+  background-color: #fcfcfc !important;
+  border-color: #f0f0f0 !important;
+}
+
+.module-card-body-ca {
+  padding: 20px !important;
+}
+
+.module-card-header-ca {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.module-title-ca {
+  font-weight: 800 !important;
+  color: #1b4332 !important;
+  font-size: 0.95rem !important;
+}
+
+.status-pill-ca {
+  font-weight: 700 !important;
+  font-size: 0.65rem !important;
+  border-radius: 6px !important;
+}
+
+.status-pill-ca.active {
+  background-color: #e9f5ed !important;
+  color: #2d6a4f !important;
+}
+
+.status-pill-ca.expired {
+  background-color: #fff0f3 !important;
+  color: #b7094c !important;
+}
+
+.module-desc-ca {
+  font-size: 0.76rem !important;
+  color: #748c82 !important;
+  line-height: 1.4 !important;
+  height: 38px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.module-meta-info-ca p {
+  margin: 4px 0;
+  font-size: 0.76rem;
+  color: #52796f;
+}
+
+.module-meta-info-ca p strong {
+  color: #1b4332;
+}
+
+.expiry-warning-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 6px;
+  margin-top: 10px;
+}
+
+.expiry-warning-pill.red-alert {
+  background-color: #fff0f3;
+  color: #b7094c;
+}
+
+.expiry-warning-pill.orange-alert {
+  background-color: #fff8f0;
+  color: #d97706;
+}
+
+.expiry-warning-pill.yellow-alert {
+  background-color: #fefbeb;
+  color: #b45309;
+}
+
+.open-module-btn-ca {
+  background: linear-gradient(135deg, #2d6a4f 0%, #1b4332 100%) !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  text-transform: none !important;
+  font-size: 0.8rem !important;
+  border-radius: 8px !important;
+  padding: 8px !important;
+  transition: all 0.3s ease !important;
+}
+
+.open-module-btn-ca:hover {
+  background: linear-gradient(135deg, #40916c 0%, #2d6a4f 100%) !important;
+}
+
+.open-module-btn-ca.Mui-disabled {
+  background: #f1f3f1 !important;
+  color: #c7dcd0 !important;
+}
+
+.empty-modules-paper {
+  border-radius: 16px !important;
+  border: 1px dashed #c7dcd0 !important;
+  background-color: #ffffff !important;
+}
+
+.spinner-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+}
