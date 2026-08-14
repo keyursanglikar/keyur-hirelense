@@ -13,7 +13,7 @@ import DashboardLayout from './components/DashboardLayout'
 import ActivateAccount from './components/ActivateAccount'
 import EmailSettingsSetupPage from './components/EmailSettingsSetupPage'
 import ModuleAccessGuard from './module-loader/ModuleAccessGuard'
-import HirelensApp from '../../modules/Hirelens/hirelense/frontend/src/App.jsx'
+import HirelensApp from '@hirelense/App.jsx'
 import { getCurrentUser } from './redux/slices/authSlice'  // ← Make sure this import exists
 
 import './App.css'
