@@ -17,7 +17,7 @@ const SubscriptionPlans = () => {
   const fetchPlans = async () => {
     try {
       const token = sessionStorage.getItem('access_token');
-      const res = await axios.get('http://localhost:8000/api/firms/modules/', {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/firms/modules/`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setModules(res.data);

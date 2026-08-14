@@ -80,7 +80,7 @@ const CAFirmsDetail = () => {
   const fetchFirmDetails = async () => {
     try {
       const token = sessionStorage.getItem('access_token')
-      const res = await axios.get(`http://localhost:8000/api/firms/${id}/`, {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/firms/${id}/`, {
         headers: { Authorization: `Bearer ${token}` }
       })
       setFirmData(res.data)
@@ -95,7 +95,7 @@ const CAFirmsDetail = () => {
   const fetchAvailableModules = async () => {
     try {
       const token = sessionStorage.getItem('access_token')
-      const res = await axios.get('http://localhost:8000/api/firms/modules/', {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/firms/modules/`, {
         headers: { Authorization: `Bearer ${token}` }
       })
       setAvailableModules(res.data)
@@ -109,7 +109,7 @@ const CAFirmsDetail = () => {
     setSuccessMessage('')
     try {
       const token = sessionStorage.getItem('access_token')
-      const res = await axios.post(`http://localhost:8000/api/firms/${id}/action/`, 
+      const res = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/firms/${id}/action/`, 
         { action: actionType },
         { headers: { Authorization: `Bearer ${token}` } }
       )
@@ -130,7 +130,7 @@ const CAFirmsDetail = () => {
     setSuccessMessage('')
     try {
       const token = sessionStorage.getItem('access_token')
-      const res = await axios.post(`http://localhost:8000/api/firms/${id}/resend-activation/`, 
+      const res = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/firms/${id}/resend-activation/`, 
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       )
@@ -214,7 +214,7 @@ const CAFirmsDetail = () => {
         action: selectedSubAction,
         ...subFormData
       }
-      await axios.post(`http://localhost:8000/api/firms/${id}/subscriptions/`, 
+      await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/firms/${id}/subscriptions/`, 
         payload,
         { headers: { Authorization: `Bearer ${token}` } }
       )

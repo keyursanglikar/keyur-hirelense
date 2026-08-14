@@ -140,7 +140,7 @@ const CAFirmsCreate = () => {
   const fetchModules = async () => {
     try {
       const token = sessionStorage.getItem('access_token')
-      const res = await axios.get('http://localhost:8000/api/firms/modules/', {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/firms/modules/`, {
         headers: { Authorization: `Bearer ${token}` }
       })
       setAvailableModules(res.data)
@@ -445,7 +445,7 @@ const CAFirmsCreate = () => {
 
     try {
       const token = sessionStorage.getItem('access_token')
-      const res = await axios.post('http://localhost:8000/api/firms/', payload, {
+      const res = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/firms/`, payload, {
         headers: { Authorization: `Bearer ${token}` }
       })
 

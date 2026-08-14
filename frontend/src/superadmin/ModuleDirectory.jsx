@@ -83,7 +83,7 @@ const ModuleDirectory = () => {
     setErrorMsg('')
     try {
       const token = sessionStorage.getItem('access_token')
-      const res = await axios.get('http://localhost:8000/api/firms/modules/', {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/firms/modules/`, {
         headers: { Authorization: `Bearer ${token}` }
       })
       setModules(res.data)
@@ -99,7 +99,7 @@ const ModuleDirectory = () => {
     setLocalModulesDialogOpen(true)
     try {
       const token = sessionStorage.getItem('access_token')
-      const res = await axios.get('http://localhost:8000/api/firms/local-modules/', {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/firms/local-modules/`, {
         headers: { Authorization: `Bearer ${token}` }
       })
       setLocalModules(res.data)
@@ -213,14 +213,14 @@ const ModuleDirectory = () => {
       const token = sessionStorage.getItem('access_token')
       if (editingModule) {
         await axios.patch(
-          `http://localhost:8000/api/firms/modules/${editingModule.id}/`,
+          `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/firms/modules/${editingModule.id}/`,
           finalForm,
           { headers: { Authorization: `Bearer ${token}` } }
         )
         setSuccessMsg(`✅ Module "${form.display_name}" updated successfully.`)
       } else {
         await axios.post(
-          'http://localhost:8000/api/firms/modules/',
+          `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/firms/modules/`,
           finalForm,
           { headers: { Authorization: `Bearer ${token}` } }
         )

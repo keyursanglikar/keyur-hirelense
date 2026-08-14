@@ -162,8 +162,8 @@ const EmailSettings = ({ type, onSaveSuccess }) => {
   const [successMsg, setSuccessMsg] = useState('')
 
   const endpoint = type === 'system' 
-    ? 'http://localhost:8000/api/firms/system-email-settings/' 
-    : 'http://localhost:8000/api/firms/email-settings/'
+    ? `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/firms/system-email-settings/` 
+    : `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/firms/email-settings/`
 
   const handleCopyHTML = () => {
     const templateText = type === 'system' ? SYSTEM_ONBOARDING_HTML_TEMPLATE : FIRM_CLIENT_HTML_TEMPLATE

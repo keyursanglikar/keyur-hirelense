@@ -35,7 +35,7 @@ const ModuleAccessGuard = () => {
       }
 
       try {
-        const res = await axios.get(`http://localhost:8000/api/firms/ca/modules/${module_slug}/access/`, {
+        const res = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/firms/ca/modules/${module_slug}/access/`, {
           headers: { Authorization: `Bearer ${token}` }
         })
         setHasAccess(true)

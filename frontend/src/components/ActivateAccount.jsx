@@ -68,7 +68,7 @@ const ActivateAccount = () => {
     setLoading(true)
 
     try {
-      await axios.post('http://localhost:8000/api/firms/activate/', {
+      await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/firms/activate/`, {
         token,
         email,
         password

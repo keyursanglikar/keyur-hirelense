@@ -43,7 +43,7 @@ const CAFirmsList = () => {
   const fetchFirms = async () => {
     try {
       const token = sessionStorage.getItem('access_token')
-      const res = await axios.get('http://localhost:8000/api/firms/', {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/firms/`, {
         headers: { Authorization: `Bearer ${token}` }
       })
       setFirms(res.data)

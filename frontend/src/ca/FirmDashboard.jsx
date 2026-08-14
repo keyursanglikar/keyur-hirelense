@@ -266,7 +266,7 @@ const FirmDashboard = () => {
   const fetchModules = async () => {
     try {
       const token = sessionStorage.getItem('access_token')
-      const res = await axios.get('http://localhost:8000/api/firms/ca/modules/', {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/firms/ca/modules/`, {
         headers: { Authorization: `Bearer ${token}` }
       })
       setModules(res.data.modules || [])
@@ -282,7 +282,7 @@ const FirmDashboard = () => {
     setAccessError('')
     try {
       const token = sessionStorage.getItem('access_token')
-      const res = await axios.get(`http://localhost:8000/api/firms/ca/modules/${slug}/access/`, {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/firms/ca/modules/${slug}/access/`, {
         headers: { Authorization: `Bearer ${token}` }
       })
       if (res.data.frontend_url) {
