@@ -140,11 +140,16 @@ class CandidateViewSet(viewsets.ModelViewSet):
             # Fetch EmailJS credentials for the frontend
             from django.db import connection
             with connection.cursor() as cursor:
+                row = None
                 if opening.tenant:
                     cursor.execute("SELECT service_id, template_id, public_key FROM email_settings WHERE firm_id = %s", [opening.tenant.id])
-                else:
+                    row = cursor.fetchone()
+                
+                # Fallback to global settings if firm hasn't configured theirs
+                if not row:
                     cursor.execute("SELECT service_id, template_id, public_key FROM email_settings WHERE firm_id IS NULL LIMIT 1")
-                row = cursor.fetchone()
+                    row = cursor.fetchone()
+                    
                 if row:
                     serialized_cand['emailjs_settings'] = {
                         'service_id': row[0],

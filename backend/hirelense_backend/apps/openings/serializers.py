@@ -16,10 +16,28 @@ class JobOpeningSerializer(serializers.ModelSerializer):
         }
 
     def to_internal_value(self, data):
-        # Set default tenant if missing
+        # Make mutable if it's a QueryDict
+        if hasattr(data, '_mutable') and not data._mutable:
+            data = data.copy()
+
+        # Set default tenant if missing based on the authenticated user's firm
         if 'tenant' not in data or data['tenant'] is None:
-            tenant = Tenant.objects.first() or Tenant.objects.create(id=1, name="Default Tenant")
-            data['tenant'] = tenant.id
+            request = self.context.get('request')
+            tenant_id = None
+            if request and hasattr(request, 'user') and request.user.is_authenticated:
+                try:
+                    from accounts.models import CAFirmUser
+                    firm_user = CAFirmUser.objects.filter(user=request.user).first()
+                    if firm_user:
+                        tenant_id = firm_user.firm.id
+                except Exception:
+                    pass
+            
+            if not tenant_id:
+                tenant = Tenant.objects.first()
+                tenant_id = tenant.id if tenant else 1
+                
+            data['tenant'] = tenant_id
 
         # Safely nullify mock/temporary flow IDs that don't exist in MySQL
         if 'flow' in data and data['flow'] is not None:
