@@ -1,7 +1,7 @@
 // frontend/src/components/FirmDashboard.jsx
 
 import React, { useState, useEffect } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom'
 import {
   Box,
   Typography,
@@ -258,6 +258,7 @@ const FirmDashboard = () => {
   const [firmName, setFirmName] = useState('')
   const [accessError, setAccessError] = useState('')
   const [errorDialogOpen, setErrorDialogOpen] = useState(false)
+  const navigate = useNavigate()
 
   useEffect(() => {
     fetchModules()
@@ -281,8 +282,12 @@ const FirmDashboard = () => {
     try {
       const token = sessionStorage.getItem('access_token')
       const res = await api.get(`/firms/ca/modules/${slug}/access/`)
-      if (res.data.frontend_url) {
+      // If the backend provides an explicit external URL, go there.
+      // Otherwise, use our internal module access guard.
+      if (res.data.frontend_url && res.data.frontend_url.startsWith('http')) {
         window.location.href = res.data.frontend_url;
+      } else {
+        navigate(`/ca/modules/${slug}`)
       }
     } catch (err) {
       console.error("Module access verification failed:", err)
