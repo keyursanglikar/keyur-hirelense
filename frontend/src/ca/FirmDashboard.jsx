@@ -45,7 +45,8 @@ const FirmModulesList = ({
   accessError,
   errorDialogOpen,
   setErrorDialogOpen,
-  handleOpenModule
+  handleOpenModule,
+  isModulePage = false
 }) => {
   // Statistics calculations
   const totalCount = modules.length
@@ -69,85 +70,87 @@ const FirmModulesList = ({
   return (
     <>
       <Helmet>
-        <title>CA Dashboard</title>
+        <title>{isModulePage ? 'Hirelens Module' : 'CA Dashboard'}</title>
       </Helmet>
 
       <Box className="firm-dashboard-content">
-        {/* Welcome Block */}
-        <Box className="dashboard-welcome" sx={{ mb: 3 }}>
-          <div>
-            <Typography variant="h5" className="welcome-title">
-              Welcome, {user?.first_name || 'Firm'} {user?.last_name || 'Partner'}
-            </Typography>
-            <Typography variant="body2" className="welcome-subtitle">
-              CA Firm Administration Hub • <strong>{firmName}</strong>
-            </Typography>
-          </div>
-          <Chip label="Firm Admin" className="role-badge-firm" />
-        </Box>
+        {!isModulePage && (
+          <>
+            {/* Welcome Block */}
+            <Box className="dashboard-welcome" sx={{ mb: 3 }}>
+              <div>
+                <Typography variant="h5" className="welcome-title">
+                  Welcome, {user?.first_name || 'Firm'} {user?.last_name || 'Partner'}
+                </Typography>
+                <Typography variant="body2" className="welcome-subtitle">
+                  CA Firm Administration Hub • <strong>{firmName}</strong>
+                </Typography>
+              </div>
+              <Chip label="Firm Admin" className="role-badge-firm" />
+            </Box>
 
-        {/* Expiry Alert Warning Banner */}
-        {expiringSoon.length > 0 && (
-          <Alert 
-            severity="warning" 
-            icon={<Warning fontSize="inherit" />}
-            className="expiring-banner-alert"
-            sx={{ mb: 4 }}
-          >
-            <AlertTitle className="alert-title-text">Subscription Licensing Warnings ({expiringSoon.length})</AlertTitle>
-            The following modules are expiring soon. Please contact SuperAdmin to renew subscriptions:
-            <ul className="alert-list">
-              {expiringSoon.map(m => (
-                <li key={m.id}>
-                  <strong>{m.module_name}</strong> expires in <strong>{m.days_remaining} days</strong> ({m.expiry_date})
-                </li>
-              ))}
-            </ul>
-          </Alert>
-        )}
+            {/* Expiry Alert Warning Banner */}
+            {expiringSoon.length > 0 && (
+              <Alert 
+                severity="warning" 
+                icon={<Warning fontSize="inherit" />}
+                className="expiring-banner-alert"
+                sx={{ mb: 4 }}
+              >
+                <AlertTitle className="alert-title-text">Subscription Licensing Warnings ({expiringSoon.length})</AlertTitle>
+                The following modules are expiring soon. Please contact SuperAdmin to renew subscriptions:
+                <ul className="alert-list">
+                  {expiringSoon.map(m => (
+                    <li key={m.id}>
+                      <strong>{m.module_name}</strong> expires in <strong>{m.days_remaining} days</strong> ({m.expiry_date})
+                    </li>
+                  ))}
+                </ul>
+              </Alert>
+            )}
 
-        {/* Metrics Grid */}
-        <Grid container spacing={3} sx={{ mb: 4 }}>
-          {/* Active Modules */}
-          <Grid item xs={12} sm={6} md={3}>
-            <Card className="metric-card card-modules">
-              <CardContent className="metric-card-content">
-                <div className="card-header-box">
-                  <div className="icon-wrapper bg-emerald-light">
-                    <Layers className="icon-main text-emerald" />
-                  </div>
-                  <span className="summary-pill modules-pill">{activeCount}/{totalCount} Active</span>
-                </div>
-                <Typography className="metric-label">Allocated Modules</Typography>
-                <Typography className="metric-value">{activeCount}</Typography>
-                <Typography className="metric-subtext">{expiredCount} modules expired/inactive</Typography>
-              </CardContent>
-            </Card>
-          </Grid>
+            {/* Metrics Grid */}
+            <Grid container spacing={3} sx={{ mb: 4 }}>
+              {/* Active Modules */}
+              <Grid item xs={12} sm={6} md={3}>
+                <Card className="metric-card card-modules">
+                  <CardContent className="metric-card-content">
+                    <div className="card-header-box">
+                      <div className="icon-wrapper bg-emerald-light">
+                        <Layers className="icon-main text-emerald" />
+                      </div>
+                      <span className="summary-pill modules-pill">{activeCount}/{totalCount} Active</span>
+                    </div>
+                    <Typography className="metric-label">Allocated Modules</Typography>
+                    <Typography className="metric-value">{activeCount}</Typography>
+                    <Typography className="metric-subtext">{expiredCount} modules expired/inactive</Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
 
-          {/* Staff Members Count */}
-          <Grid item xs={12} sm={6} md={3}>
-            <Card className="metric-card card-staff">
-              <CardContent className="metric-card-content">
-                <div className="card-header-box">
-                  <div className="icon-wrapper bg-mint-light">
-                    <People className="icon-main text-mint" />
-                  </div>
-                  <span className="summary-pill staff-pill">8 Seats Active</span>
-                </div>
-                <Typography className="metric-label">Staff Members</Typography>
-                <Typography className="metric-value">8</Typography>
-                <Typography className="metric-subtext">Manage CA office access controls</Typography>
-              </CardContent>
-            </Card>
-          </Grid>
+              {/* Staff Members Count */}
+              <Grid item xs={12} sm={6} md={3}>
+                <Card className="metric-card card-staff">
+                  <CardContent className="metric-card-content">
+                    <div className="card-header-box">
+                      <div className="icon-wrapper bg-mint-light">
+                        <People className="icon-main text-mint" />
+                      </div>
+                      <span className="summary-pill staff-pill">8 Seats Active</span>
+                    </div>
+                    <Typography className="metric-label">Staff Members</Typography>
+                    <Typography className="metric-value">8</Typography>
+                    <Typography className="metric-subtext">Manage CA office access controls</Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
 
-          {/* Storage Used */}
-          <Grid item xs={12} sm={6} md={3}>
-            <Card className="metric-card card-storage">
-              <CardContent className="metric-card-content">
-                <div className="card-header-box">
-                  <div className="icon-wrapper bg-emerald-light">
+              {/* Storage Used */}
+              <Grid item xs={12} sm={6} md={3}>
+                <Card className="metric-card card-storage">
+                  <CardContent className="metric-card-content">
+                    <div className="card-header-box">
+                      <div className="icon-wrapper bg-emerald-light">
                     <CloudQueue className="icon-main text-emerald" />
                   </div>
                   <span className="summary-pill storage-pill">1.2 GB Used</span>
@@ -158,11 +161,13 @@ const FirmModulesList = ({
               </CardContent>
             </Card>
           </Grid>
-        </Grid>
+          </Grid>
+          </>
+        )}
 
         {/* Modules Directory Display */}
         <Typography variant="h6" className="dashboard-section-title" sx={{ mb: 2 }}>
-          📦 Your Subscribed Modules &amp; Cloud Apps
+          {isModulePage ? '📦 Your Active Subscriptions' : '📦 Your Subscribed Modules & Cloud Apps'}
         </Typography>
         
         {totalCount === 0 ? (
@@ -329,6 +334,7 @@ const FirmDashboard = () => {
             errorDialogOpen={errorDialogOpen}
             setErrorDialogOpen={setErrorDialogOpen}
             handleOpenModule={handleOpenModule}
+            isModulePage={true}
           />
         }
       />
