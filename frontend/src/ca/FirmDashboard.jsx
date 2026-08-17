@@ -282,10 +282,11 @@ const FirmDashboard = () => {
     try {
       const token = sessionStorage.getItem('access_token')
       const res = await api.get(`/firms/ca/modules/${slug}/access/`)
-      // If the backend provides an explicit external URL, go there.
+      // If the backend provides an explicit external URL for a completely different domain, go there.
       // Otherwise, use our internal module access guard.
-      if (res.data.frontend_url && res.data.frontend_url.startsWith('http')) {
-        window.location.href = res.data.frontend_url;
+      const url = res.data.frontend_url;
+      if (url && url.startsWith('http') && !url.includes(window.location.hostname)) {
+        window.location.href = url;
       } else {
         navigate(`/ca/modules/${slug}`)
       }
