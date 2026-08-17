@@ -211,11 +211,7 @@
   font-size: 0.88rem !important;   /* Reduced text font size */
 }
 
-.login-paper .MuiOutlinedInput-input {
-  padding-top: 10px !important;
-  padding-bottom: 10px !important;
-  padding-right: 40px !important; /* Force room for the eye icon */
-}
+/* Removed custom .MuiOutlinedInput-input padding to avoid breaking MUI adornment layouts */
 
 .login-paper .MuiInputLabel-root {
   font-size: 0.82rem !important;   /* Reduced label font size */
