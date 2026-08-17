@@ -214,7 +214,7 @@
 .login-paper .MuiOutlinedInput-input {
   padding-top: 10px !important;
   padding-bottom: 10px !important;
-  /* Removed horizontal padding !important to prevent hiding the eye icon */
+  padding-right: 40px !important; /* Force room for the eye icon */
 }
 
 .login-paper .MuiInputLabel-root {
