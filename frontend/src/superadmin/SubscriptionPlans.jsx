@@ -3,7 +3,7 @@ import {
   Box, Typography, Paper, Grid, Card, CardContent, CircularProgress, Alert, Chip, Divider, Button
 } from '@mui/material';
 import { Payments, Edit, Add } from '@mui/icons-material';
-import axios from 'axios';
+import api from '../api';
 
 const SubscriptionPlans = () => {
   const [modules, setModules] = useState([]);
@@ -17,9 +17,7 @@ const SubscriptionPlans = () => {
   const fetchPlans = async () => {
     try {
       const token = sessionStorage.getItem('access_token');
-      const res = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/firms/modules/`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await api.get(`/firms/modules/`);
       setModules(res.data);
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to fetch subscription plans');

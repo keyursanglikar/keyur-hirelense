@@ -23,7 +23,7 @@ import {
   ArrowForward
 } from '@mui/icons-material'
 import { motion } from 'framer-motion'
-import axios from 'axios'
+import api from '../api'
 import './ActivateAccount.css'
 
 const ActivateAccount = () => {
@@ -68,7 +68,7 @@ const ActivateAccount = () => {
     setLoading(true)
 
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/firms/activate/`, {
+      await api.post(`/firms/activate/`, {
         token,
         email,
         password

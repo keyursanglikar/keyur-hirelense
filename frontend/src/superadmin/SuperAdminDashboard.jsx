@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
-import axios from 'axios'
+import api from '../api'
 import CAFirmsList from './CAFirmsList'
 import CAFirmsCreate from './CAFirmsCreate'
 import CAFirmsDetail from './CAFirmsDetail'
@@ -65,9 +65,7 @@ const SuperAdminMetrics = () => {
   const fetchDashboardData = async () => {
     try {
       const token = sessionStorage.getItem('access_token');
-      const res = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/firms/dashboard/`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await api.get(`/firms/dashboard/`);
       setDashboardData(res.data);
     } catch (err) {
       console.error('Failed to fetch dashboard data', err);

@@ -1,7 +1,7 @@
 // frontend/src/redux/slices/firmSlice.js
 
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-import axios from 'axios'
+import api from '../../api'
 import { toast } from 'react-toastify'
 
 const API_URL = import.meta.env.VITE_API_URL || `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}`
@@ -12,9 +12,7 @@ export const fetchFirms = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const token = sessionStorage.getItem('access_token')
-      const response = await axios.get(`${API_URL}/firms/`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      const response = await api.get(`/firms/`)
       return response.data
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch firms')
@@ -27,9 +25,7 @@ export const createFirm = createAsyncThunk(
   async (firmData, { rejectWithValue }) => {
     try {
       const token = sessionStorage.getItem('access_token')
-      const response = await axios.post(`${API_URL}/firms/`, firmData, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      const response = await api.post(`/firms/`, firmData)
       toast.success('Firm created successfully!')
       return response.data
     } catch (error) {
@@ -45,9 +41,7 @@ export const updateFirm = createAsyncThunk(
   async ({ id, firmData }, { rejectWithValue }) => {
     try {
       const token = sessionStorage.getItem('access_token')
-      const response = await axios.put(`${API_URL}/firms/${id}/`, firmData, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      const response = await api.put(`/firms/${id}/`, firmData)
       toast.success('Firm updated successfully!')
       return response.data
     } catch (error) {
@@ -63,9 +57,7 @@ export const deleteFirm = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     try {
       const token = sessionStorage.getItem('access_token')
-      await axios.delete(`${API_URL}/firms/${id}/`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      await api.delete(`/firms/${id}/`)
       toast.success('Firm deleted successfully!')
       return id
     } catch (error) {

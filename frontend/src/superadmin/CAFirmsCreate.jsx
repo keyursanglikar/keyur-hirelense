@@ -44,7 +44,7 @@ import {
   Download,
   Add
 } from '@mui/icons-material'
-import axios from 'axios'
+import api from '../api'
 import * as XLSX from 'xlsx'
 import emailjs from '@emailjs/browser'
 import './CAFirmsCreate.css'
@@ -140,9 +140,7 @@ const CAFirmsCreate = () => {
   const fetchModules = async () => {
     try {
       const token = sessionStorage.getItem('access_token')
-      const res = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/firms/modules/`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      const res = await api.get(`/firms/modules/`)
       setAvailableModules(res.data)
       
       const initialSubs = {}
@@ -445,9 +443,7 @@ const CAFirmsCreate = () => {
 
     try {
       const token = sessionStorage.getItem('access_token')
-      const res = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/firms/`, payload, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      const res = await api.post(`/firms/`, payload)
 
       // Send onboarding email via EmailJS using backend-built payload + credentials
       const { email_payload, emailjs_credentials } = res.data

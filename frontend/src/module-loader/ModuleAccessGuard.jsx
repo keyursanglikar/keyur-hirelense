@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useParams, Navigate, useNavigate } from 'react-router-dom'
 import { Box, Typography, Button, CircularProgress } from '@mui/material'
 import Lock from '@mui/icons-material/Lock'
-import axios from 'axios'
+import api from '../api'
 
 // Dynamically import ALL routes.jsx files inside the root modules/ directory
 const moduleRoutes = import.meta.glob('../../../modules/*/frontend/routes.jsx', { eager: true })
@@ -35,9 +35,7 @@ const ModuleAccessGuard = () => {
       }
 
       try {
-        const res = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/firms/ca/modules/${module_slug}/access/`, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
+        const res = await api.get(`/firms/ca/modules/${module_slug}/access/`)
         setHasAccess(true)
       } catch (err) {
         setHasAccess(false)

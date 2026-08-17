@@ -13,7 +13,7 @@ import {
 } from '@mui/icons-material'
 import MenuItem from '@mui/material/MenuItem'
 import { Helmet } from 'react-helmet-async'
-import axios from 'axios'
+import api from '../api'
 import './ModuleDirectory.css'
 
 const STATUS_COLORS = {
@@ -83,9 +83,7 @@ const ModuleDirectory = () => {
     setErrorMsg('')
     try {
       const token = sessionStorage.getItem('access_token')
-      const res = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/firms/modules/`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      const res = await api.get(`/firms/modules/`)
       setModules(res.data)
     } catch (err) {
       setErrorMsg('Failed to load modules. ' + (err.response?.data?.error || err.message))
@@ -99,9 +97,7 @@ const ModuleDirectory = () => {
     setLocalModulesDialogOpen(true)
     try {
       const token = sessionStorage.getItem('access_token')
-      const res = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/firms/local-modules/`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      const res = await api.get(`/firms/local-modules/`)
       setLocalModules(res.data)
     } catch (err) {
       setErrorMsg('Failed to scan local modules. ' + (err.response?.data?.error || err.message))
@@ -212,17 +208,15 @@ const ModuleDirectory = () => {
     try {
       const token = sessionStorage.getItem('access_token')
       if (editingModule) {
-        await axios.patch(
-          `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/firms/modules/${editingModule.id}/`,
-          finalForm,
-          { headers: { Authorization: `Bearer ${token}` } }
+        await api.patch(
+          `/firms/modules/${editingModule.id}/`,
+          finalForm
         )
         setSuccessMsg(`✅ Module "${form.display_name}" updated successfully.`)
       } else {
-        await axios.post(
-          `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/firms/modules/`,
-          finalForm,
-          { headers: { Authorization: `Bearer ${token}` } }
+        await api.post(
+          `/firms/modules/`,
+          finalForm
         )
         setSuccessMsg(`✅ Module "${form.display_name}" created successfully!`)
       }

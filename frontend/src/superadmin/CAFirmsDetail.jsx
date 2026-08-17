@@ -47,7 +47,7 @@ import {
   CalendarToday,
   RemoveCircle
 } from '@mui/icons-material'
-import axios from 'axios'
+import api from '../api'
 import './CAFirmsDetail.css'
 
 const CAFirmsDetail = () => {
@@ -80,9 +80,7 @@ const CAFirmsDetail = () => {
   const fetchFirmDetails = async () => {
     try {
       const token = sessionStorage.getItem('access_token')
-      const res = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/firms/${id}/`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      const res = await api.get(`/firms/${id}/`)
       setFirmData(res.data)
     } catch (err) {
       console.error("Failed to load details:", err)
@@ -95,9 +93,7 @@ const CAFirmsDetail = () => {
   const fetchAvailableModules = async () => {
     try {
       const token = sessionStorage.getItem('access_token')
-      const res = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/firms/modules/`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      const res = await api.get(`/firms/modules/`)
       setAvailableModules(res.data)
     } catch (err) {
       console.error("Failed to load available modules:", err)
@@ -109,9 +105,8 @@ const CAFirmsDetail = () => {
     setSuccessMessage('')
     try {
       const token = sessionStorage.getItem('access_token')
-      const res = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/firms/${id}/action/`, 
-        { action: actionType },
-        { headers: { Authorization: `Bearer ${token}` } }
+      const res = await api.post(`/firms/${id}/action/`, 
+        { action: actionType }
       )
       setSuccessMessage(res.data.message)
       if (actionType === 'delete') {
@@ -130,9 +125,8 @@ const CAFirmsDetail = () => {
     setSuccessMessage('')
     try {
       const token = sessionStorage.getItem('access_token')
-      const res = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/firms/${id}/resend-activation/`, 
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
+      const res = await api.post(`/firms/${id}/resend-activation/`, 
+        {}
       )
       setSuccessMessage(res.data.message)
     } catch (err) {
@@ -214,9 +208,8 @@ const CAFirmsDetail = () => {
         action: selectedSubAction,
         ...subFormData
       }
-      await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/firms/${id}/subscriptions/`, 
-        payload,
-        { headers: { Authorization: `Bearer ${token}` } }
+      await api.post(`/firms/${id}/subscriptions/`, 
+        payload
       )
       setSubModalOpen(false)
       setSuccessMessage("Module subscription updated successfully.")

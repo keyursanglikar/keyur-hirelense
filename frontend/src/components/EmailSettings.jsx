@@ -28,7 +28,7 @@ import {
 } from '@mui/icons-material'
 import { useSelector } from 'react-redux'
 import emailjs from '@emailjs/browser'
-import axios from 'axios'
+import api from '../api'
 import './EmailSettings.css'
 
 const SYSTEM_ONBOARDING_HTML_TEMPLATE = `<!DOCTYPE html>
@@ -162,8 +162,8 @@ const EmailSettings = ({ type, onSaveSuccess }) => {
   const [successMsg, setSuccessMsg] = useState('')
 
   const endpoint = type === 'system' 
-    ? `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/firms/system-email-settings/` 
-    : `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/firms/email-settings/`
+    ? `/firms/system-email-settings/` 
+    : `/firms/email-settings/`
 
   const handleCopyHTML = () => {
     const templateText = type === 'system' ? SYSTEM_ONBOARDING_HTML_TEMPLATE : FIRM_CLIENT_HTML_TEMPLATE
@@ -181,9 +181,7 @@ const EmailSettings = ({ type, onSaveSuccess }) => {
     setErrorMsg('')
     try {
       const token = sessionStorage.getItem('access_token')
-      const res = await axios.get(endpoint, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      const res = await api.get(endpoint)
       setServiceId(res.data.service_id || '')
       setTemplateId(res.data.template_id || '')
       setPublicKey(res.data.public_key || '')
@@ -268,12 +266,10 @@ const EmailSettings = ({ type, onSaveSuccess }) => {
     setSuccessMsg('')
     try {
       const token = sessionStorage.getItem('access_token')
-      await axios.post(endpoint, {
+      await api.post(endpoint, {
         service_id: serviceId,
         template_id: templateId,
         public_key: publicKey
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
       })
       setSuccessMsg("Email configurations securely saved to database!")
       if (onSaveSuccess) {

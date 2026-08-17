@@ -33,7 +33,7 @@ import {
 } from '@mui/icons-material'
 import { useSelector } from 'react-redux'
 import { Helmet } from 'react-helmet-async'
-import axios from 'axios'
+import api from '../api'
 import EmailSettings from "../components/EmailSettings";
 import './FirmDashboard.css'
 
@@ -266,9 +266,7 @@ const FirmDashboard = () => {
   const fetchModules = async () => {
     try {
       const token = sessionStorage.getItem('access_token')
-      const res = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/firms/ca/modules/`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      const res = await api.get(`/firms/ca/modules/`)
       setModules(res.data.modules || [])
       setFirmName(res.data.firm_name || 'NZ CA Partners')
     } catch (err) {
@@ -282,9 +280,7 @@ const FirmDashboard = () => {
     setAccessError('')
     try {
       const token = sessionStorage.getItem('access_token')
-      const res = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/firms/ca/modules/${slug}/access/`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      const res = await api.get(`/firms/ca/modules/${slug}/access/`)
       if (res.data.frontend_url) {
         window.location.href = res.data.frontend_url;
       }

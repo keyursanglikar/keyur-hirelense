@@ -1,7 +1,7 @@
 // frontend/src/redux/slices/moduleSlice.js
 
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-import axios from 'axios'
+import api from '../../api'
 import { toast } from 'react-toastify'
 
 const API_URL = import.meta.env.VITE_API_URL || `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}`
@@ -12,9 +12,7 @@ export const fetchModules = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const token = sessionStorage.getItem('access_token')
-      const response = await axios.get(`${API_URL}/modules/`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      const response = await api.get(`/modules/`)
       return response.data
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch modules')
@@ -27,9 +25,7 @@ export const fetchFirmModules = createAsyncThunk(
   async (firmId, { rejectWithValue }) => {
     try {
       const token = sessionStorage.getItem('access_token')
-      const response = await axios.get(`${API_URL}/firms/${firmId}/modules/`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      const response = await api.get(`/firms/${firmId}/modules/`)
       return response.data
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch firm modules')
@@ -42,9 +38,7 @@ export const assignModule = createAsyncThunk(
   async ({ firmId, moduleData }, { rejectWithValue }) => {
     try {
       const token = sessionStorage.getItem('access_token')
-      const response = await axios.post(`${API_URL}/firms/${firmId}/modules/`, moduleData, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      const response = await api.post(`/firms/${firmId}/modules/`, moduleData)
       toast.success('Module assigned successfully!')
       return response.data
     } catch (error) {

@@ -27,7 +27,7 @@ import {
   RemoveCircle,
   HelpOutlined
 } from '@mui/icons-material'
-import axios from 'axios'
+import api from '../api'
 import './CAFirmsList.css'
 
 const CAFirmsList = () => {
@@ -43,9 +43,7 @@ const CAFirmsList = () => {
   const fetchFirms = async () => {
     try {
       const token = sessionStorage.getItem('access_token')
-      const res = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/firms/`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      const res = await api.get(`/firms/`)
       setFirms(res.data)
     } catch (err) {
       console.error("Failed to fetch firms:", err)

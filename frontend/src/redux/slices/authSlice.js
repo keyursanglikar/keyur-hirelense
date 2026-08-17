@@ -1,7 +1,7 @@
 // frontend/src/redux/slices/authSlice.js
 
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-import axios from 'axios'
+import api from '../../api'
 import { toast } from 'react-toastify'
 
 const API_URL = import.meta.env.VITE_API_URL || `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}`
@@ -11,7 +11,7 @@ export const loginUser = createAsyncThunk(
   'auth/login',
   async (credentials, { rejectWithValue }) => {
     try {
-      const response = await axios.post(`${API_URL}/auth/login/`, credentials)
+      const response = await api.post(`/auth/login/`, credentials)
       const { access, refresh, user, role, is_super_admin } = response.data
       
       sessionStorage.setItem('access_token', access)
@@ -19,7 +19,7 @@ export const loginUser = createAsyncThunk(
       sessionStorage.setItem('user', JSON.stringify(user))
       sessionStorage.setItem('role', role)
       
-      axios.defaults.headers.common['Authorization'] = `Bearer ${access}`
+      api.defaults.headers.common['Authorization'] = `Bearer ${access}`
       
       toast.success('Login successful!')
       return { user, role, is_super_admin }
@@ -38,7 +38,7 @@ export const logoutUser = createAsyncThunk(
     try {
       const refreshToken = sessionStorage.getItem('refresh_token')
       if (refreshToken) {
-        await axios.post(`${API_URL}/auth/logout/`, { refresh: refreshToken })
+        await api.post(`/auth/logout/`, { refresh: refreshToken })
       }
     } catch (error) {
       // Ignore logout errors
@@ -47,7 +47,7 @@ export const logoutUser = createAsyncThunk(
       sessionStorage.removeItem('refresh_token')
       sessionStorage.removeItem('user')
       sessionStorage.removeItem('role')
-      delete axios.defaults.headers.common['Authorization']
+      delete api.defaults.headers.common['Authorization']
       toast.info('Logged out successfully')
     }
   }
@@ -63,8 +63,8 @@ export const getCurrentUser = createAsyncThunk(
         return rejectWithValue('No token found')
       }
       
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
-      const response = await axios.get(`${API_URL}/auth/user/`)
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`
+      const response = await api.get(`/auth/user/`)
       return response.data
     } catch (error) {
       // If token is invalid, clear everything
@@ -72,7 +72,7 @@ export const getCurrentUser = createAsyncThunk(
       sessionStorage.removeItem('refresh_token')
       sessionStorage.removeItem('user')
       sessionStorage.removeItem('role')
-      delete axios.defaults.headers.common['Authorization']
+      delete api.defaults.headers.common['Authorization']
       return rejectWithValue('Session expired')
     }
   }
