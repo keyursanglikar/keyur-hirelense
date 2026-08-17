@@ -145,9 +145,9 @@ const Login = () => {
                         aria-label="toggle password visibility"
                         onClick={() => setShowPassword(!showPassword)}
                         edge="end"
-                        sx={{ color: '#2d6a4f', zIndex: 10, display: 'flex' }}
+                        sx={{ color: '#2d6a4f', zIndex: 10, display: 'flex', fontSize: '0.8rem', fontWeight: 'bold', padding: '4px 8px' }}
                       >
-                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                        {showPassword ? "HIDE" : "SHOW"}
                       </IconButton>
                     </InputAdornment>
                   ),
