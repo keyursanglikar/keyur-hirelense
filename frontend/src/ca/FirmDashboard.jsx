@@ -285,7 +285,9 @@ const FirmDashboard = () => {
       // If the backend provides an explicit external URL for a completely different domain, go there.
       // Otherwise, use our internal module access guard.
       const url = res.data.frontend_url;
-      if (url && url.startsWith('http') && !url.includes(window.location.hostname)) {
+      const isLocalhostUrl = url && (url.includes('localhost') || url.includes('127.0.0.1'));
+      
+      if (url && url.startsWith('http') && !url.includes(window.location.hostname) && !isLocalhostUrl) {
         window.location.href = url;
       } else {
         navigate(`/ca/modules/${slug}`)
