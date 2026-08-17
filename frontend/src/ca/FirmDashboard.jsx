@@ -317,6 +317,21 @@ const FirmDashboard = () => {
           />
         }
       />
+      <Route
+        path="modules"
+        element={
+          <FirmModulesList
+            user={user}
+            modules={modules}
+            loading={loading}
+            firmName={firmName}
+            accessError={accessError}
+            errorDialogOpen={errorDialogOpen}
+            setErrorDialogOpen={setErrorDialogOpen}
+            handleOpenModule={handleOpenModule}
+          />
+        }
+      />
       <Route path="settings" element={<EmailSettings type="firm" />} />
       <Route path="" element={<Navigate to="dashboard" />} />
     </Routes>
