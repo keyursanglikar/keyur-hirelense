@@ -14,6 +14,9 @@ import {
   Alert,
   IconButton,
   InputAdornment,
+  FormControl,
+  InputLabel,
+  OutlinedInput,
 } from '@mui/material'
 import {
   Visibility,
@@ -101,58 +104,54 @@ const Login = () => {
             </Box>
 
             <form onSubmit={handleSubmit}>
-              <TextField
-                variant="outlined"
-                margin="dense"
-                required
-                fullWidth
-                id="email"
-                label="Email Address"
-                name="email"
-                autoComplete="email"
-                autoFocus
-                value={formData.email}
-                onChange={handleChange}
-                InputProps={{
-                  startAdornment: (
+              <FormControl variant="outlined" margin="dense" required fullWidth>
+                <InputLabel htmlFor="email">Email Address</InputLabel>
+                <OutlinedInput
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  autoFocus
+                  value={formData.email}
+                  onChange={handleChange}
+                  label="Email Address"
+                  startAdornment={
                     <InputAdornment position="start">
                       <Email color="primary" />
                     </InputAdornment>
-                  ),
-                }}
-              />
-              <TextField
-                variant="outlined"
-                margin="dense"
-                required
-                fullWidth
-                name="password"
-                label="Password"
-                type={showPassword ? 'text' : 'password'}
-                id="password"
-                autoComplete="current-password"
-                value={formData.password}
-                onChange={handleChange}
-                InputProps={{
-                  startAdornment: (
+                  }
+                />
+              </FormControl>
+
+              <FormControl variant="outlined" margin="dense" required fullWidth sx={{ mt: 2 }}>
+                <InputLabel htmlFor="password">Password</InputLabel>
+                <OutlinedInput
+                  id="password"
+                  name="password"
+                  type={showPassword ? 'text' : 'password'}
+                  autoComplete="current-password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  label="Password"
+                  startAdornment={
                     <InputAdornment position="start">
                       <Lock color="primary" />
                     </InputAdornment>
-                  ),
-                  endAdornment: (
+                  }
+                  endAdornment={
                     <InputAdornment position="end">
                       <IconButton
                         aria-label="toggle password visibility"
                         onClick={() => setShowPassword(!showPassword)}
                         edge="end"
-                        sx={{ color: '#2d6a4f', zIndex: 10, display: 'flex', fontSize: '0.8rem', fontWeight: 'bold', padding: '4px 8px' }}
+                        sx={{ color: '#2d6a4f', zIndex: 10, display: 'flex' }}
                       >
-                        {showPassword ? "HIDE" : "SHOW"}
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
                       </IconButton>
                     </InputAdornment>
-                  ),
-                }}
-              />
+                  }
+                />
+              </FormControl>
 
               {error && (
                 <Alert severity="error" className="login-error">
