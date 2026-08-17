@@ -1,4 +1,6 @@
-const BASE_URL = 'http://localhost:8000';
+// Strip trailing /api if it exists in VITE_API_URL, as the Hirelens endpoints already include /api/
+const envBase = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace(/\/api\/?$/, '') : 'http://localhost:8000';
+const BASE_URL = envBase;
 const LATENCY_MS = 300;
 
 export const mockClient = {
