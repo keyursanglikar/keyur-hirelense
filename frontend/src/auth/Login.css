@@ -212,7 +212,9 @@
 }
 
 .login-paper .MuiOutlinedInput-input {
-  padding: 10px 14px !important;   /* Compact input padding */
+  padding-top: 10px !important;
+  padding-bottom: 10px !important;
+  /* Removed horizontal padding !important to prevent hiding the eye icon */
 }
 
 .login-paper .MuiInputLabel-root {
