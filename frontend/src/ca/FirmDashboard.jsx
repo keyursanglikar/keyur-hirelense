@@ -165,73 +165,111 @@ const FirmModulesList = ({
           </>
         )}
 
-        {/* Modules Directory Display */}
-        <Typography variant="h6" className="dashboard-section-title" sx={{ mb: 2 }}>
-          {isModulePage ? '📦 Your Active Subscriptions' : '📦 Your Subscribed Modules & Cloud Apps'}
-        </Typography>
-        
-        {totalCount === 0 ? (
-          <Paper elevation={0} className="empty-modules-paper" sx={{ p: 4, textAlign: 'center' }}>
-            <InfoOutlined sx={{ fontSize: '3rem', color: '#c7dcd0', mb: 2 }} />
-            <Typography variant="h6">No Allocated Modules</Typography>
-            <Typography variant="body2" color="textSecondary">
-              Your firm has no registered module licenses. Please contact NZSolution SuperAdmin.
+        {isModulePage ? (
+          <>
+            <Typography variant="h6" className="dashboard-section-title" sx={{ mb: 2 }}>
+              📦 Your Active Subscriptions
             </Typography>
-          </Paper>
-        ) : (
-          <Grid container spacing={3}>
-            {modules.map((m) => (
-              <Grid item xs={12} md={6} lg={4} key={m.id}>
-                <Card className={`firm-module-card ${!m.is_accessible ? 'expired-card' : ''}`}>
-                  <CardContent className="module-card-body-ca">
-                    <div className="module-card-header-ca">
-                      <Typography className="module-title-ca">{m.module_name}</Typography>
-                      <Chip 
-                        label={m.is_accessible ? 'Active' : 'Expired'} 
-                        size="small" 
-                        className={`status-pill-ca ${m.is_accessible ? 'active' : 'expired'}`}
-                      />
-                    </div>
-                    
-                    <Typography className="module-desc-ca">
-                      {m.description || 'Enterprise CA cloud application module.'}
-                    </Typography>
-
-                    <Divider sx={{ my: 1.5 }} />
-
-                    <div className="module-meta-info-ca">
-                      <p><strong>License Plan:</strong> {m.plan_name}</p>
-                      <p><strong>Validity Start:</strong> {m.start_date}</p>
-                      <p><strong>Validity Expiry:</strong> {m.expiry_date}</p>
-                      
-                      {m.is_accessible ? (
-                        <div className={`expiry-warning-pill ${getDaysLeftColorClass(m.days_remaining)}`}>
-                          <HourglassEmpty fontSize="inherit" /> {m.days_remaining} Days Remaining
+            {totalCount === 0 ? (
+              <Paper elevation={0} className="empty-modules-paper" sx={{ p: 4, textAlign: 'center' }}>
+                <InfoOutlined sx={{ fontSize: '3rem', color: '#c7dcd0', mb: 2 }} />
+                <Typography variant="h6">No Allocated Modules</Typography>
+                <Typography variant="body2" color="textSecondary">
+                  Your firm has no registered module licenses. Please contact NZSolution SuperAdmin.
+                </Typography>
+              </Paper>
+            ) : (
+              <Grid container spacing={3}>
+                {modules.map((m) => (
+                  <Grid item xs={12} md={6} lg={4} key={m.id}>
+                    <Card className={`firm-module-card ${!m.is_accessible ? 'expired-card' : ''}`}>
+                      <CardContent className="module-card-body-ca">
+                        <div className="module-card-header-ca">
+                          <Typography className="module-title-ca">{m.module_name}</Typography>
+                          <Chip 
+                            label={m.is_accessible ? 'Active' : 'Expired'} 
+                            size="small" 
+                            className={`status-pill-ca ${m.is_accessible ? 'active' : 'expired'}`}
+                          />
                         </div>
-                      ) : (
-                        <div className="expiry-warning-pill red-alert">
-                          <Lock fontSize="inherit" /> Subscription Expired
-                        </div>
-                      )}
-                    </div>
+                        
+                        <Typography className="module-desc-ca">
+                          {m.description || 'Enterprise CA cloud application module.'}
+                        </Typography>
 
-                    <Box sx={{ mt: 2.5 }}>
-                      <Button
-                        variant="contained"
-                        fullWidth
-                        disabled={!m.is_accessible}
-                        startIcon={m.is_accessible ? <Launch /> : <Lock />}
-                        onClick={() => handleOpenModule(m.slug)}
-                        className="open-module-btn-ca"
-                      >
-                        {m.is_accessible ? 'Open Module' : 'Locked (Expired)'}
-                      </Button>
-                    </Box>
-                  </CardContent>
-                </Card>
+                        <Divider sx={{ my: 1.5 }} />
+
+                        <div className="module-meta-info-ca">
+                          <p><strong>License Plan:</strong> {m.plan_name}</p>
+                          <p><strong>Validity Start:</strong> {m.start_date}</p>
+                          <p><strong>Validity Expiry:</strong> {m.expiry_date}</p>
+                          
+                          {m.is_accessible ? (
+                            <div className={`expiry-warning-pill ${getDaysLeftColorClass(m.days_remaining)}`}>
+                              <HourglassEmpty fontSize="inherit" /> {m.days_remaining} Days Remaining
+                            </div>
+                          ) : (
+                            <div className="expiry-warning-pill red-alert">
+                              <Lock fontSize="inherit" /> Subscription Expired
+                            </div>
+                          )}
+                        </div>
+
+                        <Box sx={{ mt: 2.5 }}>
+                          <Button
+                            variant="contained"
+                            fullWidth
+                            disabled={!m.is_accessible}
+                            startIcon={m.is_accessible ? <Launch /> : <Lock />}
+                            onClick={() => handleOpenModule(m.slug)}
+                            className="open-module-btn-ca"
+                          >
+                            {m.is_accessible ? 'Open Module' : 'Locked (Expired)'}
+                          </Button>
+                        </Box>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                ))}
               </Grid>
-            ))}
-          </Grid>
+            )}
+          </>
+        ) : (
+          <>
+            <Typography variant="h6" className="dashboard-section-title" sx={{ mb: 2, mt: 4 }}>
+              ⏱️ Subscription Overview
+            </Typography>
+            <Grid container spacing={3}>
+              {modules.map((m) => (
+                <Grid item xs={12} md={6} lg={4} key={`dash-${m.id}`}>
+                  <Card className={`metric-card ${!m.is_accessible ? 'expired-card' : ''}`}>
+                    <CardContent className="metric-card-content">
+                      <div className="card-header-box">
+                        <div className="icon-wrapper bg-emerald-light">
+                          {m.is_accessible ? <CheckCircleOutlined className="icon-main text-emerald" /> : <Lock className="icon-main" style={{color: '#b7094c'}}/>}
+                        </div>
+                        <span className={`summary-pill ${m.is_accessible ? 'modules-pill' : 'staff-pill'}`} style={!m.is_accessible ? {backgroundColor: '#ffe3e3', color: '#b7094c'} : {}}>
+                          {m.is_accessible ? 'Active' : 'Expired'}
+                        </span>
+                      </div>
+                      <Typography className="metric-label" sx={{ mt: 2, fontWeight: 700, fontSize: '1.1rem', color: '#2d6a4f' }}>
+                        {m.module_name}
+                      </Typography>
+                      {m.is_accessible ? (
+                        <Typography className="metric-value" sx={{ fontSize: '1.4rem', mt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <HourglassEmpty fontSize="small" /> {m.days_remaining} Days Left
+                        </Typography>
+                      ) : (
+                        <Typography className="metric-value" sx={{ fontSize: '1.2rem', mt: 1, color: '#b7094c' }}>
+                          Expired on {m.expiry_date}
+                        </Typography>
+                      )}
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          </>
         )}
       </Box>
 
