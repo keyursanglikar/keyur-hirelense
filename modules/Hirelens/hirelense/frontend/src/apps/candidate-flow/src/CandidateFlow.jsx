@@ -3357,7 +3357,7 @@ export default function CandidateFlow() {
                         onClick={() => setMcqAnswers({ ...mcqAnswers, [selectedMcqIdx]: optIdx })}
                       >
                         <span className="key">{String.fromCharCode(65 + optIdx)}</span>
-                        <span>{opt}</span>
+                        <span>{opt.text || opt}</span>
                       </button>
                     );
                   })}

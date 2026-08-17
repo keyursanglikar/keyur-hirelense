@@ -25,8 +25,36 @@ const INITIAL_FLOWS = [
         { id: 17, question: "ASMT-10 notice: GSTR-3B ITC exceeds 2B by 4.2L. Walk through your cause analysis and reply.", answer: "Timing diffs, vendor default, reconciliation steps.", timeLimit: 7, required: true, difficulty: "Hard" }
       ]},
       { id: 5, type: "mcq", dur: 5, order: 4, name: "Objective Test", description: "MCQ screening on GST regulations", questions: [
-        { id: 18, question: "ITC on motor vehicles for transport of persons (seating <= 13) is blocked, except when used for—", answer: "Further supply of such vehicles", timeLimit: 1, required: true, difficulty: "Easy" },
-        { id: 19, question: "Under AS 2 / Ind AS 2, inventories are valued at—", answer: "Lower of cost and NRV", timeLimit: 1, required: true, difficulty: "Easy" }
+        { 
+          id: 18, 
+          question: "ITC on motor vehicles for transport of persons (seating <= 13) is blocked, except when used for—", 
+          answer: "Further supply of such vehicles", 
+          timeLimit: 1, 
+          required: true, 
+          difficulty: "Easy",
+          options: ["Further supply of such vehicles", "Transportation of goods", "Making taxable supplies", "All of the above"],
+          mcqs: [{
+            id: 181,
+            question: "ITC on motor vehicles for transport of persons (seating <= 13) is blocked, except when used for—",
+            options: ["Further supply of such vehicles", "Transportation of goods", "Making taxable supplies", "All of the above"],
+            correctAnswer: 0
+          }]
+        },
+        { 
+          id: 19, 
+          question: "Under AS 2 / Ind AS 2, inventories are valued at—", 
+          answer: "Lower of cost and NRV", 
+          timeLimit: 1, 
+          required: true, 
+          difficulty: "Easy",
+          options: ["Cost", "Net Realizable Value", "Lower of cost and NRV", "Higher of cost and NRV"],
+          mcqs: [{
+            id: 191,
+            question: "Under AS 2 / Ind AS 2, inventories are valued at—",
+            options: ["Cost", "Net Realizable Value", "Lower of cost and NRV", "Higher of cost and NRV"],
+            correctAnswer: 2
+          }]
+        }
       ]}
     ],
     // Frontend extra UI metadata keys (these will map or be stored on client side)
