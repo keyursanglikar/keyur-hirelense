@@ -13,6 +13,7 @@ from .views import (
     SystemEmailSettingsView,
     FirmEmailSettingsView,
     ModuleDetailView,
+    SubscriptionPlanDetailView,
     LocalModulesDiscoveryView,
     SuperAdminDashboardDataView
 )
