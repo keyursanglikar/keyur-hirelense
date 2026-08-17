@@ -142,19 +142,26 @@ const CAFirmsDetail = () => {
     setSuccessMessage('')
     
     if (action === 'add') {
-      const today = new Date().toISOString().split('T')[0]
+      const today = new Date()
+      const nextYear = new Date(today)
+      nextYear.setFullYear(today.getFullYear() + 1)
+      const todayStr = today.toISOString().split('T')[0]
+      const nextYearStr = nextYear.toISOString().split('T')[0]
+      
       setSubFormData({
+        subscription_id: '',
         module_id: '',
         plan_id: '',
-        start_date: today,
-        expiry_date: '',
+        start_date: todayStr,
+        expiry_date: nextYearStr,
         price: '0.00',
         auto_renew: false
       })
     } else if (existingSub) {
       // Prefill values
       setSubFormData({
-        module_id: existingSub.module_id,
+        subscription_id: existingSub.id,
+        module_id: existingSub.module_id || '',
         plan_id: existingSub.plan_id,
         start_date: existingSub.start_date,
         expiry_date: existingSub.expiry_date,
@@ -176,13 +183,18 @@ const CAFirmsDetail = () => {
       }
 
       if (field === 'plan_id' && updated.module_id) {
-        const module = availableModules.find(m => m.id === updated.module_id)
-        const plan = module?.plans.find(p => p.id === value)
-        if (plan) {
-          updated.price = plan.price
-          const start = new Date(updated.start_date)
-          start.setDate(start.getDate() + (plan.duration_days || 30))
-          updated.expiry_date = start.toISOString().split('T')[0]
+        const mod = availableModules.find(m => m.id === updated.module_id)
+        if (mod && mod.plans) {
+          const plan = mod.plans.find(p => p.id === value)
+          if (plan) {
+            updated.price = plan.price
+            // Auto calculate expiry date if start date exists
+            if (updated.start_date) {
+               const start = new Date(updated.start_date)
+               start.setDate(start.getDate() + (plan.duration_days || 365))
+               updated.expiry_date = start.toISOString().split('T')[0]
+            }
+          }
         }
       }
 
@@ -363,7 +375,7 @@ const CAFirmsDetail = () => {
         {/* Right Column: Subscriptions & Modules */}
         <Grid item xs={12} lg={5}>
           <Paper elevation={0} className="details-paper" sx={{ p: 3, height: '100%' }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2, mb: 2 }}>
               <Typography variant="h6" className="details-section-title"><CardMembership /> Subscription Licenses</Typography>
               <Button
                 variant="outlined"
@@ -371,6 +383,7 @@ const CAFirmsDetail = () => {
                 startIcon={<Add />}
                 onClick={() => openSubscriptionModal('add')}
                 className="add-sub-btn"
+                sx={{ ml: 'auto' }}
               >
                 Add Module
               </Button>
@@ -406,12 +419,21 @@ const CAFirmsDetail = () => {
                         </Button>
                         <Button 
                           size="small" 
-                          color="error" 
+                          color="warning" 
                           startIcon={<RemoveCircle />}
                           onClick={() => openSubscriptionModal('cancel', sub)}
                           className="sub-action-btn-item cancel"
                         >
-                          Cancel Subscription
+                          Cancel
+                        </Button>
+                        <Button 
+                          size="small" 
+                          color="error" 
+                          startIcon={<Delete />}
+                          onClick={() => openSubscriptionModal('delete', sub)}
+                          className="sub-action-btn-item cancel"
+                        >
+                          Delete
                         </Button>
                       </div>
                     </CardContent>
@@ -429,82 +451,83 @@ const CAFirmsDetail = () => {
           {selectedSubAction === 'add' && 'Add Module Subscription'}
           {selectedSubAction === 'edit' && 'Modify / Extend Subscription'}
           {selectedSubAction === 'cancel' && 'Confirm Subscription Cancellation'}
+          {selectedSubAction === 'delete' && 'Delete Subscription Permanently'}
         </DialogTitle>
-        <DialogContent sx={{ pt: 2 }}>
+        <DialogContent sx={{ pt: 2, pb: 2, overflowX: 'hidden' }}>
           {selectedSubAction === 'cancel' ? (
             <Typography variant="body1">
               Are you sure you want to cancel the subscription license for this module? The CA Firm will lose all access to the module immediately. This action cannot be undone.
             </Typography>
+          ) : selectedSubAction === 'delete' ? (
+            <Typography variant="body1">
+              Are you sure you want to permanently delete this subscription record? This will completely remove it from the system. This action cannot be undone.
+            </Typography>
           ) : (
-            <Grid container spacing={2.5} sx={{ mt: 0.5 }}>
-              <Grid item xs={12}>
-                <FormControl fullWidth size="small" disabled={selectedSubAction === 'edit'}>
-                  <InputLabel>Module Allocation</InputLabel>
-                  <Select
-                    value={subFormData.module_id}
-                    onChange={(e) => handleSubFormChange('module_id', e.target.value)}
-                    label="Module Allocation"
-                  >
-                    {availableModules.map(m => (
-                      <MenuItem key={m.id} value={m.id}>{m.display_name}</MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, mt: 1 }}>
+              <FormControl fullWidth size="medium" disabled={selectedSubAction === 'edit'}>
+                <InputLabel>Module Allocation</InputLabel>
+                <Select
+                  value={subFormData.module_id}
+                  onChange={(e) => handleSubFormChange('module_id', e.target.value)}
+                  label="Module Allocation"
+                >
+                  {availableModules.map(m => (
+                    <MenuItem key={m.id} value={m.id}>{m.display_name}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
 
               {subFormData.module_id && (
-                <>
-                  <Grid item xs={12}>
-                    <FormControl fullWidth size="small">
-                      <InputLabel>Subscription Plan</InputLabel>
-                      <Select
-                        value={subFormData.plan_id}
-                        onChange={(e) => handleSubFormChange('plan_id', e.target.value)}
-                        label="Subscription Plan"
-                      >
-                        {availableModules.find(m => m.id === subFormData.module_id)?.plans.map(p => (
-                          <MenuItem key={p.id} value={p.id}>{p.plan_name} ({p.price})</MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <TextField
-                      label="Start Date"
-                      type="date"
-                      fullWidth
-                      size="small"
-                      InputLabelProps={{ shrink: true }}
-                      value={subFormData.start_date}
-                      onChange={(e) => handleSubFormChange('start_date', e.target.value)}
-                    />
-                  </Grid>
-                  <Grid item xs={6}>
-                    <TextField
-                      label="Expiry Date"
-                      type="date"
-                      fullWidth
-                      size="small"
-                      InputLabelProps={{ shrink: true }}
-                      value={subFormData.expiry_date}
-                      onChange={(e) => handleSubFormChange('expiry_date', e.target.value)}
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          checked={subFormData.auto_renew}
-                          onChange={(e) => handleSubFormChange('auto_renew', e.target.checked)}
-                          color="success"
-                        />
-                      }
-                      label="Enable Auto-Renewal for Module"
-                    />
-                  </Grid>
-                </>
+                <FormControl fullWidth size="medium">
+                  <InputLabel>Subscription Plan</InputLabel>
+                  <Select
+                    value={subFormData.plan_id}
+                    onChange={(e) => handleSubFormChange('plan_id', e.target.value)}
+                    label="Subscription Plan"
+                  >
+                    {availableModules.find(m => m.id === subFormData.module_id)?.plans?.map(p => (
+                      <MenuItem key={p.id} value={p.id}>{p.plan_name} ({p.price})</MenuItem>
+                    )) || <MenuItem disabled>No plans available</MenuItem>}
+                  </Select>
+                </FormControl>
               )}
-            </Grid>
+
+              {subFormData.module_id && (
+                <Box sx={{ display: 'flex', gap: 2, flexWrap: { xs: 'wrap', sm: 'nowrap' } }}>
+                  <TextField
+                    label="Start Date"
+                    type="date"
+                    fullWidth
+                    size="medium"
+                    InputLabelProps={{ shrink: true }}
+                    value={subFormData.start_date}
+                    onChange={(e) => handleSubFormChange('start_date', e.target.value)}
+                  />
+                  <TextField
+                    label="Expiry Date"
+                    type="date"
+                    fullWidth
+                    size="medium"
+                    InputLabelProps={{ shrink: true }}
+                    value={subFormData.expiry_date}
+                    onChange={(e) => handleSubFormChange('expiry_date', e.target.value)}
+                  />
+                </Box>
+              )}
+
+              {subFormData.module_id && (
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={subFormData.auto_renew}
+                      onChange={(e) => handleSubFormChange('auto_renew', e.target.checked)}
+                      color="success"
+                    />
+                  }
+                  label="Enable Auto-Renewal for Module"
+                />
+              )}
+            </Box>
           )}
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 3 }}>
@@ -514,10 +537,12 @@ const CAFirmsDetail = () => {
           <Button 
             onClick={handleSubFormSubmit} 
             variant="contained" 
-            className={selectedSubAction === 'cancel' ? 'dialog-action-btn-cancel' : 'dialog-action-btn-save'}
-            disabled={!subFormData.module_id || (!subFormData.plan_id && selectedSubAction !== 'cancel')}
+            className={['cancel', 'delete'].includes(selectedSubAction) ? 'dialog-action-btn-cancel' : 'dialog-action-btn-save'}
+            disabled={
+              ['cancel', 'delete'].includes(selectedSubAction) ? false : (!subFormData.module_id || !subFormData.plan_id)
+            }
           >
-            {selectedSubAction === 'cancel' ? 'Confirm Cancellation' : 'Save Changes'}
+            {selectedSubAction === 'cancel' ? 'Confirm Cancellation' : selectedSubAction === 'delete' ? 'Confirm Deletion' : 'Save Changes'}
           </Button>
         </DialogActions>
       </Dialog>

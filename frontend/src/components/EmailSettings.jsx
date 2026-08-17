@@ -313,8 +313,10 @@ const EmailSettings = ({ type, onSaveSuccess }) => {
         {onboardingSteps.map((label, index) => (
           <Step key={label} onClick={() => setActiveStep(index)} sx={{ cursor: 'pointer' }}>
             <StepLabel 
-              StepIconProps={{
-                style: { color: activeStep >= index ? '#2d6a4f' : '#adc1b6' }
+              slotProps={{
+                stepIcon: {
+                  style: { color: activeStep >= index ? '#2d6a4f' : '#adc1b6' }
+                }
               }}
             >
               <Typography sx={{ fontSize: '0.72rem', fontWeight: activeStep === index ? 700 : 500 }}>

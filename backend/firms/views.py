@@ -543,6 +543,9 @@ class GetAvailableModulesPlansView(APIView):
         modules_list = []
         for m in modules:
             allowed_plan_ids = module_plans_map.get(m.id, [])
+            # If no specific plans are mapped, allow all active plans, otherwise restrict
+            plan_pool = plans if not allowed_plan_ids else [p for p in plans if p.id in allowed_plan_ids]
+            
             module_plans = [
                 {
                     'id': p.id,
@@ -551,7 +554,7 @@ class GetAvailableModulesPlansView(APIView):
                     'price': p.price,
                     'duration_days': p.duration_days,
                     'is_trial': p.is_trial
-                } for p in plans if p.id in allowed_plan_ids
+                } for p in plan_pool
             ]
             
             modules_list.append({
@@ -599,12 +602,57 @@ class ModuleDetailView(APIView):
                     setattr(module, key, value)
             module.updated_by = request.user.id if request.user else None
             module.save()
-            return Response({'message': 'Module updated successfully'})
+            return Response({'message': 'Module updated successfully'}, status=status.HTTP_200_OK)
         except Module.DoesNotExist:
             return Response({'error': 'Module not found'}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+    def delete(self, request, pk):
+        try:
+            module = Module.objects.get(pk=pk)
+            module.delete()
+            return Response({'message': 'Module deleted successfully'})
+        except Module.DoesNotExist:
+            return Response({'error': 'Module not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+class SubscriptionPlanDetailView(APIView):
+    permission_classes = [IsSuperAdmin]
+
+    def patch(self, request, pk):
+        try:
+            plan = SubscriptionPlan.objects.get(pk=pk)
+            for key, value in request.data.items():
+                if hasattr(plan, key):
+                    setattr(plan, key, value)
+            plan.updated_by = request.user.id if request.user else None
+            plan.save()
+            return Response({'message': 'Subscription Plan updated successfully'}, status=status.HTTP_200_OK)
+        except SubscriptionPlan.DoesNotExist:
+            return Response({'error': 'Subscription Plan not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    def post(self, request):
+        try:
+            plan = SubscriptionPlan.objects.create(
+                plan_name=request.data.get('plan_name'),
+                plan_code=request.data.get('plan_code'),
+                price=request.data.get('price', 0),
+                duration_days=request.data.get('duration_days', 365),
+                is_trial=request.data.get('is_trial', False),
+                created_by=request.user.id if request.user else None
+            )
+            module_id = request.data.get('module_id')
+            if module_id:
+                with connection.cursor() as cursor:
+                    cursor.execute("INSERT INTO plan_modules (plan_id, module_id) VALUES (%s, %s)", [plan.id, module_id])
+            
+            return Response({'message': 'Subscription Plan created successfully', 'id': plan.id}, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 class LocalModulesDiscoveryView(APIView):
     permission_classes = [IsSuperAdmin]
@@ -658,6 +706,23 @@ class LocalModulesDiscoveryView(APIView):
                         is_installed = False
                         if slug:
                             is_installed = Module.objects.filter(slug=slug).exists()
+                            
+                            # Auto-detect database name from .env
+                            env_var_name = f"{slug.upper().replace('-', '_')}_DB_NAME"
+                            db_name = os.environ.get(env_var_name)
+                            if not db_name:
+                                try:
+                                    env_path = os.path.join(settings.BASE_DIR, '.env')
+                                    if os.path.exists(env_path):
+                                        with open(env_path, 'r') as env_file:
+                                            for line in env_file:
+                                                if line.startswith(env_var_name + '='):
+                                                    db_name = line.strip().split('=', 1)[1]
+                                                    break
+                                except Exception:
+                                    pass
+                            if db_name:
+                                module_config['database_name'] = db_name
                         
                         module_config['is_installed'] = is_installed
                         # Use the relative path from the modules folder as the folder_name
@@ -707,29 +772,36 @@ class ManageSubscriptionsView(APIView):
         start_date_str = request.data.get('start_date')
         expiry_date_str = request.data.get('expiry_date')
         auto_renew = request.data.get('auto_renew', False)
+        subscription_id = request.data.get('subscription_id')
 
-        if not action or not module_id or not plan_id:
-            return Response({'error': 'Missing parameters.'}, status=status.HTTP_400_BAD_REQUEST)
+        if action not in ['cancel', 'delete']:
+            if (action == 'add' and not module_id) or not plan_id or not start_date_str or not expiry_date_str:
+                return Response({'error': 'Missing parameters.'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+            expiry_date = datetime.strptime(expiry_date_str, '%Y-%m-%d').date()
+            
+            if expiry_date <= start_date:
+                return Response({'error': 'Expiry date must be after start date.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
-        expiry_date = datetime.strptime(expiry_date_str, '%Y-%m-%d').date()
-        
-        if expiry_date <= start_date:
-            return Response({'error': 'Expiry date must be after start date.'}, status=status.HTTP_400_BAD_REQUEST)
-
-        module = Module.objects.get(id=module_id)
-        plan = SubscriptionPlan.objects.get(id=plan_id)
-
-        today = timezone.now().date()
-        sub_status = 'active'
-        if start_date > today:
-            sub_status = 'pending'
-        elif expiry_date < today:
-            sub_status = 'expired'
+            plan = SubscriptionPlan.objects.get(id=plan_id)
+            today = timezone.now().date()
+            sub_status = 'active'
+            if start_date > today:
+                sub_status = 'pending'
+            elif expiry_date < today:
+                sub_status = 'expired'
+        else:
+            today = timezone.now().date()
+            
+        module = Module.objects.filter(id=module_id).first() if module_id else None
 
         try:
             with transaction.atomic():
                 if action == 'add':
+                    if not module:
+                        return Response({'error': 'Valid module is required for new subscriptions.'}, status=status.HTTP_400_BAD_REQUEST)
+                    
                     sub_code = f"SUB-{firm.firm_code.upper()}-{module.slug.upper().replace('-', '_')}-{secrets.token_hex(3)}"
                     subscription = FirmSubscription.objects.create(
                         firm_id=firm.id,
@@ -764,12 +836,13 @@ class ManageSubscriptionsView(APIView):
                     )
 
                 elif action == 'edit':
-                    # Find existing subscription
-                    fm = FirmModule.objects.filter(firm_id=firm.id, module_id=module.id).first()
-                    if not fm:
-                        return Response({'error': 'No active module relation found to modify.'}, status=status.HTTP_400_BAD_REQUEST)
-                    
-                    sub = fm.subscription
+                    if not subscription_id:
+                        return Response({'error': 'Subscription ID is missing.'}, status=status.HTTP_400_BAD_REQUEST)
+                        
+                    sub = FirmSubscription.objects.filter(id=subscription_id, firm_id=firm.id).first()
+                    if not sub:
+                        return Response({'error': 'Subscription not found.'}, status=status.HTTP_404_NOT_FOUND)
+
                     old_values = f"Start: {sub.start_date}, Expiry: {sub.expiry_date}, Plan: {sub.plan.plan_name}, Status: {sub.status}"
 
                     sub.plan = plan
@@ -779,10 +852,13 @@ class ManageSubscriptionsView(APIView):
                     sub.status = sub_status
                     sub.save()
 
-                    fm.module_status = sub_status
-                    fm.activated_at = datetime.combine(start_date, datetime.min.time(), tzinfo=timezone.utc)
-                    fm.expires_at = datetime.combine(expiry_date, datetime.max.time(), tzinfo=timezone.utc)
-                    fm.save()
+                    # Find related FirmModule to update its status
+                    fm = FirmModule.objects.filter(subscription_id=sub.id).first()
+                    if fm:
+                        fm.module_status = sub_status
+                        fm.activated_at = datetime.combine(start_date, datetime.min.time(), tzinfo=timezone.utc)
+                        fm.expires_at = datetime.combine(expiry_date, datetime.max.time(), tzinfo=timezone.utc)
+                        fm.save()
 
                     log_audit(
                         user_id=request.user.id,
@@ -796,19 +872,23 @@ class ManageSubscriptionsView(APIView):
                     )
 
                 elif action == 'cancel':
-                    fm = FirmModule.objects.filter(firm_id=firm.id, module_id=module.id).first()
-                    if not fm:
-                        return Response({'error': 'No module relation found.'}, status=status.HTTP_400_BAD_REQUEST)
-                    
-                    sub = fm.subscription
+                    if not subscription_id:
+                        return Response({'error': 'Subscription ID is missing for cancellation.'}, status=status.HTTP_400_BAD_REQUEST)
+                        
+                    sub = FirmSubscription.objects.filter(id=subscription_id, firm_id=firm.id).first()
+                    if not sub:
+                        return Response({'error': 'Subscription not found.'}, status=status.HTTP_404_NOT_FOUND)
+                        
                     sub.status = 'cancelled'
                     sub.is_active = False
                     sub.cancellation_date = today
                     sub.cancellation_reason = 'Cancelled by SuperAdmin'
                     sub.save()
 
-                    fm.module_status = 'inactive'
-                    fm.save()
+                    fm = FirmModule.objects.filter(subscription_id=sub.id).first()
+                    if fm:
+                        fm.module_status = 'inactive'
+                        fm.save()
 
                     log_audit(
                         user_id=request.user.id,
@@ -819,6 +899,31 @@ class ManageSubscriptionsView(APIView):
                         new_values="Cancelled module subscription",
                         request=request
                     )
+                elif action == 'delete':
+                    if not subscription_id:
+                        return Response({'error': 'Subscription ID is missing for deletion.'}, status=status.HTTP_400_BAD_REQUEST)
+                        
+                    sub = FirmSubscription.objects.filter(id=subscription_id, firm_id=firm.id).first()
+                    if not sub:
+                        return Response({'error': 'Subscription not found.'}, status=status.HTTP_404_NOT_FOUND)
+                        
+                    # Delete the related FirmModule if it exists (cascade will handle it, but let's be explicit and audit)
+                    fm = FirmModule.objects.filter(subscription_id=sub.id).first()
+                    
+                    log_audit(
+                        user_id=request.user.id,
+                        firm_id=firm.id,
+                        table_name='firm_subscriptions',
+                        record_id=sub.id,
+                        action='delete',
+                        new_values="Permanently deleted subscription record",
+                        request=request
+                    )
+                    
+                    if fm:
+                        fm.delete()
+                    
+                    sub.delete()
                 else:
                     return Response({'error': 'Unsupported action.'}, status=status.HTTP_400_BAD_REQUEST)
 

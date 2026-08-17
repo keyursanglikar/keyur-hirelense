@@ -9,7 +9,7 @@ import {
 import {
   Add, Edit, Layers, Launch, ArrowBack, CheckCircle,
   Close, Refresh, Circle, LinkOutlined, LockOutlined,
-  LockOpenOutlined, DocumentScanner
+  LockOpenOutlined, DocumentScanner, Delete
 } from '@mui/icons-material'
 import MenuItem from '@mui/material/MenuItem'
 import { Helmet } from 'react-helmet-async'
@@ -57,6 +57,11 @@ const ModuleDirectory = () => {
   const [localModulesDialogOpen, setLocalModulesDialogOpen] = useState(false)
   const [localModules, setLocalModules] = useState([])
   const [scanning, setScanning] = useState(false)
+
+  // Delete Confirmation State
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [moduleToDelete, setModuleToDelete] = useState(null)
+  const [deleting, setDeleting] = useState(false)
 
   const defaultForm = {
     module_name: '',
@@ -190,6 +195,27 @@ const ModuleDirectory = () => {
       }
       return updated
     })
+  }
+
+  const handleDeleteModule = (mod) => {
+    setModuleToDelete(mod)
+    setDeleteDialogOpen(true)
+  }
+
+  const confirmDeleteModule = async () => {
+    if (!moduleToDelete) return
+    setDeleting(true)
+    setErrorMsg('')
+    try {
+      await api.delete(`/firms/modules/${moduleToDelete.id}/`)
+      fetchModules()
+      setDeleteDialogOpen(false)
+      setModuleToDelete(null)
+    } catch (err) {
+      setErrorMsg(err.response?.data?.error || 'Failed to delete module')
+    } finally {
+      setDeleting(false)
+    }
   }
 
   const handleSave = async () => {
@@ -383,11 +409,18 @@ const ModuleDirectory = () => {
                         {mod.is_active ? 'Active' : 'Inactive'}
                       </Typography>
                     </Box>
-                    <Tooltip title="Edit Module">
-                      <IconButton size="small" onClick={() => openEdit(mod)} sx={{ color: '#2d6a4f', '&:hover': { background: '#f0fdf4' } }}>
-                        <Edit fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                      <Tooltip title="Edit Module">
+                        <IconButton size="small" onClick={() => openEdit(mod)} sx={{ color: '#2d6a4f', '&:hover': { background: '#f0fdf4' } }}>
+                          <Edit fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Delete Module">
+                        <IconButton size="small" onClick={() => handleDeleteModule(mod)} sx={{ color: '#dc2626', '&:hover': { background: '#fef2f2' } }}>
+                          <Delete fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
                   </Box>
                 </CardContent>
               </Card>
@@ -646,6 +679,35 @@ const ModuleDirectory = () => {
             </Box>
           )}
         </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)} maxWidth="xs" fullWidth slotProps={{ paper: { sx: { borderRadius: '12px' } } }}>
+        <DialogTitle sx={{ fontWeight: 800, color: '#dc2626', display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Delete sx={{ color: '#dc2626' }} /> Confirm Deletion
+        </DialogTitle>
+        <Divider />
+        <DialogContent>
+          <Typography sx={{ color: '#374151', fontSize: '0.9rem' }}>
+            Are you sure you want to permanently delete the module <strong>{moduleToDelete?.display_name}</strong>?
+          </Typography>
+          <Typography sx={{ color: '#6b7280', fontSize: '0.8rem', mt: 1 }}>
+            This action will remove it from the portal and database. No physical project files will be deleted.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ p: 2, pt: 0 }}>
+          <Button onClick={() => setDeleteDialogOpen(false)} sx={{ color: '#6b7280', textTransform: 'none' }}>
+            Cancel
+          </Button>
+          <Button 
+            onClick={confirmDeleteModule} 
+            variant="contained" 
+            disabled={deleting}
+            sx={{ backgroundColor: '#dc2626', '&:hover': { backgroundColor: '#b91c1c' }, textTransform: 'none', borderRadius: '6px' }}
+          >
+            {deleting ? <CircularProgress size={20} color="inherit" /> : 'Yes, Delete'}
+          </Button>
+        </DialogActions>
       </Dialog>
 
     </Box>

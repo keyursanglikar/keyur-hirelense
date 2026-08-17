@@ -111,12 +111,14 @@ const CAFirmsList = () => {
           fullWidth
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <Search sx={{ color: '#52796f' }} />
-              </InputAdornment>
-            )
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Search sx={{ color: '#52796f' }} />
+                </InputAdornment>
+              )
+            }
           }}
           className="search-field"
         />
