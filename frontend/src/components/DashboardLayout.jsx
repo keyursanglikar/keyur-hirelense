@@ -83,7 +83,7 @@ const DashboardLayout = ({ children }) => {
         return [
           { text: 'Dashboard', icon: <Dashboard className="menu-item-icon" />, path: '/firm/dashboard' },
           { text: 'Staff Directory', icon: <People className="menu-item-icon" />, path: '/firm/staff' },
-          { text: 'Purchased Modules', icon: <Layers className="menu-item-icon" />, path: '/firm/modules' },
+          { text: 'Hirelens Module', icon: <Layers className="menu-item-icon" />, path: '/firm/modules' },
           { text: 'Firm Settings', icon: <Settings className="menu-item-icon" />, path: '/firm/settings' },
         ]
       case 'staff':
