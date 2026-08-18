@@ -143,10 +143,22 @@ const ModuleDirectory = () => {
 
   const openEdit = (mod) => {
     setEditingModule(mod)
-    // When editing, check if the stored URL matches the auto-computed one
     const autoUrl = buildFrontendUrl(mod.slug)
-    const storedUrl = mod.frontend_url || ''
-    // If stored URL differs from auto-computed, user had overridden it
+    const autoBackendUrl = buildBackendUrl(mod.slug)
+    
+    let storedUrl = mod.frontend_url || ''
+    let storedBackendUrl = mod.backend_url || ''
+    
+    // Normalize if the path matches but domain changed (e.g. from localhost to vercel)
+    try {
+      if (storedUrl && new URL(storedUrl).pathname === new URL(autoUrl).pathname) {
+        storedUrl = autoUrl;
+      }
+      if (storedBackendUrl && new URL(storedBackendUrl).pathname === new URL(autoBackendUrl).pathname) {
+        storedBackendUrl = autoBackendUrl;
+      }
+    } catch (e) {}
+
     setUrlOverride(storedUrl !== autoUrl && storedUrl !== '')
     setForm({
       module_name: mod.module_name || '',
@@ -155,8 +167,8 @@ const ModuleDirectory = () => {
       description: mod.description || '',
       short_description: mod.short_description || '',
       category: mod.category || '',
-      frontend_url: mod.frontend_url || '',
-      backend_url: mod.backend_url || '',
+      frontend_url: storedUrl,
+      backend_url: storedBackendUrl,
       database_name: mod.database_name || '',
       status: mod.status || 'draft',
       is_active: mod.is_active !== false,
@@ -396,7 +408,14 @@ const ModuleDirectory = () => {
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1.5 }}>
                       <Launch sx={{ fontSize: 12, color: '#7f9f8c' }} />
                       <Typography sx={{ fontSize: '0.72rem', color: '#7f9f8c', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {mod.frontend_url}
+                        {(() => {
+                          try {
+                            const urlObj = new URL(mod.frontend_url);
+                            return `${window.location.origin}${urlObj.pathname}${urlObj.search}${urlObj.hash}`;
+                          } catch (e) {
+                            return mod.frontend_url;
+                          }
+                        })()}
                       </Typography>
                     </Box>
                   )}
