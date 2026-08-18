@@ -32,76 +32,432 @@ import api from '../api'
 import './EmailSettings.css'
 
 const SYSTEM_ONBOARDING_HTML_TEMPLATE = `<!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NZSolution CA Firm Onboarding</title>
   <style>
-    body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f4f7f5; margin: 0; padding: 20px; }
-    .email-container { max-width: 620px; background: #ffffff; margin: 0 auto; border-radius: 12px; border: 1px solid #e2efe6; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-    .header { background: linear-gradient(135deg, #1b4332 0%, #2d6a4f 100%); padding: 32px 24px; text-align: center; color: #ffffff; }
-    .header h1 { margin: 0 0 6px 0; font-size: 26px; font-weight: 800; letter-spacing: 0.5px; }
-    .header p { margin: 0; font-size: 13px; color: #b7e4c7; }
-    .content { padding: 32px 28px; line-height: 1.7; color: #333333; }
-    .welcome-text { font-size: 18px; color: #1b4332; font-weight: 700; margin-top: 0; }
-    .details-table { width: 100%; border-collapse: collapse; margin: 20px 0; background-color: #fafdfb; border-radius: 8px; border: 1px solid #e8f0eb; overflow: hidden; }
-    .details-table td { padding: 12px 16px; border-bottom: 1px solid #e8f0eb; font-size: 14px; }
-    .details-table tr:last-child td { border-bottom: none; }
-    .details-table td strong { color: #2d6a4f; }
-    .section-title { font-size: 15px; font-weight: 700; color: #1b4332; margin: 24px 0 12px 0; padding-bottom: 6px; border-bottom: 2px solid #d8f3dc; }
-    .button-container { text-align: center; margin: 28px 0; }
-    .activate-button { background: linear-gradient(135deg, #1b4332 0%, #2d6a4f 100%); color: #ffffff !important; padding: 14px 36px; text-decoration: none; border-radius: 8px; font-weight: 700; display: inline-block; font-size: 16px; box-shadow: 0 4px 14px rgba(45,106,79,0.3); letter-spacing: 0.3px; }
-    .footer { background: #f8fdf9; text-align: center; padding: 20px; font-size: 12px; color: #7f9f8c; border-top: 1px solid #e8f0eb; }
-    .note-box { background: #fffbf0; border-left: 4px solid #f6c90e; padding: 12px 16px; margin: 20px 0; border-radius: 0 8px 8px 0; font-size: 13px; color: #7d6008; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+      background: linear-gradient(135deg, #f0f9f6 0%, #f8fcfa 100%);
+      padding: 24px 16px;
+      color: #1a1a1a;
+      line-height: 1.6;
+    }
+
+    .email-wrapper {
+      max-width: 640px;
+      margin: 0 auto;
+      background: #ffffff;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(27, 67, 50, 0.08);
+    }
+
+    /* Header Section */
+    .header {
+      background: linear-gradient(135deg, #0f5c3e 0%, #1b7e4d 50%, #2d8e5c 100%);
+      padding: 48px 32px 40px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -10%;
+      width: 300px;
+      height: 300px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .header-content {
+      position: relative;
+      z-index: 1;
+    }
+
+    .header-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+      display: inline-block;
+    }
+
+    .header h1 {
+      font-size: 32px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.6px;
+      margin-bottom: 6px;
+    }
+
+    .header p {
+      font-size: 14px;
+      color: #c3f0dd;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+      tracking: 0.5px;
+    }
+
+    /* Main Content */
+    .content {
+      padding: 48px 36px;
+    }
+
+    .greeting {
+      font-size: 18px;
+      font-weight: 600;
+      color: #0f5c3e;
+      margin-bottom: 16px;
+    }
+
+    .intro-text {
+      font-size: 15px;
+      color: #4a4a4a;
+      line-height: 1.75;
+      margin-bottom: 32px;
+    }
+
+    .intro-text strong {
+      color: #1b7e4d;
+      font-weight: 600;
+    }
+
+    /* Section Styling */
+    .section {
+      margin-bottom: 36px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .section-icon {
+      font-size: 20px;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #0f5c3e;
+      letter-spacing: -0.3px;
+      margin: 0;
+    }
+
+    /* Details Table */
+    .details-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fafcfb;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid #e0ede8;
+    }
+
+    .details-table tr {
+      border-bottom: 1px solid #e0ede8;
+    }
+
+    .details-table tr:last-child {
+      border-bottom: none;
+    }
+
+    .details-table td {
+      padding: 14px 18px;
+      font-size: 14px;
+      color: #4a4a4a;
+    }
+
+    .details-table td:first-child {
+      font-weight: 600;
+      color: #1b7e4d;
+      width: 35%;
+      background: rgba(27, 126, 77, 0.03);
+    }
+
+    /* Modules Section */
+    .modules-intro {
+      font-size: 14px;
+      color: #666666;
+      line-height: 1.7;
+      margin-bottom: 20px;
+      background: #f8fcfb;
+      padding: 14px 16px;
+      border-radius: 8px;
+      border-left: 3px solid #1b7e4d;
+    }
+
+    .modules-intro strong {
+      color: #0f5c3e;
+    }
+
+    .module-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 16px;
+      background: #f8fcfb;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      border: 1px solid #e0ede8;
+      transition: all 0.2s ease;
+    }
+
+    .module-item:hover {
+      background: #f0f9f6;
+      border-color: #1b7e4d;
+    }
+
+    .module-name {
+      font-weight: 600;
+      color: #1a1a1a;
+      font-size: 14px;
+    }
+
+    .module-badge {
+      display: inline-block;
+      background: #e0f2ed;
+      color: #0f5c3e;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Alert/Note Box */
+    .alert-box {
+      background: #fffaf0;
+      border-left: 4px solid #f6b913;
+      padding: 16px 18px;
+      border-radius: 0 8px 8px 0;
+      margin: 28px 0;
+      font-size: 13px;
+      color: #7d5d08;
+      line-height: 1.6;
+    }
+
+    .alert-box strong {
+      color: #6b4d04;
+    }
+
+    /* CTA Button */
+    .cta-section {
+      text-align: center;
+      margin: 36px 0;
+    }
+
+    .cta-text {
+      font-size: 15px;
+      color: #4a4a4a;
+      margin-bottom: 20px;
+      line-height: 1.7;
+    }
+
+    .cta-text strong {
+      color: #0f5c3e;
+      font-weight: 600;
+    }
+
+    .activate-button {
+      display: inline-block;
+      background: linear-gradient(135deg, #1b7e4d 0%, #0f5c3e 100%);
+      color: #ffffff !important;
+      padding: 16px 42px;
+      text-decoration: none;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 16px;
+      letter-spacing: 0.3px;
+      box-shadow: 0 6px 24px rgba(27, 126, 77, 0.25);
+      transition: all 0.3s ease;
+      border: 2px solid transparent;
+    }
+
+    .activate-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(27, 126, 77, 0.35);
+    }
+
+    .activate-button:active {
+      transform: translateY(0);
+    }
+
+    /* Fallback Link */
+    .fallback-link-section {
+      font-size: 12px;
+      color: #888888;
+      text-align: center;
+      margin-top: 18px;
+      line-height: 1.6;
+    }
+
+    .fallback-link-section a {
+      color: #1b7e4d;
+      text-decoration: none;
+      word-break: break-all;
+      font-weight: 500;
+    }
+
+    .fallback-link-section a:hover {
+      text-decoration: underline;
+    }
+
+    /* Footer */
+    .footer {
+      background: #f5f8f7;
+      padding: 24px 32px;
+      text-align: center;
+      border-top: 1px solid #e0ede8;
+    }
+
+    .footer p {
+      font-size: 12px;
+      color: #8a9b95;
+      margin: 6px 0;
+      line-height: 1.6;
+    }
+
+    .footer-divider {
+      height: 1px;
+      background: #e0ede8;
+      margin: 12px 0;
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .header {
+        padding: 36px 24px 32px;
+      }
+
+      .header h1 {
+        font-size: 26px;
+      }
+
+      .content {
+        padding: 32px 24px;
+      }
+
+      .details-table td {
+        padding: 12px 14px;
+        font-size: 13px;
+      }
+
+      .section-title {
+        font-size: 15px;
+      }
+
+      .activate-button {
+        padding: 14px 36px;
+        font-size: 15px;
+      }
+    }
+
+    /* Print Optimization */
+    @media print {
+      body {
+        background: white;
+        padding: 0;
+      }
+
+      .email-wrapper {
+        box-shadow: none;
+      }
+    }
   </style>
 </head>
 <body>
-  <div class="email-container">
+  <div class="email-wrapper">
+    <!-- Header -->
     <div class="header">
-      <h1>&#127381; Welcome to NZSolution</h1>
-      <p>CA Firm Onboarding &amp; Module Access</p>
+      <div class="header-content">
+        <div class="header-icon">🏛️</div>
+        <h1>Welcome to NZSolution</h1>
+        <p>CA Firm Onboarding & Module Access</p>
+      </div>
     </div>
+
+    <!-- Main Content -->
     <div class="content">
-      <p class="welcome-text">Dear {{to_name}},</p>
-      <p>Your CA Firm has been successfully registered on the <strong>NZSolution SaaS Portal</strong>. Your administrative credentials and module subscriptions are now active.</p>
-
-      <p class="section-title">&#127970; Firm &amp; Account Details</p>
-      <table class="details-table">
-        <tr>
-          <td><strong>Firm Name:</strong></td>
-          <td>{{firm_name}}</td>
-        </tr>
-        <tr>
-          <td><strong>Firm Code:</strong></td>
-          <td>{{firm_code}}</td>
-        </tr>
-        <tr>
-          <td><strong>Admin Login (Email):</strong></td>
-          <td>{{to_email}}</td>
-        </tr>
-      </table>
-
-      <p class="section-title">&#128274; Purchased Modules &amp; Access Links</p>
-      <p style="font-size:13px; color:#555; margin-bottom:14px;">The following modules have been assigned to your firm. Click the <strong>"Access [Module]"</strong> button for each module to open it directly. These links are accessible only with your activated account.</p>
-
-      {{modules_links}}
-
-      <div class="note-box">
-        &#9888;&nbsp; Module links will redirect you to the login page until your account is activated. Please activate your account first using the button below.
-      </div>
-
-      <p class="section-title">&#128272; Activate Your Account</p>
-      <p>To set your secure password and access all modules, click the activation button below. This link expires in <strong>24 hours</strong>.</p>
-
-      <div class="button-container">
-        <a href="{{activation_link}}" class="activate-button">&#9989; Activate CA Account</a>
-      </div>
-
-      <p style="font-size: 12px; color: #888; text-align:center;">If the button does not work, copy and paste this link into your browser:<br>
-        <a href="{{activation_link}}" style="color:#2d6a4f; word-break:break-all;">{{activation_link}}</a>
+      <p class="greeting">Hi {{to_name}},</p>
+      
+      <p class="intro-text">
+        Your CA firm has been successfully registered on the <strong>NZSolution SaaS Portal</strong>. Your administrative credentials and module subscriptions are now active and ready to use.
       </p>
+
+      <!-- Firm Details Section -->
+      <div class="section">
+        <div class="section-header">
+          <span class="section-icon">🏢</span>
+          <h2 class="section-title">Firm & Account Details</h2>
+        </div>
+        <table class="details-table">
+          <tr>
+            <td>Firm Name</td>
+            <td>{{firm_name}}</td>
+          </tr>
+          <tr>
+            <td>Firm Code</td>
+            <td>{{firm_code}}</td>
+          </tr>
+          <tr>
+            <td>Admin Login</td>
+            <td>{{to_email}}</td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- Modules Section -->
+      <div class="section">
+        <div class="section-header">
+          <span class="section-icon">📦</span>
+          <h2 class="section-title">Purchased Modules & Access</h2>
+        </div>
+        <p class="modules-intro">
+          The following modules have been assigned to your firm. Click the <strong>"Access Module"</strong> button to open each module directly. These links are accessible only with your activated account.
+        </p>
+        {{modules_links}}
+      </div>
+
+      <!-- Alert Box -->
+      <div class="alert-box">
+        ⚠️ <strong>Important:</strong> Module links will redirect you to the login page until your account is activated. Please activate your account first using the button below.
+      </div>
+
+      <!-- CTA Section -->
+      <div class="section">
+        <div class="section-header">
+          <span class="section-icon">🔐</span>
+          <h2 class="section-title">Activate Your Account</h2>
+        </div>
+        <p class="cta-text">
+          Set your secure password and unlock all modules immediately. This activation link expires in <strong>24 hours</strong>.
+        </p>
+        <div class="cta-section">
+          <a href="{{activation_link}}" class="activate-button">✓ Activate CA Account</a>
+          <div class="fallback-link-section">
+            If the button doesn't work, copy and paste this link:<br>
+            <a href="{{activation_link}}">{{activation_link}}</a>
+          </div>
+        </div>
+      </div>
     </div>
+
+    <!-- Footer -->
     <div class="footer">
       <p>&copy; 2026 NZSolution SaaS Gateway. All rights reserved.</p>
+      <div class="footer-divider"></div>
       <p>This is an automated operational notification. Please do not reply to this email.</p>
     </div>
   </div>
