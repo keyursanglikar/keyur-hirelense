@@ -763,10 +763,17 @@ export default function EmployerPortal() {
 
   const handleSignOut = async () => {
     await authService.logout();
-    setIsLoggedIn(false);
-    setCurrentUser(null);
-    setScreen('dash');
-    setProtoMenuOpen(false);
+    
+    const role = sessionStorage.getItem('role');
+    if (role === 'super_admin') {
+      window.location.href = '/superadmin/dashboard';
+    } else if (role === 'firm_admin') {
+      window.location.href = '/firm/dashboard';
+    } else if (role === 'staff') {
+      window.location.href = '/staff/dashboard';
+    } else {
+      window.location.href = '/login';
+    }
   };
 
   // --- MODAL ACTIONS: CREATE / EDIT ROUNDS ---
