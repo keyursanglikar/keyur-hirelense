@@ -236,6 +236,129 @@ const SYSTEM_ONBOARDING_HTML_TEMPLATE = `<!DOCTYPE html>
       letter-spacing: 0.5px;
     }
 
+    .module-link-container {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .module-access-link {
+      display: inline-block;
+      background: #e8f4f1;
+      color: #1b7e4d;
+      padding: 8px 14px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      border: 1.5px solid #1b7e4d;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .module-access-link:hover {
+      background: #1b7e4d;
+      color: #ffffff;
+    }
+
+    .link-label {
+      font-size: 11px;
+      color: #0f5c3e;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      background: #fff9f0;
+      padding: 4px 8px;
+      border-radius: 4px;
+      display: inline-block;
+    }
+
+    /* Link Boxes */
+    .link-box-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin: 28px 0;
+    }
+
+    .link-box {
+      padding: 20px;
+      border-radius: 12px;
+      border: 2px solid #1b7e4d;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+
+    .link-box.primary {
+      background: linear-gradient(135deg, #f0f9f6 0%, #e8f4f1 100%);
+      border-color: #1b7e4d;
+    }
+
+    .link-box.primary:hover {
+      background: linear-gradient(135deg, #e8f4f1 0%, #d8eee8 100%);
+      box-shadow: 0 6px 20px rgba(27, 126, 77, 0.15);
+    }
+
+    .link-box-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: #0f5c3e;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+      display: block;
+    }
+
+    .link-box-button {
+      display: inline-block;
+      background: linear-gradient(135deg, #1b7e4d 0%, #0f5c3e 100%);
+      color: #ffffff !important;
+      padding: 12px 20px;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 14px;
+      box-shadow: 0 4px 12px rgba(27, 126, 77, 0.2);
+      transition: all 0.2s ease;
+      margin-top: 8px;
+      display: block;
+      width: 100%;
+      text-align: center;
+    }
+
+    .link-box-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(27, 126, 77, 0.3);
+    }
+
+    .link-box-url {
+      font-size: 11px;
+      color: #0f5c3e;
+      word-break: break-all;
+      margin-top: 12px;
+      font-weight: 500;
+      line-height: 1.5;
+      font-family: 'Monaco', 'Courier New', monospace;
+      background: rgba(255, 255, 255, 0.6);
+      padding: 8px;
+      border-radius: 4px;
+    }
+
+    .link-instruction {
+      font-size: 12px;
+      color: #666666;
+      margin-top: 10px;
+      line-height: 1.5;
+    }
+
+    /* Responsive Grid */
+    @media (max-width: 600px) {
+      .link-box-container {
+        grid-template-columns: 1fr;
+        gap: 14px;
+      }
+    }
+
     /* Alert/Note Box */
     .alert-box {
       background: #fffaf0;
@@ -425,7 +548,7 @@ const SYSTEM_ONBOARDING_HTML_TEMPLATE = `<!DOCTYPE html>
           <h2 class="section-title">Purchased Modules & Access</h2>
         </div>
         <p class="modules-intro">
-          The following modules have been assigned to your firm. Click the <strong>"Access Module"</strong> button to open each module directly. These links are accessible only with your activated account.
+          The following modules have been assigned to your firm. Each has a dedicated <strong>Module Login Link</strong> to access it directly. These links are accessible only with your activated account.
         </p>
         {{{modules_links}}}
       </div>
@@ -435,21 +558,62 @@ const SYSTEM_ONBOARDING_HTML_TEMPLATE = `<!DOCTYPE html>
         ⚠️ <strong>Important:</strong> Module links will redirect you to the login page until your account is activated. Please activate your account first using the button below.
       </div>
 
-      <!-- CTA Section -->
+      <!-- Important Links Section -->
       <div class="section">
         <div class="section-header">
-          <span class="section-icon">🔐</span>
-          <h2 class="section-title">Activate Your Account</h2>
+          <span class="section-icon">⚡</span>
+          <h2 class="section-title">Important Links</h2>
         </div>
-        <p class="cta-text">
-          Set your secure password and unlock all modules immediately. This activation link expires in <strong>24 hours</strong>.
-        </p>
-        <div class="cta-section">
-          <a href="{{activation_link}}" class="activate-button">✓ Activate CA Account</a>
-          <div class="fallback-link-section">
-            If the button doesn't work, copy and paste this link:<br>
-            <a href="{{activation_link}}">{{activation_link}}</a>
+
+        <!-- Link Boxes Container -->
+        <div class="link-box-container">
+          <!-- CA Portal Access Box -->
+          <div class="link-box primary">
+            <span class="link-box-label">🌐 CA Portal Access</span>
+            <p class="link-instruction">Access the main portal dashboard</p>
+            <a href="{{portal_link}}" class="link-box-button">→ Go to Portal</a>
+            <div class="link-box-url">{{portal_link}}</div>
           </div>
+
+          <!-- Account Activation Box -->
+          <div class="link-box primary">
+            <span class="link-box-label">🔐 Account Activation</span>
+            <p class="link-instruction">Expires in 24 hours - activate now</p>
+            <a href="{{activation_link}}" class="link-box-button">→ Activate Account</a>
+            <div class="link-box-url">{{activation_link}}</div>
+          </div>
+        </div>
+
+        <div class="alert-box" style="margin-top: 20px;">
+          ⚠️ <strong>Required:</strong> You must activate your account before accessing any modules. Use the <strong>"Account Activation"</strong> link above.
+        </div>
+      </div>
+
+      <!-- Next Steps Section -->
+      <div class="section" style="background: #f0f9f6; padding: 24px; border-radius: 12px; border-left: 4px solid #1b7e4d;">
+        <div class="section-header">
+          <span class="section-icon">✅</span>
+          <h2 class="section-title">Next Steps</h2>
+        </div>
+        <ol style="margin-left: 20px; font-size: 14px; color: #4a4a4a; line-height: 1.8;">
+          <li style="margin-bottom: 12px;"><strong style="color: #0f5c3e;">Activate Your Account</strong> — Click the "Account Activation" link above and set your secure password (expires in 24 hours)</li>
+          <li style="margin-bottom: 12px;"><strong style="color: #0f5c3e;">Log In to Portal</strong> — Use your email and the password you just set to access the CA Portal</li>
+          <li><strong style="color: #0f5c3e;">Access Modules</strong> — Use the "Module Login Links" listed above to access your purchased modules</li>
+        </ol>
+      </div>
+
+      <!-- Login Credentials Section -->
+      <div class="section">
+        <div class="section-header">
+          <span class="section-icon">🔑</span>
+          <h2 class="section-title">Your Login Credentials</h2>
+        </div>
+        <div style="background: #fafcfb; padding: 16px; border-radius: 10px; border: 1px solid #e0ede8; border-left: 4px solid #1b7e4d;">
+          <p style="font-size: 13px; color: #4a4a4a; margin: 0; line-height: 1.8;">
+            <strong style="color: #0f5c3e;">📧 Email:</strong> {{to_email}}<br>
+            <strong style="color: #0f5c3e;">🔑 Password:</strong> Set during account activation (Step 1)<br>
+            <strong style="color: #0f5c3e;">🏢 Firm Code:</strong> {{firm_code}}
+          </p>
         </div>
       </div>
     </div>
@@ -854,6 +1018,7 @@ const EmailSettings = ({ type, onSaveSuccess }) => {
                 <span><span className="variable-tag">{"{{firm_name}}"}</span>: New CA Firm name</span>
                 <span><span className="variable-tag">{"{{firm_code}}"}</span>: Unique Firm Code</span>
                 <span><span className="variable-tag">{"{{activation_link}}"}</span>: Secure 24hr account activation URL</span>
+                <span><span className="variable-tag">{"{{portal_link}}"}</span>: URL to access the CA Portal Dashboard</span>
                 <span><span className="variable-tag">{"{{{modules_links}}}"}</span>: Auto HTML cards — module name, plan, validity, "Access →" button per module</span>
               </>
             ) : (

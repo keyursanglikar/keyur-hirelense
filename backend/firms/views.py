@@ -123,12 +123,15 @@ def build_email_payload(user, firm, token_raw, subs_info=[]):
     else:
         modules_links = '<p style="color:#888; font-style:italic;">No modules have been assigned to your firm yet. Please contact your NZSolution administrator.</p>'
 
+    portal_link = f"{DEFAULT_FRONTEND_BASE}/login"
+    
     return {
         'to_name': f"{user.first_name} {user.last_name}",
         'to_email': user.email,
         'firm_name': firm.firm_name,
         'firm_code': firm.firm_code,
         'activation_link': activation_link,
+        'portal_link': portal_link,
         'modules_links': modules_links,
     }
 
