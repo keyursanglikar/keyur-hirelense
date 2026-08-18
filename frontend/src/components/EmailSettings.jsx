@@ -427,7 +427,7 @@ const SYSTEM_ONBOARDING_HTML_TEMPLATE = `<!DOCTYPE html>
         <p class="modules-intro">
           The following modules have been assigned to your firm. Click the <strong>"Access Module"</strong> button to open each module directly. These links are accessible only with your activated account.
         </p>
-        {{modules_links}}
+        {{{modules_links}}}
       </div>
 
       <!-- Alert Box -->
@@ -854,7 +854,7 @@ const EmailSettings = ({ type, onSaveSuccess }) => {
                 <span><span className="variable-tag">{"{{firm_name}}"}</span>: New CA Firm name</span>
                 <span><span className="variable-tag">{"{{firm_code}}"}</span>: Unique Firm Code</span>
                 <span><span className="variable-tag">{"{{activation_link}}"}</span>: Secure 24hr account activation URL</span>
-                <span><span className="variable-tag">{"{{modules_links}}"}</span>: Auto HTML cards — module name, plan, validity, "Access →" button per module</span>
+                <span><span className="variable-tag">{"{{{modules_links}}}"}</span>: Auto HTML cards — module name, plan, validity, "Access →" button per module</span>
               </>
             ) : (
               <>
