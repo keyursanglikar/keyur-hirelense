@@ -573,9 +573,11 @@ export default function CandidateFlow() {
 
   // Web Speech API for voice-to-text transcription
   useEffect(() => {
+    const isMcq = roundsList[currentRoundIdx]?.questions?.[currentQuestionIdx]?.options?.length > 0;
+
     if (typeof window !== 'undefined') {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (SpeechRecognition && speakingState === 'listening') {
+      if (SpeechRecognition && speakingState === 'listening' && !isMcq) {
         const recognition = new SpeechRecognition();
         recognition.continuous = true;
         recognition.interimResults = true;
@@ -594,7 +596,7 @@ export default function CandidateFlow() {
         };
 
         recognition.onend = () => {
-          // Restart if still in listening state
+          // Restart if still in listening state and not MCQ
           if (speakingState === 'listening') {
             try {
               recognition.start();
@@ -618,7 +620,7 @@ export default function CandidateFlow() {
         };
       }
     }
-  }, [speakingState]);
+  }, [speakingState, currentRoundIdx, currentQuestionIdx, roundsList]);
 
   // --- INTERVAL TIMERS ---
   useEffect(() => {
@@ -3010,6 +3012,52 @@ export default function CandidateFlow() {
                         {roundsList[currentRoundIdx]?.questions?.[currentQuestionIdx]?.text || ""}
                       </p>
 
+                      {roundsList[currentRoundIdx]?.questions?.[currentQuestionIdx]?.options?.length > 0 && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '24px' }}>
+                          {roundsList[currentRoundIdx].questions[currentQuestionIdx].options.map((opt, idx) => {
+                             const isSelected = currentTranscript === opt;
+                             return (
+                               <div 
+                                 key={idx}
+                                 onClick={() => {
+                                   if (speakingState === 'listening') {
+                                     setCurrentTranscript(opt);
+                                   }
+                                 }}
+                                 onMouseEnter={(e) => {
+                                   if (speakingState === 'listening' && !isSelected) {
+                                     e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
+                                   }
+                                 }}
+                                 onMouseLeave={(e) => {
+                                   if (speakingState === 'listening' && !isSelected) {
+                                     e.currentTarget.style.background = 'rgba(255,255,255,0.03)';
+                                   }
+                                 }}
+                                 style={{
+                                   padding: '12px 16px',
+                                   background: isSelected ? 'rgba(221,160,50,0.1)' : 'rgba(255,255,255,0.03)',
+                                   border: `1px solid ${isSelected ? 'var(--amber)' : 'rgba(255,255,255,0.1)'}`,
+                                   borderRadius: '8px',
+                                   cursor: speakingState === 'listening' ? 'pointer' : 'not-allowed',
+                                   fontSize: '14.5px',
+                                   color: isSelected ? 'var(--amber)' : '#EDF4F0',
+                                   transition: 'all 0.2s',
+                                   display: 'flex',
+                                   alignItems: 'center',
+                                   gap: '12px'
+                                 }}
+                               >
+                                 <div style={{ width: '18px', height: '18px', borderRadius: '50%', border: `1.5px solid ${isSelected ? 'var(--amber)' : 'rgba(255,255,255,0.3)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                   {isSelected && <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: 'var(--amber)' }}></div>}
+                                 </div>
+                                 <span style={{ lineHeight: 1.4 }}>{opt}</span>
+                               </div>
+                             );
+                          })}
+                        </div>
+                      )}
+
                       
                       <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         
@@ -3124,8 +3172,18 @@ export default function CandidateFlow() {
                         ) : (
                           <button 
                             className="btn primary" 
+                            disabled={roundsList[currentRoundIdx]?.questions?.[currentQuestionIdx]?.options?.length > 0 && !currentTranscript}
                             onClick={handleSaveAndNextQuestion} 
-                            style={{ width: '100%', height: '48px', backgroundColor: 'var(--amber)', color: 'var(--deep)', fontWeight: '700', fontSize: '14.5px', borderRadius: '10px' }}
+                            style={{ 
+                              width: '100%', 
+                              height: '48px', 
+                              backgroundColor: (roundsList[currentRoundIdx]?.questions?.[currentQuestionIdx]?.options?.length > 0 && !currentTranscript) ? 'rgba(255,255,255,0.1)' : 'var(--amber)', 
+                              color: (roundsList[currentRoundIdx]?.questions?.[currentQuestionIdx]?.options?.length > 0 && !currentTranscript) ? 'rgba(255,255,255,0.3)' : 'var(--deep)', 
+                              fontWeight: '700', 
+                              fontSize: '14.5px', 
+                              borderRadius: '10px',
+                              cursor: (roundsList[currentRoundIdx]?.questions?.[currentQuestionIdx]?.options?.length > 0 && !currentTranscript) ? 'not-allowed' : 'pointer'
+                            }}
                           >
                             Save &amp; Next →
                           </button>
@@ -3136,7 +3194,9 @@ export default function CandidateFlow() {
                 </div>
 
                 <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.06)', marginTop: '24px', paddingTop: '16px', fontSize: '12px', color: '#7E978E', lineHeight: 1.45, fontStyle: 'italic', textAlign: 'center' }}>
-                  💡 Tip — look at the camera, not the screen. Structure answers as situation → action → result.
+                  {roundsList[currentRoundIdx]?.questions?.[currentQuestionIdx]?.options?.length > 0 
+                    ? "💡 Tip — Select the best option from the choices above before the timer runs out." 
+                    : "💡 Tip — look at the camera, not the screen. Structure answers as situation → action → result."}
                 </div>
               </div>
 
