@@ -4,19 +4,19 @@ import { Box, Typography, Button, CircularProgress } from '@mui/material'
 import Lock from '@mui/icons-material/Lock'
 import api from '../api'
 
-// Dynamically import ALL routes.jsx files inside the root modules/ directory
-const moduleRoutes = import.meta.glob('../../../modules/*/frontend/routes.jsx', { eager: true })
-const hirelensRoutes = import.meta.glob('../../../modules/Hirelens/hirelense/frontend/src/App.jsx', { eager: true })
+// Dynamically import ALL routes.jsx files inside the root modules/ directory using lazy loading
+const moduleRoutes = import.meta.glob('../../../modules/*/frontend/routes.jsx')
+const hirelensRoutes = import.meta.glob('../../../modules/Hirelens/hirelense/frontend/src/App.jsx')
 
-const moduleComponents = {}
+const lazyModuleComponents = {}
 for (const path in moduleRoutes) {
   // path will be something like '../../../modules/fee_estimation/frontend/routes.jsx'
   const folderName = path.split('/')[4] // index 4 because of ../../../modules/<name>
-  moduleComponents[folderName.toLowerCase()] = moduleRoutes[path].default
+  lazyModuleComponents[folderName.toLowerCase()] = React.lazy(moduleRoutes[path])
 }
 
 for (const path in hirelensRoutes) {
-  moduleComponents['hirelens'] = hirelensRoutes[path].default
+  lazyModuleComponents['hirelens'] = React.lazy(hirelensRoutes[path])
 }
 
 const ModuleAccessGuard = () => {
@@ -71,8 +71,8 @@ const ModuleAccessGuard = () => {
     )
   }
 
-  const ModuleComponent = moduleComponents[module_slug]
-
+  const ModuleComponent = lazyModuleComponents[module_slug]
+  
   if (!ModuleComponent) {
     return (
       <Box sx={{ p: 4, textAlign: 'center', background: '#f8faf9', height: '100vh' }}>
@@ -84,7 +84,15 @@ const ModuleAccessGuard = () => {
     )
   }
 
-  return <ModuleComponent />
+  return (
+    <React.Suspense fallback={
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#f8faf9' }}>
+        <CircularProgress sx={{ color: '#2d6a4f' }} />
+      </Box>
+    }>
+      <ModuleComponent />
+    </React.Suspense>
+  )
 }
 
 export default ModuleAccessGuard

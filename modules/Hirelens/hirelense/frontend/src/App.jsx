@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './index.css';
-import EmployerPortal from './apps/employer-portal/src/EmployerPortal.jsx';
-import CandidateFlow from './apps/candidate-flow/src/CandidateFlow.jsx';
+const EmployerPortal = React.lazy(() => import('./apps/employer-portal/src/EmployerPortal.jsx'));
+const CandidateFlow = React.lazy(() => import('./apps/candidate-flow/src/CandidateFlow.jsx'));
 
 function App() {
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
@@ -19,10 +19,13 @@ function App() {
     };
   }, []);
 
-  if (currentPath === '/candidate' || currentPath === '/interview' || currentPath.startsWith('/interview/invite/') || currentPath.startsWith('/candidate-portal')) {
-    return <CandidateFlow />;
-  }
-  return <EmployerPortal />;
+  return (
+    <React.Suspense fallback={<div style={{display:'flex',justifyContent:'center',alignItems:'center',height:'100vh'}}>Loading App...</div>}>
+      {currentPath === '/candidate' || currentPath === '/interview' || currentPath.startsWith('/interview/invite/') || currentPath.startsWith('/candidate-portal')
+        ? <CandidateFlow />
+        : <EmployerPortal />}
+    </React.Suspense>
+  );
 }
 
 export default App;

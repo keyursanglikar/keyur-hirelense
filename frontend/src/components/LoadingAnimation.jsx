@@ -10,7 +10,7 @@ const LoadingAnimation = ({ onComplete }) => {
       setProgress((prev) => {
         if (prev >= 100) {
           clearInterval(timer);
-          setTimeout(onComplete, 400);
+          if (onComplete) setTimeout(onComplete, 400);
           return 100;
         }
         // Accelerate near the end for a snappy feel
