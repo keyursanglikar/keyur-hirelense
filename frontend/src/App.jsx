@@ -20,7 +20,6 @@ import { getCurrentUser } from './redux/slices/authSlice'  // ← Make sure this
 import './App.css'
 
 function App() {
-  const [loading, setLoading] = useState(true)
   const dispatch = useDispatch()
 
   useEffect(() => {
@@ -29,14 +28,6 @@ function App() {
       dispatch(getCurrentUser())
     }
   }, [dispatch])
-
-  const handleLoadingComplete = () => {
-    setLoading(false)
-  }
-
-  if (loading) {
-    return <LoadingAnimation onComplete={handleLoadingComplete} />
-  }
 
   return (
     <div className="ca-saas-app">
