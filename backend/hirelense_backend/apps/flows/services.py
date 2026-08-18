@@ -19,8 +19,8 @@ class QuestionGenerationService:
             
         genai.configure(api_key=api_key)
         
-        # Use gemini-3.5-flash which is standard for fast JSON generation
-        model = genai.GenerativeModel('gemini-3.5-flash')
+        # Use gemini-1.5-flash which is standard for fast JSON generation
+        model = genai.GenerativeModel('gemini-1.5-flash')
         
         existing_str = ""
         if existing_questions and len(existing_questions) > 0:
@@ -44,7 +44,7 @@ Department: {department}
 Interview Flow Description: {description}
 {existing_str}
 Requirements:
-1. The question style must match the round type (e.g. tech, hr, case study).
+1. STRICT ROUND ENFORCEMENT: The question MUST perfectly match the Round Type. If this is an HR round, generate ONLY behavioral, cultural, or situational HR questions (NO coding or technical skills questions). If this is a Technical round, generate strictly technical/skill-based questions.
 2. Avoid generic questions; make them specific to the job title and description.
 3. For every generated question, provide an 'answer'. If it is an MCQ round, the 'answer' must strictly be 'A', 'B', 'C', or 'D' representing the correct option.
 4. Each question should test a different skill, competency, or aspect of the candidate where possible.
