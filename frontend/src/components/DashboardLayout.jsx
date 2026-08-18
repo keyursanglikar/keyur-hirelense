@@ -76,7 +76,7 @@ const DashboardLayout = ({ children }) => {
           { text: 'Dashboard', icon: <Dashboard className="menu-item-icon" />, path: '/superadmin/dashboard' },
           { text: 'CA Firms', icon: <Business className="menu-item-icon" />, path: '/superadmin/firms' },
           { text: 'Module Directory', icon: <Layers className="menu-item-icon" />, path: '/superadmin/modules' },
-          { text: 'Subscriptions', icon: <CreditCard className="menu-item-icon" />, path: '/superadmin/subscriptions' },
+          { text: 'Subscription Plans', icon: <CreditCard className="menu-item-icon" />, path: '/superadmin/subscriptions' },
           { text: 'Global Settings', icon: <Settings className="menu-item-icon" />, path: '/superadmin/settings' },
         ]
       case 'firm_admin':
