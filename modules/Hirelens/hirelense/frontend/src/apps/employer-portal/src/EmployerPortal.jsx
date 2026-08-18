@@ -346,8 +346,8 @@ const calculateMatchScore = (jobTitle, jobDesc, jobDept, jobType, jobExp, templa
 export default function EmployerPortal() {
   // --- STATE ---
   const [isLoggedIn, setIsLoggedIn] = useState(true);
-  const [loginEmail, setLoginEmail] = useState("impatiljay@gmail.com");
-  const [loginPassword, setLoginPassword] = useState("Jay@1234");
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [screen, setScreen] = useState('dash'); // dash, openings, pipeline, report, flow, scorecard, settings
   const [toast, setToast] = useState({ show: false, msg: '' });
@@ -2119,7 +2119,6 @@ export default function EmployerPortal() {
               </div>
               <p className="trial">New to Hirelens? <a href="#trial" onClick={(e) => e.preventDefault()}>Start a 14-day trial</a> — no card needed.</p>
               <p className="trial" style={{ marginTop: '10px' }}>Are you a candidate? <a href="#candidate" onClick={(e) => { e.preventDefault(); window.history.pushState({}, '', '/candidate'); window.dispatchEvent(new Event('pathnamechange')); }}>Access your interview portal →</a></p>
-              <p className="hintline">Sign in with impatiljay@gmail.com / Jay@1234</p>
             </div>
           </div>
         </form>
