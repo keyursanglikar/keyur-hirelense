@@ -671,13 +671,13 @@ const ModuleDirectory = () => {
                       background: mod.is_installed ? '#fafdfb' : '#f0fdf4',
                       opacity: mod.is_installed ? 0.7 : 1
                     }}>
-                      <CardContent sx={{ p: '16px !important', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Box>
+                      <CardContent sx={{ p: '16px !important', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
+                        <Box sx={{ minWidth: 0, flex: 1 }}>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                            <Typography sx={{ fontWeight: 700, color: '#1b4332' }}>{mod.display_name || mod.folder_name}</Typography>
-                            {mod.is_installed && <Chip label="Already Installed" size="small" sx={{ height: 20, fontSize: '0.65rem' }} />}
+                            <Typography sx={{ fontWeight: 700, color: '#1b4332', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{mod.display_name || mod.folder_name}</Typography>
+                            {mod.is_installed && <Chip label="Already Installed" size="small" sx={{ height: 20, fontSize: '0.65rem', flexShrink: 0 }} />}
                           </Box>
-                          <Typography sx={{ fontSize: '0.75rem', color: '#52796f', fontFamily: 'monospace' }}>
+                          <Typography sx={{ fontSize: '0.75rem', color: '#52796f', fontFamily: 'monospace', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                             📁 backend/{mod.folder_name}
                           </Typography>
                         </Box>
@@ -686,7 +686,7 @@ const ModuleDirectory = () => {
                           size="small" 
                           disabled={mod.is_installed}
                           onClick={() => selectLocalModule(mod)}
-                          sx={{ backgroundColor: '#2d6a4f', textTransform: 'none', borderRadius: '6px' }}
+                          sx={{ backgroundColor: '#2d6a4f', textTransform: 'none', borderRadius: '6px', whiteSpace: 'nowrap', minWidth: 'fit-content', flexShrink: 0 }}
                         >
                           Select &amp; Auto-fill
                         </Button>
