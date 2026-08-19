@@ -2161,8 +2161,8 @@ export default function EmployerPortal() {
         student_id: newCand.student_id || newCand.id,
         login_link: loginLink,
         // Add variables commonly used in the CA SaaS default templates
-        company_name: currentUser ? currentUser.tenant_name : 'Hirelens',
-        firm_name: currentUser ? currentUser.tenant_name : 'Hirelens',
+        company_name: (currentUser && currentUser.tenant_name) ? currentUser.tenant_name : 'NZ Solutions',
+        firm_name: (currentUser && currentUser.tenant_name) ? currentUser.tenant_name : 'NZ Solutions',
         message: `You have been invited to an interview for the position of ${opening ? opening.title : 'Interview'}. \n\nPlease access your assessment directly using this secure link: ${loginLink} \n\nYour Student ID/Exam ID is: ${newCand.student_id || newCand.id}`
       };
       
