@@ -157,8 +157,8 @@ class CandidateEvaluationService:
                 logger.info(f"Attempting Gemini Flash evaluation for candidate {candidate.id}...")
                 genai.configure(api_key=api_key)
                 
-                # We use gemini-3.5-flash as the active model name
-                model = genai.GenerativeModel('gemini-3.5-flash')
+                # We use gemini-1.5-flash as the active model name
+                model = genai.GenerativeModel('gemini-1.5-flash')
 
 
                 

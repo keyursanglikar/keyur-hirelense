@@ -24,7 +24,7 @@ class JobOpeningViewSet(viewsets.ModelViewSet):
 
         try:
             genai.configure(api_key=api_key)
-            model = genai.GenerativeModel('gemini-3.5-flash')
+            model = genai.GenerativeModel('gemini-1.5-flash')
             
             prompt = f"""
             You are an expert technical recruiter and interviewer. Generate interview questions for the following role:
