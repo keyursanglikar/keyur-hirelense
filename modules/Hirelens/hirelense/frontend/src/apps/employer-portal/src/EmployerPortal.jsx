@@ -1027,8 +1027,8 @@ export default function EmployerPortal() {
     
     const isMCQ = expectedType === 'MCQ';
     
-    const row1 = { Type: expectedType, Question: 'Example Question 1?', Difficulty: 'Easy', Marks: 5, TimeLimit: 2 };
-    const row2 = { Type: expectedType, Question: 'Example Question 2?', Difficulty: 'Medium', Marks: 10, TimeLimit: 5 };
+    const row1 = { JobTitle: flowWizTitle || 'Job', RoundName: roundName, Type: expectedType, Question: 'Example Question 1?', Difficulty: 'Easy', Marks: 5, TimeLimit: 2 };
+    const row2 = { JobTitle: flowWizTitle || 'Job', RoundName: roundName, Type: expectedType, Question: 'Example Question 2?', Difficulty: 'Medium', Marks: 10, TimeLimit: 5 };
     
     if (isMCQ) {
       row1.Option1 = 'Option A'; row1.Option2 = 'Option B'; row1.Option3 = 'Option C'; row1.Option4 = 'Option D'; row1.CorrectOptionIndex = 0;
