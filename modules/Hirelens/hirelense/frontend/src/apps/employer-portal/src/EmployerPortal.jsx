@@ -2152,7 +2152,7 @@ export default function EmployerPortal() {
       
       const loginLink = newCand.interview_token 
         ? `${window.location.origin}/candidate-portal/login?token=${newCand.interview_token}`
-        : `${window.location.origin}/candidate-portal/login?student_id=${newCand.student_id || newCand.id}`;
+        : `${window.location.origin}/candidate-portal/login?student_id=${newCand.student_id || newCand.id}&email=${encodeURIComponent(newCand.email || '')}`;
 
       const emailParams = {
         to_name: inviteName.trim(),
