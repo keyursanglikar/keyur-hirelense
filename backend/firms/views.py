@@ -567,6 +567,8 @@ class GetAvailableModulesPlansView(APIView):
                 'slug': m.slug,
                 'description': m.description,
                 'frontend_url': m.frontend_url,
+                'status': m.status,
+                'is_active': m.is_active,
                 'plans': module_plans
             })
 
