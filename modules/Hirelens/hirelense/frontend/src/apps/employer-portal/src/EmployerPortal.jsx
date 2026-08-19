@@ -1025,10 +1025,17 @@ export default function EmployerPortal() {
     // Determine typical question type for this round
     const expectedType = round?.type === 'mcq' ? 'MCQ' : (round?.type === 'code' ? 'Code' : 'Subjective');
     
-    const ws = XLSX.utils.json_to_sheet([
-      { Type: expectedType, Question: 'Example Question 1?', Difficulty: 'Easy', Marks: 5, TimeLimit: 2, Option1: 'Option A', Option2: 'Option B', Option3: 'Option C', Option4: 'Option D', CorrectOptionIndex: 0 },
-      { Type: expectedType, Question: 'Example Question 2?', Difficulty: 'Medium', Marks: 10, TimeLimit: 5, Option1: '', Option2: '', Option3: '', Option4: '', CorrectOptionIndex: '' }
-    ]);
+    const isMCQ = expectedType === 'MCQ';
+    
+    const row1 = { Type: expectedType, Question: 'Example Question 1?', Difficulty: 'Easy', Marks: 5, TimeLimit: 2 };
+    const row2 = { Type: expectedType, Question: 'Example Question 2?', Difficulty: 'Medium', Marks: 10, TimeLimit: 5 };
+    
+    if (isMCQ) {
+      row1.Option1 = 'Option A'; row1.Option2 = 'Option B'; row1.Option3 = 'Option C'; row1.Option4 = 'Option D'; row1.CorrectOptionIndex = 0;
+      row2.Option1 = 'True'; row2.Option2 = 'False'; row2.Option3 = ''; row2.Option4 = ''; row2.CorrectOptionIndex = 1;
+    }
+    
+    const ws = XLSX.utils.json_to_sheet([row1, row2]);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Template");
     
