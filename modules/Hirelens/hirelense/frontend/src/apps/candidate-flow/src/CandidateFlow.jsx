@@ -50,8 +50,8 @@ export default function CandidateFlow() {
   const isDarkMode = [8, 9, 10, 11, 12].includes(screen);
 
   // --- STATE DATA ---
-  const [candLoginEmail, setCandLoginEmail] = useState('jay.patil@example.com');
-  const [candRefCode, setCandRefCode] = useState('HL-48293-CF');
+  const [candLoginEmail, setCandLoginEmail] = useState('');
+  const [candRefCode, setCandRefCode] = useState('');
   
   // Live backend integrated data
   const [candidateData, setCandidateData] = useState(null);
@@ -331,6 +331,10 @@ export default function CandidateFlow() {
         const studId = params.get('student_id') || params.get('ref');
         if (studId) {
           setCandRefCode(studId);
+        }
+        const email = params.get('email');
+        if (email) {
+          setCandLoginEmail(email);
         }
       }
     }
