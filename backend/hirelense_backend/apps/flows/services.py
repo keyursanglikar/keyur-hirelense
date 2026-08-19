@@ -19,12 +19,6 @@ class QuestionGenerationService:
             
         genai.configure(api_key=api_key)
         
-        # Use gemini-1.5-flash-latest or gemini-pro as a fallback
-        try:
-            model = genai.GenerativeModel('gemini-1.5-flash-latest')
-        except Exception:
-            model = genai.GenerativeModel('gemini-pro')
-        
         existing_str = ""
         if existing_questions and len(existing_questions) > 0:
             existing_str = "Existing questions to avoid duplicating:\n" + "\n".join([f"- {q}" for q in existing_questions]) + "\n"
@@ -74,18 +68,41 @@ Note: You MUST include the 'options' array if generating MCQs. Ensure valid JSON
         
         try:
             logger.info(f"Calling Gemini to generate {count} questions for round '{round_name}' ({round_type})...")
+            
+            # Dynamically fetch available models to prevent 404 errors due to region/key restrictions
+            available_models = []
             try:
-                response = model.generate_content(
-                    [system_prompt, user_prompt],
-                    generation_config={"response_mime_type": "application/json"}
-                )
-            except Exception as model_err:
-                logger.warning(f"Failed with gemini-1.5-flash-latest, falling back to gemini-pro: {model_err}")
-                model = genai.GenerativeModel('gemini-pro')
-                response = model.generate_content([system_prompt, user_prompt])
+                for m in genai.list_models():
+                    if 'generateContent' in m.supported_generation_methods:
+                        available_models.append(m.name)
+            except Exception as list_err:
+                logger.warning(f"Failed to list models: {list_err}")
+                
+            if not available_models:
+                # Fallback to standard names if list_models fails
+                available_models = ['models/gemini-1.5-flash', 'models/gemini-1.5-pro', 'models/gemini-1.0-pro']
+                
+            # Try models until one works
+            response = None
+            last_err = None
+            for model_name in available_models:
+                try:
+                    logger.info(f"Trying model: {model_name}")
+                    # Remove 'models/' prefix if present, as GenerativeModel handles it
+                    clean_name = model_name.replace('models/', '')
+                    model = genai.GenerativeModel(clean_name)
+                    response = model.generate_content([system_prompt, user_prompt])
+                    break # Success!
+                except Exception as model_err:
+                    last_err = model_err
+                    logger.warning(f"Model {model_name} failed: {model_err}")
+                    continue
+                    
+            if not response:
+                raise Exception(f"All available models failed. Last error: {last_err}")
             
             text = response.text.strip()
-            # Remove potential markdown block formatting from gemini-pro
+            # Remove potential markdown block formatting
             if text.startswith('```json'):
                 text = text[7:]
             if text.startswith('```'):
