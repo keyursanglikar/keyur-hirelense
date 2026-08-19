@@ -5,6 +5,7 @@ import candidateService from '../../../shared/services/candidate.service';
 import flowService from '../../../shared/services/flow.service';
 import scorecardService from '../../../shared/services/scorecard.service';
 import emailjs from '@emailjs/browser';
+import * as XLSX from 'xlsx';
 
 // --- TIMEZONE / UTC FORMATTING UTILITY ---
 const formatLocalTime = (utcString) => {
@@ -1013,6 +1014,68 @@ export default function EmployerPortal() {
     } finally {
       setIsGeneratingQuestions(false);
     }
+  };
+  // --- BULK UPLOAD EXCEL / CSV ---
+  const downloadQuestionTemplate = () => {
+    const ws = XLSX.utils.json_to_sheet([
+      { Type: 'MCQ', Question: 'What is 2+2?', Difficulty: 'Easy', Marks: 5, TimeLimit: 1, Option1: '3', Option2: '4', Option3: '5', Option4: '6', CorrectOptionIndex: 1 },
+      { Type: 'Subjective', Question: 'Explain React hooks.', Difficulty: 'Medium', Marks: 10, TimeLimit: 5, Option1: '', Option2: '', Option3: '', Option4: '', CorrectOptionIndex: '' },
+      { Type: 'Code', Question: 'Write a function to reverse a string.', Difficulty: 'Hard', Marks: 20, TimeLimit: 10, Option1: '', Option2: '', Option3: '', Option4: '', CorrectOptionIndex: '' }
+    ]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Template");
+    XLSX.writeFile(wb, "Hirelens_Bulk_Questions_Template.xlsx");
+  };
+
+  const handleBulkUploadQuestions = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      try {
+        const data = evt.target.result;
+        const workbook = XLSX.read(data, { type: 'binary' });
+        const firstSheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[firstSheetName];
+        const rows = XLSX.utils.sheet_to_json(worksheet);
+
+        if (!rows || rows.length === 0) {
+          triggerToast("The uploaded file is empty.");
+          return;
+        }
+
+        const newQuestions = rows.map((row, idx) => {
+          const type = row.Type || 'MCQ';
+          return {
+            id: Date.now() + idx + Math.random(),
+            type: type,
+            question: row.Question || 'Untitled Question',
+            difficulty: row.Difficulty || 'Medium',
+            marks: parseInt(row.Marks) || 10,
+            timeLimit: parseInt(row.TimeLimit) || 2,
+            options: type === 'MCQ' ? [row.Option1 || '', row.Option2 || '', row.Option3 || '', row.Option4 || ''] : undefined,
+            answer: type === 'MCQ' ? (parseInt(row.CorrectOptionIndex) || 0) : undefined,
+            required: true,
+            hints: ''
+          };
+        });
+
+        const updatedRounds = [...flowWizRounds];
+        const currentQuestions = updatedRounds[flowWizSelectedRoundIdx].questions || [];
+        updatedRounds[flowWizSelectedRoundIdx] = {
+          ...updatedRounds[flowWizSelectedRoundIdx],
+          questions: [...currentQuestions, ...newQuestions]
+        };
+        setFlowWizRounds(updatedRounds);
+        triggerToast(`Successfully added ${newQuestions.length} questions in bulk!`);
+      } catch (err) {
+        console.error("Bulk Upload Error:", err);
+        triggerToast("Failed to parse the file. Ensure it follows the template format.");
+      }
+    };
+    reader.readAsBinaryString(file);
+    e.target.value = null; // reset input
   };
 
   // --- MODAL ACTIONS: CREATE / EDIT QUESTIONS ---
@@ -3952,6 +4015,27 @@ export default function EmployerPortal() {
                               >
                                 {isGeneratingQuestions ? "Generating..." : "✨ Generate AI Questions"}
                               </button>
+                              
+                              {/* --- BULK UPLOAD START --- */}
+                              <button 
+                                className="btn ghost sm" 
+                                onClick={downloadQuestionTemplate}
+                                title="Download Excel template for bulk import"
+                              >
+                                📥 Download Template
+                              </button>
+                              
+                              <label className="btn ghost sm" style={{ cursor: 'pointer', margin: 0 }}>
+                                📤 Bulk Upload
+                                <input 
+                                  type="file" 
+                                  accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" 
+                                  style={{ display: 'none' }}
+                                  onChange={handleBulkUploadQuestions}
+                                />
+                              </label>
+                              {/* --- BULK UPLOAD END --- */}
+
                               <button className="btn primary sm" onClick={() => handleOpenQuestionModal(null)}>+ Add Question</button>
                             </div>
                           </div>
