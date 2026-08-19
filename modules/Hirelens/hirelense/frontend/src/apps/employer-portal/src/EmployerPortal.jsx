@@ -1063,6 +1063,24 @@ export default function EmployerPortal() {
 
         const newQuestions = rows.map((row, idx) => {
           const type = row.Type || 'MCQ';
+          
+          let mcqs = undefined;
+          if (type === 'MCQ') {
+            mcqs = [{
+              id: Date.now() + idx + Math.random(),
+              question: row.Question || 'Untitled Question',
+              options: [
+                { label: 'A', text: String(row.Option1 || '') },
+                { label: 'B', text: String(row.Option2 || '') },
+                { label: 'C', text: String(row.Option3 || '') },
+                { label: 'D', text: String(row.Option4 || '') }
+              ],
+              correctAnswer: parseInt(row.CorrectOptionIndex) || 0,
+              marks: parseInt(row.Marks) || 10,
+              difficulty: row.Difficulty || 'Medium'
+            }];
+          }
+
           return {
             id: Date.now() + idx + Math.random(),
             type: type,
@@ -1070,8 +1088,8 @@ export default function EmployerPortal() {
             difficulty: row.Difficulty || 'Medium',
             marks: parseInt(row.Marks) || 10,
             timeLimit: parseInt(row.TimeLimit) || 2,
-            options: type === 'MCQ' ? [row.Option1 || '', row.Option2 || '', row.Option3 || '', row.Option4 || ''] : undefined,
-            answer: type === 'MCQ' ? (parseInt(row.CorrectOptionIndex) || 0) : (row.ExpectedAnswer || row.Answer || ''),
+            mcqs: mcqs,
+            answer: type === 'MCQ' ? undefined : (row.ExpectedAnswer || row.Answer || ''),
             required: true,
             hints: ''
           };
