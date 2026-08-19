@@ -715,6 +715,12 @@ export default function EmployerPortal() {
   };
 
   const activeFlow = templates.find(t => t.id === activeFlowId) || templates[0] || DEFAULT_FLOW_FALLBACK;
+  
+  useEffect(() => {
+    if (activeFlow && activeFlow.ai_model) {
+      setActiveModel(activeFlow.ai_model);
+    }
+  }, [activeFlow]);
 
   const getFlowCalculatedDuration = (flow) => {
     if (!flow || !flow.rounds) return 0;
@@ -2991,12 +2997,12 @@ export default function EmployerPortal() {
                     <div className="meter">
                       <div className="meter-card">
                         <div className="eyebrow">Estimated cost</div>
-                        <div className="meter-total">₹{getFlowCalculatedDuration(activeFlow) * 1.2 + 6} <small>/ interview</small></div>
+                        <div className="meter-total">₹{Math.round((getFlowCalculatedDuration(activeFlow) * (MODELS.find(m => m.id === activeModel)?.rate || 1.2) + 6) * 100) / 100} <small>/ interview</small></div>
                         <div className="meter-sub">Calculated from total questions time limits.</div>
                         <div id="costLines">
                           <div className="m-line">
                             <span>Evaluated duration · {getFlowCalculatedDuration(activeFlow)} mins</span>
-                            <b>₹{getFlowCalculatedDuration(activeFlow) * 1.2}</b>
+                            <b>₹{Math.round((getFlowCalculatedDuration(activeFlow) * (MODELS.find(m => m.id === activeModel)?.rate || 1.2)) * 100) / 100}</b>
                           </div>
                           <div className="m-line">
                             <span>Processing &amp; report</span>
@@ -3010,7 +3016,13 @@ export default function EmployerPortal() {
                         <div id="models">
                           {MODELS.map(m => (
                             <label className={`model-opt ${activeModel === m.id ? 'on' : ''}`} key={m.id}>
-                              <input type="radio" name="mdl" checked={activeModel === m.id} onChange={() => setActiveModel(m.id)} />
+                              <input type="radio" name="mdl" checked={activeModel === m.id} onChange={() => {
+                                setActiveModel(m.id);
+                                flowService.updateFlow(activeFlow.id, { ai_model: m.id }).then(() => {
+                                  setTemplates(templates.map(t => t.id === activeFlow.id ? { ...t, ai_model: m.id } : t));
+                                  triggerToast(`Model updated to ${m.name}`);
+                                });
+                              }} />
                               <span className="grow">
                                 <b>{m.name}</b>
                                 <small>{m.note}</small>
@@ -4004,13 +4016,13 @@ export default function EmployerPortal() {
                           <div className="meter-card" style={{ background: '#0e2b26', color: '#fff', padding: '16px 20px', borderRadius: '12px' }}>
                             <div className="eyebrow" style={{ fontSize: '9px', textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)', letterSpacing: '0.05em' }}>Estimated cost</div>
                             <div className="meter-total" style={{ fontSize: '30px', fontWeight: 'bold', margin: '6px 0', color: '#fff' }}>
-                              ₹{(flowWizRounds.reduce((sum, r) => sum + getRoundCalculatedDuration(r), 0) * (MODELS.find(m => m.id === flowWizModel)?.rate || 1.2) + 6).toFixed(2)} <small style={{ fontSize: '11px', fontWeight: 'normal', color: 'rgba(255,255,255,0.6)' }}>/ interview</small>
+                              ₹{Math.round((flowWizRounds.reduce((sum, r) => sum + getRoundCalculatedDuration(r), 0) * (MODELS.find(m => m.id === flowWizModel)?.rate || 1.2) + 6) * 100) / 100} <small style={{ fontSize: '11px', fontWeight: 'normal', color: 'rgba(255,255,255,0.6)' }}>/ interview</small>
                             </div>
                             <div className="meter-sub" style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', marginBottom: '12px' }}>Calculated from total questions time limits.</div>
                             <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '10px' }}>
                               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11.5px', marginBottom: '6px' }}>
                                 <span>Evaluated duration · {flowWizRounds.reduce((sum, r) => sum + getRoundCalculatedDuration(r), 0)} mins</span>
-                                <b>₹{(flowWizRounds.reduce((sum, r) => sum + getRoundCalculatedDuration(r), 0) * (MODELS.find(m => m.id === flowWizModel)?.rate || 1.2)).toFixed(2)}</b>
+                                <b>₹{Math.round((flowWizRounds.reduce((sum, r) => sum + getRoundCalculatedDuration(r), 0) * (MODELS.find(m => m.id === flowWizModel)?.rate || 1.2)) * 100) / 100}</b>
                               </div>
                               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11.5px' }}>
                                 <span>Processing &amp; report</span>
