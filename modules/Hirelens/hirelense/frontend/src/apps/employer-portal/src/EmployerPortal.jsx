@@ -1017,14 +1017,23 @@ export default function EmployerPortal() {
   };
   // --- BULK UPLOAD EXCEL / CSV ---
   const downloadQuestionTemplate = () => {
+    const round = flowWizRounds[flowWizSelectedRoundIdx];
+    const roundName = round?.name || 'Round';
+    const safeTitle = (flowWizTitle || 'Job').replace(/[^a-z0-9]/gi, '_');
+    const safeRoundName = roundName.replace(/[^a-z0-9]/gi, '_');
+    
+    // Determine typical question type for this round
+    const expectedType = round?.type === 'mcq' ? 'MCQ' : (round?.type === 'code' ? 'Code' : 'Subjective');
+    
     const ws = XLSX.utils.json_to_sheet([
-      { Type: 'MCQ', Question: 'What is 2+2?', Difficulty: 'Easy', Marks: 5, TimeLimit: 1, Option1: '3', Option2: '4', Option3: '5', Option4: '6', CorrectOptionIndex: 1 },
-      { Type: 'Subjective', Question: 'Explain React hooks.', Difficulty: 'Medium', Marks: 10, TimeLimit: 5, Option1: '', Option2: '', Option3: '', Option4: '', CorrectOptionIndex: '' },
-      { Type: 'Code', Question: 'Write a function to reverse a string.', Difficulty: 'Hard', Marks: 20, TimeLimit: 10, Option1: '', Option2: '', Option3: '', Option4: '', CorrectOptionIndex: '' }
+      { Type: expectedType, Question: 'Example Question 1?', Difficulty: 'Easy', Marks: 5, TimeLimit: 2, Option1: 'Option A', Option2: 'Option B', Option3: 'Option C', Option4: 'Option D', CorrectOptionIndex: 0 },
+      { Type: expectedType, Question: 'Example Question 2?', Difficulty: 'Medium', Marks: 10, TimeLimit: 5, Option1: '', Option2: '', Option3: '', Option4: '', CorrectOptionIndex: '' }
     ]);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Template");
-    XLSX.writeFile(wb, "Hirelens_Bulk_Questions_Template.xlsx");
+    
+    const fileName = `Hirelens_${safeTitle}_${safeRoundName}_Questions.xlsx`;
+    XLSX.writeFile(wb, fileName);
   };
 
   const handleBulkUploadQuestions = (e) => {
