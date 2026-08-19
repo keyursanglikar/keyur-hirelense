@@ -4705,13 +4705,13 @@ export default function EmployerPortal() {
       {/* ================= MODAL: CREATE SCORECARD ================= */}
       {scardWizOpen && (
         <div className="overlay on" id="scardModal" onClick={(e) => { if (e.target.id === 'scardModal') setScardWizOpen(false); }}>
-          <div className="modal big">
-            <div className="modal-h">
+          <div className="modal big" style={{ display: 'flex', flexDirection: 'column', maxHeight: '92vh' }}>
+            <div className="modal-h" style={{ flexShrink: 0, paddingBottom: '16px', borderBottom: '1px solid var(--line-soft)' }}>
               <h3>Create Scorecard Template</h3>
               <button className="modal-x" onClick={() => setScardWizOpen(false)}>✕</button>
             </div>
             
-            <div className="pad">
+            <div className="pad" style={{ flex: 1, overflowY: 'auto' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '20px' }}>
                 <div className="lfield">
                   <label>Scorecard Name (Mandatory)</label>
@@ -4740,7 +4740,7 @@ export default function EmployerPortal() {
                     <span className="t">{scardWizCriteria.reduce((sum, c) => sum + c.weight, 0)}%</span>
                   </div>
 
-                  <div style={{ maxHeight: '340px', overflowY: 'auto', paddingRight: '12px' }}>
+                  <div style={{ paddingRight: '4px' }}>
                     {scardWizCriteria.map((c, idx) => (
                       <div className="param" key={idx}>
                         <div className="param-top">
@@ -4875,11 +4875,11 @@ export default function EmployerPortal() {
                   </div>
                 </div>
               </div>
+            </div>
 
-              <div className="wnav" style={{ padding: '24px 0 0', display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-                <button className="btn ghost" onClick={() => handleSaveScorecardWiz(false)}>Save Draft</button>
-                <button className="btn primary" onClick={() => handleSaveScorecardWiz(true)}>Publish Scorecard</button>
-              </div>
+            <div className="wnav" style={{ padding: '16px 24px', display: 'flex', justifyContent: 'flex-end', gap: '8px', borderTop: '1px solid var(--line-soft)', flexShrink: 0 }}>
+              <button className="btn ghost" onClick={() => handleSaveScorecardWiz(false)}>Save Draft</button>
+              <button className="btn primary" onClick={() => handleSaveScorecardWiz(true)}>Publish Scorecard</button>
             </div>
           </div>
         </div>
