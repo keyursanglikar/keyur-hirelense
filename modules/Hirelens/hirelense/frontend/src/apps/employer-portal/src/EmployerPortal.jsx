@@ -1402,10 +1402,10 @@ export default function EmployerPortal() {
     if (!flowWizOriginalData) return false;
     
     // Compare basic fields
-    if (flowWizName.trim() !== (flowWizOriginalData.name || '').trim()) return true;
-    if (flowWizTitle.trim() !== (flowWizOriginalData.jobTitle || '').trim()) return true;
-    if (flowWizDept.trim() !== (flowWizOriginalData.department || '').trim()) return true;
-    if (flowWizDesc.trim() !== (flowWizOriginalData.description || '').trim()) return true;
+    if ((flowWizName || '').trim() !== (flowWizOriginalData.name || '').trim()) return true;
+    if ((flowWizTitle || '').trim() !== (flowWizOriginalData.jobTitle || '').trim()) return true;
+    if ((flowWizDept || '').trim() !== (flowWizOriginalData.department || '').trim()) return true;
+    if ((flowWizDesc || '').trim() !== (flowWizOriginalData.description || '').trim()) return true;
     if (flowWizModel !== (flowWizOriginalData.ai_model || 'sonnet')) return true;
 
     // Compare rounds and questions
@@ -1437,7 +1437,7 @@ export default function EmployerPortal() {
   };
 
   const handleSaveFlowWizard = (publish) => {
-    if (!flowWizName.trim()) {
+    if (!(flowWizName || '').trim()) {
       triggerToast("Flow Name is required.");
       return;
     }
@@ -1456,10 +1456,10 @@ export default function EmployerPortal() {
 
     if (flowWizEditingId !== null) {
       const payload = {
-        name: flowWizName.trim(),
-        jobTitle: flowWizTitle.trim(),
-        department: flowWizDept.trim(),
-        description: flowWizDesc.trim(),
+        name: (flowWizName || '').trim(),
+        jobTitle: (flowWizTitle || '').trim(),
+        department: (flowWizDept || '').trim(),
+        description: (flowWizDesc || '').trim(),
         version: flowWizVersion,
         is_live: publish,
         ai_model: flowWizModel,
@@ -1471,10 +1471,10 @@ export default function EmployerPortal() {
       });
     } else {
       const payload = {
-        name: flowWizName.trim(),
-        jobTitle: flowWizTitle.trim() || "Generic Role",
-        department: flowWizDept.trim() || "General",
-        description: flowWizDesc.trim() || "No description provided.",
+        name: (flowWizName || '').trim(),
+        jobTitle: (flowWizTitle || '').trim() || "Generic Role",
+        department: (flowWizDept || '').trim() || "General",
+        description: (flowWizDesc || '').trim() || "No description provided.",
         rounds: flowWizRounds,
         is_live: publish,
         ai_model: flowWizModel
@@ -3881,7 +3881,7 @@ export default function EmployerPortal() {
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', borderTop: '1px solid #eee', paddingTop: '16px', marginTop: '10px' }}>
                   <button type="button" className="btn ghost" onClick={handleCloseAttempt}>Cancel</button>
                   <button type="button" className="btn primary" onClick={() => {
-                    if (!flowWizName.trim()) {
+                    if (!(flowWizName || '').trim()) {
                       triggerToast("Flow Name is required.");
                       return;
                     }
