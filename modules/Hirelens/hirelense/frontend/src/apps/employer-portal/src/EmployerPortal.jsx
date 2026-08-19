@@ -1062,23 +1062,33 @@ export default function EmployerPortal() {
         }
 
         const newQuestions = rows.map((row, idx) => {
-          const type = row.Type || 'MCQ';
+          let rawType = String(row.Type || '').trim();
+          let type = 'MCQ';
+          if (/subjective|descriptive/i.test(rawType)) type = 'Descriptive';
+          else if (/case study/i.test(rawType)) type = 'Case Study';
+          else if (/scenario/i.test(rawType)) type = 'Scenario-Based Question';
+          else if (/excel/i.test(rawType)) type = 'Excel Assessment';
+
+          const answerStr = row['Expected Answer'] || row.ExpectedAnswer || row.Answer || row.answer || row.expectedAnswer || '';
           
           let mcqs = undefined;
           if (type === 'MCQ') {
-            mcqs = [{
-              id: Date.now() + idx + Math.random(),
-              question: row.Question || 'Untitled Question',
-              options: [
-                { label: 'A', text: String(row.Option1 || '') },
-                { label: 'B', text: String(row.Option2 || '') },
-                { label: 'C', text: String(row.Option3 || '') },
-                { label: 'D', text: String(row.Option4 || '') }
-              ],
-              correctAnswer: parseInt(row.CorrectOptionIndex) || 0,
-              marks: parseInt(row.Marks) || 10,
-              difficulty: row.Difficulty || 'Medium'
-            }];
+            const options = [];
+            if (row.Option1) options.push({ label: 'A', text: String(row.Option1) });
+            if (row.Option2) options.push({ label: 'B', text: String(row.Option2) });
+            if (row.Option3) options.push({ label: 'C', text: String(row.Option3) });
+            if (row.Option4) options.push({ label: 'D', text: String(row.Option4) });
+
+            if (options.length >= 2) {
+              mcqs = [{
+                id: Date.now() + idx + Math.random(),
+                question: row.Question || 'Untitled Question',
+                options: options,
+                correctAnswer: parseInt(row.CorrectOptionIndex) || 0,
+                marks: parseInt(row.Marks) || 5,
+                difficulty: row.Difficulty || 'Medium'
+              }];
+            }
           }
 
           return {
@@ -1086,10 +1096,10 @@ export default function EmployerPortal() {
             type: type,
             question: row.Question || 'Untitled Question',
             difficulty: row.Difficulty || 'Medium',
-            marks: parseInt(row.Marks) || 10,
+            marks: parseInt(row.Marks) || 5,
             timeLimit: parseInt(row.TimeLimit) || 2,
             mcqs: mcqs,
-            answer: type === 'MCQ' ? undefined : (row.ExpectedAnswer || row.Answer || ''),
+            answer: type === 'MCQ' ? undefined : answerStr,
             required: true,
             hints: ''
           };
@@ -4349,6 +4359,7 @@ export default function EmployerPortal() {
                   <option value="Scenario-Based Question">Scenario-Based Question</option>
                   <option value="Excel Assessment">Excel Assessment</option>
                   <option value="Descriptive">Descriptive</option>
+                  <option value="Subjective">Subjective</option>
                 </select>
                 {questionModalTypeError && <span style={{ color: 'var(--rec)', fontSize: '11px', marginTop: '4px', display: 'block' }}>{questionModalTypeError}</span>}
               </div>
