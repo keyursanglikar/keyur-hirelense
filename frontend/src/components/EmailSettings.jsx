@@ -639,23 +639,30 @@ const FIRM_CLIENT_HTML_TEMPLATE = `<!DOCTYPE html>
     .content { padding: 30px 25px; line-height: 1.6; color: #333333; }
     .welcome-text { font-size: 16px; color: #1b4332; font-weight: 700; margin-top: 0; }
     .message-box { background: #fafdfb; border-left: 4px solid #2d6a4f; padding: 20px; margin: 20px 0; border-radius: 4px; font-size: 14px; color: #333333; line-height: 1.6; }
+    .action-btn { display: inline-block; background-color: #2d6a4f; color: #ffffff !important; text-decoration: none; padding: 12px 28px; border-radius: 6px; font-weight: bold; margin: 24px 0; text-align: center; letter-spacing: 0.5px; }
     .footer { background: #fafdfb; text-align: center; padding: 20px; font-size: 12px; color: #7f9f8c; border-top: 1px solid #e8f0eb; }
   </style>
 </head>
 <body>
   <div class="email-container">
     <div class="header">
-      <h1>Secure Client Notice</h1>
+      <h1>Interview Invitation</h1>
     </div>
     <div class="content">
       <p class="welcome-text">Dear {{to_name}},</p>
-      <p>You have received a new administrative update regarding your account from <strong>{{firm_name}}</strong>:</p>
+      <p>You have been invited for an interview by <strong>{{firm_name}}</strong>.</p>
       
       <div class="message-box">
         {{message}}
       </div>
 
-      <p>If you need further clarification, please log in to your Client Portal or reply to your CA consultant at {{to_email}}.</p>
+      <p>To begin your interview process, please click the secure link below. We recommend joining from a quiet environment with a working camera and microphone.</p>
+      
+      <div style="text-align: center;">
+        <a href="{{interview_link}}" class="action-btn">Start Interview Now</a>
+      </div>
+
+      <p>If you have any questions or need to reschedule, please reply directly to this email at {{to_email}}.</p>
     </div>
     <div class="footer">
       <p>Sent securely on behalf of {{firm_name}}.</p>
@@ -1023,10 +1030,11 @@ const EmailSettings = ({ type, onSaveSuccess }) => {
               </>
             ) : (
               <>
-                <span><span className="variable-tag">{"{{to_name}}"}</span>: Client's full name</span>
+                <span><span className="variable-tag">{"{{to_name}}"}</span>: Client's / Candidate's full name</span>
                 <span><span className="variable-tag">{"{{to_email}}"}</span>: Client's email — used as recipient address ⬅ set in "To Email" field</span>
                 <span><span className="variable-tag">{"{{firm_name}}"}</span>: Your CA Firm name</span>
-                <span><span className="variable-tag">{"{{message}}"}</span>: Secure notice body content</span>
+                <span><span className="variable-tag">{"{{message}}"}</span>: Secure notice body content (e.g. interview instructions)</span>
+                <span><span className="variable-tag">{"{{interview_link}}"}</span>: Unique interview link for the candidate</span>
               </>
             )}
           </div>
