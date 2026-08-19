@@ -19,8 +19,11 @@ class QuestionGenerationService:
             
         genai.configure(api_key=api_key)
         
-        # Use gemini-1.5-flash which is standard for fast JSON generation
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        # Use gemini-1.5-flash-latest or gemini-pro as a fallback
+        try:
+            model = genai.GenerativeModel('gemini-1.5-flash-latest')
+        except Exception:
+            model = genai.GenerativeModel('gemini-pro')
         
         existing_str = ""
         if existing_questions and len(existing_questions) > 0:
@@ -71,12 +74,26 @@ Note: You MUST include the 'options' array if generating MCQs. Ensure valid JSON
         
         try:
             logger.info(f"Calling Gemini to generate {count} questions for round '{round_name}' ({round_type})...")
-            response = model.generate_content(
-                [system_prompt, user_prompt],
-                generation_config={"response_mime_type": "application/json"}
-            )
+            try:
+                response = model.generate_content(
+                    [system_prompt, user_prompt],
+                    generation_config={"response_mime_type": "application/json"}
+                )
+            except Exception as model_err:
+                logger.warning(f"Failed with gemini-1.5-flash-latest, falling back to gemini-pro: {model_err}")
+                model = genai.GenerativeModel('gemini-pro')
+                response = model.generate_content([system_prompt, user_prompt])
             
             text = response.text.strip()
+            # Remove potential markdown block formatting from gemini-pro
+            if text.startswith('```json'):
+                text = text[7:]
+            if text.startswith('```'):
+                text = text[3:]
+            if text.endswith('```'):
+                text = text[:-3]
+            text = text.strip()
+
             start = text.find('{')
             end = text.rfind('}')
             if start != -1 and end != -1:
