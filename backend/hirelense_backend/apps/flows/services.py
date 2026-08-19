@@ -78,14 +78,19 @@ Note: You MUST include the 'options' array if generating MCQs. Ensure valid JSON
             except Exception as list_err:
                 logger.warning(f"Failed to list models: {list_err}")
                 
+            # If the user specifically requested gemini-3.1-flash-lite, make sure it is tried first
+            priority_models = ['models/gemini-3.1-flash-lite']
+            for m in available_models:
+                if m not in priority_models:
+                    priority_models.append(m)
+                    
             if not available_models:
-                # Fallback to standard names if list_models fails
-                available_models = ['models/gemini-1.5-flash', 'models/gemini-1.5-pro', 'models/gemini-1.0-pro']
+                priority_models.extend(['models/gemini-1.5-flash', 'models/gemini-1.5-pro', 'models/gemini-1.0-pro'])
                 
             # Try models until one works
             response = None
             last_err = None
-            for model_name in available_models:
+            for model_name in priority_models:
                 try:
                     logger.info(f"Trying model: {model_name}")
                     # Remove 'models/' prefix if present, as GenerativeModel handles it
