@@ -370,7 +370,7 @@ tbody tr:hover{background:#FBFCFB}
 .overlay{position:fixed;inset:0;background:rgba(11,30,26,.5);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;z-index:70;padding:20px}
 .overlay.on{display:flex}
 .modal{background:#fff;border-radius:18px;width:min(520px,100%);box-shadow:0 30px 80px -20px rgba(0,0,0,.4);animation:rise .3s cubic-bezier(.22,.9,.3,1);max-height:92vh;overflow:auto}
-.modal.big{width:min(660px,100%)}
+.modal.big{width:min(860px,100%)}
 .modal-h{display:flex;justify-content:space-between;align-items:center;padding:20px 24px 0}
 .modal-h h3{font-family:var(--font-d);font-size:18px;font-weight:650}
 .modal-x{background:none;border:none;font-size:20px;color:var(--faint);padding:4px}
