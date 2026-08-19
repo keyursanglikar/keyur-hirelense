@@ -4007,11 +4007,11 @@ export default function EmployerPortal() {
 
                       {flowWizRounds.length > 0 ? (
                         <div>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                            <span style={{ fontSize: '12px', color: 'var(--muted)' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '10px' }}>
+                            <span style={{ fontSize: '12px', color: 'var(--muted)', whiteSpace: 'nowrap' }}>
                               Round Duration: <b>{getRoundCalculatedDuration(flowWizRounds[flowWizSelectedRoundIdx])} mins</b> · ({flowWizRounds[flowWizSelectedRoundIdx]?.questions?.length || 0} Questions)
                             </span>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                               <select 
                                 className="btn sm" 
                                 style={{ background: 'var(--surface2)', color: 'var(--text)', border: '1px solid var(--border)' }}
@@ -4025,7 +4025,7 @@ export default function EmployerPortal() {
                               </select>
                               <button 
                                 className="btn primary sm" 
-                                style={{ background: 'var(--amber-deep)', border: 'none' }} 
+                                style={{ background: 'var(--amber-deep)', border: 'none', whiteSpace: 'nowrap' }} 
                                 onClick={handleGenerateAIQuestions}
                                 disabled={isGeneratingQuestions}
                               >
@@ -4035,13 +4035,14 @@ export default function EmployerPortal() {
                               {/* --- BULK UPLOAD START --- */}
                               <button 
                                 className="btn ghost sm" 
+                                style={{ whiteSpace: 'nowrap' }}
                                 onClick={downloadQuestionTemplate}
                                 title="Download Excel template for bulk import"
                               >
                                 📥 Download Template
                               </button>
                               
-                              <label className="btn ghost sm" style={{ cursor: 'pointer', margin: 0 }}>
+                              <label className="btn ghost sm" style={{ cursor: 'pointer', margin: 0, whiteSpace: 'nowrap' }}>
                                 📤 Bulk Upload
                                 <input 
                                   type="file" 
@@ -4052,7 +4053,7 @@ export default function EmployerPortal() {
                               </label>
                               {/* --- BULK UPLOAD END --- */}
 
-                              <button className="btn primary sm" onClick={() => handleOpenQuestionModal(null)}>+ Add Question</button>
+                              <button className="btn primary sm" style={{ whiteSpace: 'nowrap' }} onClick={() => handleOpenQuestionModal(null)}>+ Add Question</button>
                             </div>
                           </div>
 
