@@ -1467,6 +1467,8 @@ export default function EmployerPortal() {
       };
       flowService.updateFlow(flowWizEditingId, payload).then(updatedFlow => {
         setTemplates(templates.map(t => t.id === flowWizEditingId ? updatedFlow : t));
+        setFlowWizOriginalData(JSON.parse(JSON.stringify(updatedFlow)));
+        setFlowWizOpen(false);
         triggerToast(`Flow "${flowWizName}" updated successfully.`);
       });
     } else {
@@ -1484,6 +1486,8 @@ export default function EmployerPortal() {
         if (wizOpen && publish) {
           setWizAttachedFlowId(newFlow.id);
         }
+        setFlowWizOriginalData(JSON.parse(JSON.stringify(newFlow)));
+        setFlowWizOpen(false);
         triggerToast(`Flow "${newFlow.name}" created successfully as ${publish ? "Published" : "Draft"}.`);
       });
     }
@@ -1888,7 +1892,7 @@ export default function EmployerPortal() {
 
     const updatedTemplates = templates.map(t => {
       if (t.id === activeFlowId) {
-        const roundsCopy = [...t.rounds];
+        const roundsCopy = JSON.parse(JSON.stringify(t.rounds || []));
         if (!roundsCopy[selectedWizRoundIdx]) {
           roundsCopy[selectedWizRoundIdx] = { type: 'tech', name: 'Technical Round', questions: [] };
         }
@@ -1901,6 +1905,13 @@ export default function EmployerPortal() {
           difficulty: "Medium",
           required: true
         });
+        
+        // Save to backend
+        flowService.updateFlow(t.id, { rounds: roundsCopy }).catch(err => {
+          console.error(err);
+          triggerToast("Failed to save question to server.");
+        });
+        
         return { ...t, rounds: roundsCopy };
       }
       return t;
@@ -1916,8 +1927,15 @@ export default function EmployerPortal() {
   const handleToggleActiveQuestionRequired = (rIdx, qIdx) => {
     const updated = templates.map(t => {
       if (t.id === activeFlowId) {
-        const roundsCopy = [...t.rounds];
+        const roundsCopy = JSON.parse(JSON.stringify(t.rounds || []));
         roundsCopy[rIdx].questions[qIdx].required = !roundsCopy[rIdx].questions[qIdx].required;
+        
+        // Save to backend
+        flowService.updateFlow(t.id, { rounds: roundsCopy }).catch(err => {
+          console.error(err);
+          triggerToast("Failed to save changes to server.");
+        });
+        
         return { ...t, rounds: roundsCopy };
       }
       return t;
@@ -1928,8 +1946,15 @@ export default function EmployerPortal() {
   const handleRemoveActiveQuestion = (rIdx, qIdx) => {
     const updated = templates.map(t => {
       if (t.id === activeFlowId) {
-        const roundsCopy = [...t.rounds];
+        const roundsCopy = JSON.parse(JSON.stringify(t.rounds || []));
         roundsCopy[rIdx].questions.splice(qIdx, 1);
+        
+        // Save to backend
+        flowService.updateFlow(t.id, { rounds: roundsCopy }).catch(err => {
+          console.error(err);
+          triggerToast("Failed to save changes to server.");
+        });
+        
         return { ...t, rounds: roundsCopy };
       }
       return t;
