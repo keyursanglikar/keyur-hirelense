@@ -1974,10 +1974,10 @@ export default function EmployerPortal() {
   const openingCandidates = candidates.filter(c => activeOpening ? String(c.opening) === String(activeOpening.id) : true);
 
   const totalInvited = openingCandidates.length;
-  const totalStarted = openingCandidates.filter(c => c.st !== 'Invited').length;
-  const totalCompleted = openingCandidates.filter(c => ['Scored', 'Shortlisted', 'Rejected (auto)', 'Rejected'].includes(c.st)).length;
-  const totalCleared = openingCandidates.filter(c => ['Scored', 'Shortlisted'].includes(c.st) && (c.sc === null || c.sc >= 50)).length;
-  const totalShortlisted = openingCandidates.filter(c => c.st === 'Shortlisted').length;
+  const totalStarted = openingCandidates.filter(c => c.status !== 'Invited').length;
+  const totalCompleted = openingCandidates.filter(c => ['Scored', 'Shortlisted', 'Rejected (auto)', 'Rejected'].includes(c.status)).length;
+  const totalCleared = openingCandidates.filter(c => ['Scored', 'Shortlisted'].includes(c.status) && (c.score === null || c.score >= 50)).length;
+  const totalShortlisted = openingCandidates.filter(c => c.status === 'Shortlisted').length;
 
   const wInvited = totalInvited > 0 ? 100 : 0;
   const wStarted = totalInvited > 0 ? Math.round((totalStarted / totalInvited) * 100) : 0;
@@ -1987,9 +1987,26 @@ export default function EmployerPortal() {
 
   const filteredCandidates = openingCandidates.filter(c => {
     if (pipelineFilter === 'all') return true;
-    if (pipelineFilter === 'progress') return c.st === 'In progress';
-    return c.st.startsWith(pipelineFilter) || (pipelineFilter === 'Scored' && c.st === 'Shortlisted');
+    if (pipelineFilter === 'progress') return c.status === 'In progress';
+    return c.status.startsWith(pipelineFilter) || (pipelineFilter === 'Scored' && c.status === 'Shortlisted');
   });
+
+  // --- Dashboard Analytics ---
+  const currentMonth = new Date().getMonth();
+  const currentYear = new Date().getFullYear();
+  const interviewsThisMonth = candidates.filter(c => {
+    if (!c.created_at) return false;
+    const d = new Date(c.created_at);
+    return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+  }).length;
+  
+  const awaitingReview = candidates.filter(c => c.status === 'Scored').length;
+  const latestScored = [...candidates]
+    .filter(c => ['Scored', 'Shortlisted', 'Rejected'].includes(c.status))
+    .sort((a, b) => new Date(b.completed_at || 0) - new Date(a.completed_at || 0))
+    .slice(0, 4);
+  
+  const formattedToday = new Date().toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' });
 
   // Breadcrumbs rendering logic
   const renderCrumbs = () => {
@@ -2390,7 +2407,7 @@ export default function EmployerPortal() {
               <div className="vhead">
                 <div>
                   <h2>{getTimeBasedGreeting()}, {currentUser ? currentUser.first_name : 'Meera'}</h2>
-                  <p>Saturday, 18 Jul 2026 · Audit &amp; Tax Executive screening is live</p>
+                  <p>{formattedToday} · {activeOpening ? activeOpening.title : 'Audit & Tax Executive'} screening is live</p>
                 </div>
                 <button className="btn ghost" onClick={() => setScreen('openings')}>All openings</button>
               </div>
@@ -2398,13 +2415,13 @@ export default function EmployerPortal() {
               <div className="kpis">
                 <div className="kpi">
                   <div className="lab">Interviews this month</div>
-                  <div className="num">182 <small>/ 250 plan</small></div>
-                  <div className="delta">▲ 46 this week</div>
+                  <div className="num">{interviewsThisMonth} <small>/ 250 plan</small></div>
+                  <div className="delta">▲ Auto calculated</div>
                 </div>
                 <div className="kpi">
                   <div className="lab">Awaiting your review</div>
-                  <div className="num">14</div>
-                  <div className="delta warn">Oldest waiting 2 days</div>
+                  <div className="num">{awaitingReview}</div>
+                  <div className="delta warn">{awaitingReview > 0 ? 'Pending action' : 'All caught up!'}</div>
                 </div>
                 <div className="kpi">
                   <div className="lab">Average Duration</div>
@@ -2414,7 +2431,7 @@ export default function EmployerPortal() {
                 <div className="kpi">
                   <div className="lab">Avg AI cost / interview</div>
                   <div className="num">₹41</div>
-                  <div className="delta">₹7,462 this month</div>
+                  <div className="delta">₹{interviewsThisMonth * 41} this month</div>
                 </div>
               </div>
 
@@ -2435,18 +2452,20 @@ export default function EmployerPortal() {
                 <div className="card pad">
                   <div className="eyebrow">Latest scored</div>
                   <div className="rlist" style={{ marginTop: '8px' }}>
-                    {candidates.slice(0, 4).map((c, idx) => {
-                      const ini = c.n.split(" ").map(x => x[0]).join("");
-                      const scoreClass = c.sc >= 71 ? "s-hi" : c.sc >= 51 ? "s-mid" : "s-lo";
+                    {latestScored.length === 0 ? (
+                      <p style={{ fontSize: '13px', color: 'var(--muted)', marginTop: '8px' }}>No candidates scored yet.</p>
+                    ) : latestScored.map((c, idx) => {
+                      const ini = c.name ? c.name.split(" ").map(x => x[0]).join("") : "??";
+                      const scoreClass = c.score >= 71 ? "s-hi" : c.score >= 51 ? "s-mid" : "s-lo";
                       return (
                         <div className="r-item" key={idx}>
                           <span className="mini-av">{ini}</span>
                           <span className="grow">
-                            <b>{c.n}</b>
-                            <small>{c.st === 'In progress' ? 'In progress' : `Completed ${formatLocalTime(c.d)}`} · {c.fl ? `⚑ ${c.fl} tab switches` : '34 min'}</small>
+                            <b>{c.name}</b>
+                            <small>{c.status === 'In progress' ? 'In progress' : `Completed ${formatLocalTime(c.completed_at)}`} · {c.tab_switches ? `⚑ ${c.tab_switches} tab switches` : '34 min'}</small>
                           </span>
-                          <span className={`scorechip ${scoreClass}`}>{c.sc !== null ? c.sc : '—'}</span>
-                          <button className="linkbtn" onClick={() => c.rep ? setScreen('report') : triggerToast("Full report wired for Priya Sharma.")}>
+                          <span className={`scorechip ${scoreClass}`}>{c.score !== null ? c.score : '—'}</span>
+                          <button className="linkbtn" onClick={() => { setCandidateForReport(c); setScreen('report'); }}>
                             Report
                           </button>
                         </div>
@@ -2626,29 +2645,29 @@ export default function EmployerPortal() {
                   </thead>
                   <tbody>
                     {filteredCandidates.map((c, idx) => {
-                      const ini = c.n.split(" ").map(x => x[0]).join("");
-                      const scoreClass = c.sc === null ? "" : c.sc >= 71 ? "s-hi" : c.sc >= 51 ? "s-mid" : "s-lo";
+                      const ini = c.name ? c.name.split(" ").map(x => x[0]).join("") : "??";
+                      const scoreClass = c.score === null ? "" : c.score >= 71 ? "s-hi" : c.score >= 51 ? "s-mid" : "s-lo";
                       return (
                         <tr key={idx}>
                           <td>
                             <span className="tname">
-                              <span className="mini-av">{ini}</span>{c.n}
+                              <span className="mini-av">{ini}</span>{c.name}
                             </span>
                           </td>
                           <td>
-                            <span className={`badge ${c.st === 'Shortlisted' ? 'b-ok' : c.st === 'Scored' ? 'b-info' : c.st === 'In progress' ? 'b-amber' : c.st === 'Invited' ? 'b-mute' : 'b-rec'}`}>
-                              {c.st}
+                            <span className={`badge ${c.status === 'Shortlisted' ? 'b-ok' : c.status === 'Scored' ? 'b-info' : c.status === 'In progress' ? 'b-amber' : c.status === 'Invited' ? 'b-mute' : 'b-rec'}`}>
+                              {c.status}
                             </span>
                           </td>
                           <td>
-                            {c.sc !== null ? <span className={`scorechip ${scoreClass}`}>{c.sc}</span> : <span className="okcell">—</span>}
+                            {c.score !== null ? <span className={`scorechip ${scoreClass}`}>{c.score}</span> : <span className="okcell">—</span>}
                           </td>
                           <td>
-                            {c.fl ? <span className="flagcell">⚑ {c.fl} tab switch{c.fl > 1 ? 'es' : ''}</span> : <span className="okcell">Clean</span>}
+                            {c.tab_switches ? <span className="flagcell">⚑ {c.tab_switches} tab switch{c.tab_switches > 1 ? 'es' : ''}</span> : <span className="okcell">Clean</span>}
                           </td>
-                          <td className="mono" style={{ fontSize: '12px', color: 'var(--muted)' }}>{formatLocalTime(c.d)}</td>
+                          <td className="mono" style={{ fontSize: '12px', color: 'var(--muted)' }}>{formatLocalTime(c.completed_at)}</td>
                           <td style={{ textAlign: 'right' }}>
-                            {c.sc !== null ? (
+                            {c.score !== null ? (
                               <button className="btn ghost sm" onClick={() => { setActiveCandidate(c); setScreen('report'); }}>
                                 View report
                               </button>
