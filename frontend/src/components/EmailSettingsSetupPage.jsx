@@ -143,7 +143,10 @@ const EmailSettingsSetupPage = () => {
             onSaveSuccess={handleEmailSuccess} 
           />
         ) : (
-          <GDriveSettings onSaveSuccess={handleGDriveSuccess} />
+          <GDriveSettings 
+            onSaveSuccess={handleGDriveSuccess} 
+            onSkip={() => navigate('/firm/dashboard')} 
+          />
         )}
       </Container>
     </Box>

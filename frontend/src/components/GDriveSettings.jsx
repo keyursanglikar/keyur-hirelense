@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Box, Paper, Typography, TextField, Button, Alert, Link } from '@mui/material';
 import api from '../api';
 
-const GDriveSettings = ({ onSaveSuccess }) => {
+const GDriveSettings = ({ onSaveSuccess, onSkip }) => {
   const [gdriveJson, setGdriveJson] = useState('');
   const [gdriveFolderId, setGdriveFolderId] = useState('');
   const [loading, setLoading] = useState(false);
@@ -122,22 +122,42 @@ const GDriveSettings = ({ onSaveSuccess }) => {
             fullWidth
           />
 
-          <Button 
-            variant="contained" 
-            onClick={handleSave} 
-            disabled={loading}
-            sx={{ 
-              backgroundColor: '#2d6a4f', 
-              '&:hover': { backgroundColor: '#1b4332' },
-              alignSelf: 'flex-start',
-              px: 4,
-              py: 1.5,
-              borderRadius: '8px',
-              fontWeight: 600
-            }}
-          >
-            {loading ? 'Saving...' : 'Save Google Drive Settings'}
-          </Button>
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            <Button 
+              variant="contained" 
+              onClick={handleSave} 
+              disabled={loading}
+              sx={{ 
+                backgroundColor: '#2d6a4f', 
+                '&:hover': { backgroundColor: '#1b4332' },
+                px: 4,
+                py: 1.5,
+                borderRadius: '8px',
+                fontWeight: 600
+              }}
+            >
+              {loading ? 'Saving...' : 'Save Google Drive Settings'}
+            </Button>
+            
+            {onSkip && (
+              <Button 
+                variant="outlined" 
+                onClick={onSkip} 
+                disabled={loading}
+                sx={{ 
+                  color: '#2d6a4f',
+                  borderColor: '#2d6a4f',
+                  '&:hover': { backgroundColor: '#eef5f0', borderColor: '#1b4332' },
+                  px: 4,
+                  py: 1.5,
+                  borderRadius: '8px',
+                  fontWeight: 600
+                }}
+              >
+                Skip for now
+              </Button>
+            )}
+          </Box>
         </Box>
       </Paper>
     </Box>

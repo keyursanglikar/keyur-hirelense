@@ -11,11 +11,8 @@ const PrivateRoute = ({ children, requiredRole }) => {
     return <Navigate to="/login" replace />
   }
 
-  // Redirect to setup page if EmailJS or GDrive is not configured for first login
-  if (user && role === 'firm_admin' && (user.email_settings_configured === false || user.gdrive_configured === false)) {
-    return <Navigate to="/setup-email" replace />
-  }
-  if (user && role === 'super_admin' && user.email_settings_configured === false) {
+  // Redirect to setup page if EmailJS is not configured for first login
+  if (user && user.email_settings_configured === false && (role === 'super_admin' || role === 'firm_admin')) {
     return <Navigate to="/setup-email" replace />
   }
 
