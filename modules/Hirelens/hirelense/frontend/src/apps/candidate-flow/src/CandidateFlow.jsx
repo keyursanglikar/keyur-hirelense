@@ -115,6 +115,7 @@ export default function CandidateFlow() {
   const [isAnswering, setIsAnswering] = useState(false);
   const [speakingState, setSpeakingState] = useState('idle'); // 'asking', 'listening', 'done'
   const [questionTimer, setQuestionTimer] = useState(15);
+  const [examStartTimer, setExamStartTimer] = useState(10);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [answerTimer, setAnswerTimer] = useState(120);
   const [replayUsed, setReplayUsed] = useState(0);
@@ -646,6 +647,14 @@ export default function CandidateFlow() {
           return prev - 1;
         });
       }, 1000);
+    } else if (screen === 75) {
+      if (examStartTimer > 0) {
+        timerIntervalRef.current = setInterval(() => {
+          setExamStartTimer(prev => prev - 1);
+        }, 1000);
+      } else {
+        proceedToRound();
+      }
     } else if (screen === 8) {
       // AI Interview Timers
       const currentLimit = getQuestionTimeLimitSeconds(currentRoundIdx, currentQuestionIdx);
@@ -1336,7 +1345,14 @@ export default function CandidateFlow() {
   const handleBeginRound = async () => {
     if (currentRoundIdx === 0) {
       await handleStartSession(candidateData.id);
+      setScreen(75);
+      setExamStartTimer(10);
+    } else {
+      proceedToRound();
     }
+  };
+
+  const proceedToRound = () => {
     const currentRound = roundsList[currentRoundIdx];
     if (currentRound && (currentRound.id === 'case' || currentRound.type === 'case')) {
       const totalMinutes = currentRound.questions?.reduce((sum, q) => sum + (parseInt(q.timeLimit) || 5), 0) || 5;
@@ -2977,6 +2993,23 @@ export default function CandidateFlow() {
                   Begin Round {currentRoundIdx + 1} · {roundsList[currentRoundIdx]?.name || roundsList[currentRoundIdx]?.type_display || roundsList[currentRoundIdx]?.type?.toUpperCase()} →
                 </button>
               </div>
+            </div>
+          )}
+
+          
+          {/* ================= SCREEN 75: EXAM COUNTDOWN ================= */}
+          {screen === 75 && (
+            <div className="c-card" style={{ maxWidth: '480px', margin: '40px auto', textAlign: 'center', padding: '40px' }}>
+              <div style={{ width: '80px', height: '80px', borderRadius: '50%', backgroundColor: 'rgba(239, 176, 54, 0.1)', border: '2px solid var(--amber)', display: 'grid', placeItems: 'center', margin: '0 auto 24px auto', position: 'relative' }}>
+                <span style={{ fontSize: '36px', fontWeight: 'bold', color: 'var(--amber)' }}>{examStartTimer}</span>
+                <svg style={{ position: 'absolute', top: '-2px', left: '-2px', width: '84px', height: '84px', transform: 'rotate(-90deg)' }}>
+                  <circle cx="42" cy="42" r="40" fill="none" stroke="var(--amber)" strokeWidth="4" strokeDasharray="251" strokeDashoffset={251 - (251 * (examStartTimer / 10))} style={{ transition: 'stroke-dashoffset 1s linear' }} />
+                </svg>
+              </div>
+              <h2 style={{ fontFamily: 'var(--font-d)', fontSize: '24px', margin: '0 0 12px 0' }}>Get Ready</h2>
+              <p style={{ color: 'var(--muted)', fontSize: '14.5px', marginBottom: '0', lineHeight: 1.5 }}>
+                Your exam will start in {examStartTimer} seconds.<br />Please ensure you are sitting comfortably and looking at the camera.
+              </p>
             </div>
           )}
 
