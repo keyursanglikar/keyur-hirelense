@@ -354,6 +354,7 @@ export default function EmployerPortal() {
   const [toast, setToast] = useState({ show: false, msg: '' });
   const [protoMenuOpen, setProtoMenuOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
+  const [subscriptionDetails, setSubscriptionDetails] = useState(null);
 
   // Core Data States (All stored in Client-side state)
   const [openings, setOpenings] = useState([]);
@@ -409,6 +410,21 @@ export default function EmployerPortal() {
       triggerToast('Failed to save integrations.');
     }
   };
+
+
+  // Fetch Firm Subscription details
+  useEffect(() => {
+    if (isLoggedIn) {
+      mockClient.get('/api/firms/ca/modules/').then(res => {
+        if (res.data && res.data.modules) {
+          const hlModule = res.data.modules.find(m => m.slug === 'hirelense');
+          if (hlModule) {
+            setSubscriptionDetails(hlModule);
+          }
+        }
+      }).catch(err => console.error("Error fetching subscription:", err));
+    }
+  }, [isLoggedIn]);
 
   useEffect(() => {
     if (screen === 'settings' && settingsTab === 'integrations') {
@@ -3339,11 +3355,11 @@ export default function EmployerPortal() {
               {settingsTab === 'billing' && (
                 <div className="set-pane on" id="t-billing">
                   <div className="card pad" style={{ maxWidth: '640px' }}>
-                    <div className="plan-line"><span>Plan</span><b>Growth — ₹14,999 / month</b></div>
-                    <div className="plan-line"><span>Included interviews</span><b>250 / month</b></div>
+                    <div className="plan-line"><span>Plan</span><b>{subscriptionDetails ? subscriptionDetails.plan_name : 'Growth — ₹14,999 / month'}</b></div>
+                    <div className="plan-line"><span>Days Remaining</span><b>{subscriptionDetails ? subscriptionDetails.days_remaining + ' days' : '250 / month'}</b></div>
                     <div className="plan-line"><span>Used this cycle</span><b>182</b></div>
                     <div className="bigtrack"><i></i></div>
-                    <p className="sc-note">Renews 01 Aug 2026 · overage billed at ₹79 / interview · AI usage (₹7,462 this month) billed at cost, no markup.</p>
+                    <p className="sc-note">Renews {subscriptionDetails ? new Date(subscriptionDetails.expiry_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '01 Aug 2026'} · overage billed at ₹79 / interview · AI usage (₹7,462 this month) billed at cost, no markup.</p>
                     <div style={{ display: 'flex', gap: '9px', marginTop: '14px' }}>
                       <button className="btn primary sm" onClick={() => triggerToast('Plan comparison.')}>Upgrade to Scale</button>
                       <button className="btn ghost sm" onClick={() => triggerToast('Invoices: Jun ₹14,999 · May ₹14,999')}>Invoices</button>

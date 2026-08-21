@@ -190,9 +190,17 @@ const CAFirmsDetail = () => {
             updated.price = plan.price
             // Auto calculate expiry date if start date exists
             if (updated.start_date) {
-               const start = new Date(updated.start_date)
-               start.setDate(start.getDate() + (plan.duration_days || 365))
-               updated.expiry_date = start.toISOString().split('T')[0]
+               const start = new Date(updated.start_date);
+               if (plan.duration_months) {
+                 start.setMonth(start.getMonth() + plan.duration_months);
+               } else if (plan.duration_days) {
+                 start.setDate(start.getDate() + plan.duration_days);
+               } else if (plan.duration_years) {
+                 start.setFullYear(start.getFullYear() + plan.duration_years);
+               } else {
+                 start.setDate(start.getDate() + 365);
+               }
+               updated.expiry_date = start.toISOString().split('T')[0];
             }
           }
         }
@@ -202,9 +210,17 @@ const CAFirmsDetail = () => {
         const module = availableModules.find(m => m.id === updated.module_id)
         const plan = module?.plans.find(p => p.id === updated.plan_id)
         if (plan) {
-          const start = new Date(value)
-          start.setDate(start.getDate() + (plan.duration_days || 30))
-          updated.expiry_date = start.toISOString().split('T')[0]
+          const start = new Date(value);
+          if (plan.duration_months) {
+            start.setMonth(start.getMonth() + plan.duration_months);
+          } else if (plan.duration_days) {
+            start.setDate(start.getDate() + plan.duration_days);
+          } else if (plan.duration_years) {
+            start.setFullYear(start.getFullYear() + plan.duration_years);
+          } else {
+            start.setDate(start.getDate() + 30);
+          }
+          updated.expiry_date = start.toISOString().split('T')[0];
         }
       }
 
