@@ -25,59 +25,9 @@ class LogoutView(APIView):
             if refresh_token:
                 token = RefreshToken(refresh_token)
                 token.blacklist()
-    
-        # Check GDrive configuration
-        gdrive_configured = False
-        with connection.cursor() as cursor:
-            cursor.execute("""
-                CREATE TABLE IF NOT EXISTS gdrive_settings (
-                    id INT AUTO_INCREMENT PRIMARY KEY,
-                    firm_id INT NULL,
-                    service_account_json TEXT,
-                    folder_id VARCHAR(255),
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-                );
-            """)
-            if user.role == 'firm_admin':
-                from accounts.models import CAFirmUser
-                firm_user = CAFirmUser.objects.filter(user=user, status='active').first()
-                if firm_user:
-                    cursor.execute("SELECT id FROM gdrive_settings WHERE firm_id = %s LIMIT 1", [firm_user.firm.id])
-                    gdrive_configured = cursor.fetchone() is not None
-                else:
-                    gdrive_configured = True
-            else:
-                gdrive_configured = True
-
-        return Response({'message': 'Logged out successfully'}, status=status.HTTP_200_OK)
+            return Response({'message': 'Logged out successfully'}, status=status.HTTP_200_OK)
         except Exception as e:
-    
-        # Check GDrive configuration
-        gdrive_configured = False
-        with connection.cursor() as cursor:
-            cursor.execute("""
-                CREATE TABLE IF NOT EXISTS gdrive_settings (
-                    id INT AUTO_INCREMENT PRIMARY KEY,
-                    firm_id INT NULL,
-                    service_account_json TEXT,
-                    folder_id VARCHAR(255),
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-                );
-            """)
-            if user.role == 'firm_admin':
-                from accounts.models import CAFirmUser
-                firm_user = CAFirmUser.objects.filter(user=user, status='active').first()
-                if firm_user:
-                    cursor.execute("SELECT id FROM gdrive_settings WHERE firm_id = %s LIMIT 1", [firm_user.firm.id])
-                    gdrive_configured = cursor.fetchone() is not None
-                else:
-                    gdrive_configured = True
-            else:
-                gdrive_configured = True
-
-        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 from django.db import connection
 
@@ -115,7 +65,6 @@ class UserView(APIView):
                     email_configured = True
             else:
                 email_configured = True
-
 
         # Check GDrive configuration
         gdrive_configured = False
