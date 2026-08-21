@@ -2234,7 +2234,11 @@ export default function EmployerPortal() {
         // Add variables commonly used in the CA SaaS default templates
         company_name: (currentUser && currentUser.tenant_name) ? currentUser.tenant_name : 'NZ Solutions',
         firm_name: (currentUser && currentUser.tenant_name) ? currentUser.tenant_name : 'NZ Solutions',
-        message: `You have been invited to an interview for the position of ${opening ? opening.title : 'Interview'}. \n\nPlease access your assessment directly using this secure link: ${loginLink} \n\nYour Student ID/Exam ID is: ${newCand.student_id || newCand.id}`
+        message: `You have been invited to an interview for the position of ${opening ? opening.title : 'Interview'}. 
+
+Please access your assessment directly using this secure link: ${loginLink} 
+
+Your Student ID/Exam ID is: ${newCand.student_id || newCand.id}`
       };
       
       try {
@@ -4173,7 +4177,24 @@ export default function EmployerPortal() {
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '10px' }}>
                             <span style={{ fontSize: '12px', color: 'var(--muted)', whiteSpace: 'nowrap' }}>
                               Round Duration: <b>{getRoundCalculatedDuration(flowWizRounds[flowWizSelectedRoundIdx])} mins</b> · ({flowWizRounds[flowWizSelectedRoundIdx]?.questions?.length || 0} Questions)
-                            </span>
+                              </span>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginLeft: '12px', borderLeft: '1px solid var(--border)', paddingLeft: '12px' }}>
+                                <span style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 500 }}>Ask candidates:</span>
+                                <select 
+                                  className=""
+                                  style={{ background: 'transparent', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: '4px', fontSize: '11px', padding: '2px 4px' }}
+                                  value={flowWizRounds[flowWizSelectedRoundIdx]?.ask_count || flowWizRounds[flowWizSelectedRoundIdx]?.questions?.length || 1}
+                                  onChange={(e) => {
+                                    const updated = [...flowWizRounds];
+                                    updated[flowWizSelectedRoundIdx].ask_count = Number(e.target.value);
+                                    setFlowWizRounds(updated);
+                                  }}
+                                >
+                                  {Array.from({length: Math.max(1, flowWizRounds[flowWizSelectedRoundIdx]?.questions?.length || 1)}, (_, i) => i + 1).map(num => (
+                                    <option key={num} value={num}>{num} randomly</option>
+                                  ))}
+                                </select>
+                              </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                               <select 
                                 className="btn sm" 
@@ -5019,6 +5040,8 @@ export default function EmployerPortal() {
     window.scrollTo({ top: 0 });
   }
 }
+
+
 
 
 

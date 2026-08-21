@@ -43,7 +43,7 @@ Interview Flow Description: {description}
 Requirements:
 1. STRICT ROUND ENFORCEMENT: The question MUST perfectly match the Round Type. If this is an HR round, generate ONLY behavioral, cultural, or situational HR questions (NO coding or technical skills questions). If this is a Technical round, generate strictly technical/skill-based questions.
 2. Avoid generic questions; make them specific to the job title and description.
-3. For every generated question, provide an 'answer'. If it is an MCQ round, the 'answer' must strictly be 'A', 'B', 'C', or 'D' representing the correct option.
+3. FORMAT BY ROUND TYPE: For every generated question, provide an 'answer'. If the round type is an MCQ round (e.g. 'Multiple Choice', 'MCQ'), the 'answer' must strictly be 'A', 'B', 'C', or 'D' and the 'options' array must contain the 4 choices. If it is NOT an MCQ round (e.g. 'Descriptive', 'Technical Q&A', 'HR'), the 'answer' MUST be a detailed full-text expected answer (NOT 'A', 'B', 'C', 'D'), and the 'options' array MUST be completely empty [].
 4. Each question should test a different skill, competency, or aspect of the candidate where possible.
 5. Return the response in this exact JSON schema:
 {{
@@ -63,7 +63,7 @@ Requirements:
     }}
   ]
 }}
-Note: You MUST include the 'options' array if generating MCQs. Ensure valid JSON format and escape any quotes properly!
+Note: Only populate the 'options' array if the round is strictly Multiple Choice (MCQ). For any descriptive or Q&A round, leave 'options' as an empty array []. Ensure valid JSON format!
 """
         
         try:
@@ -127,3 +127,4 @@ Note: You MUST include the 'options' array if generating MCQs. Ensure valid JSON
         except Exception as e:
             logger.error(f"Failed to generate questions: {str(e)}", exc_info=True)
             raise e
+
