@@ -2533,7 +2533,7 @@ export default function EmployerPortal() {
                             <small>{c.status === 'In progress' ? 'In progress' : `Completed ${formatLocalTime(c.completed_at)}`} · {c.tab_switches ? `⚑ ${c.tab_switches} tab switches` : '34 min'}</small>
                           </span>
                           <span className={`scorechip ${scoreClass}`}>{c.score !== null ? `${c.score}/${totalScore}` : '—'}</span>
-                          <button className="linkbtn" onClick={() => { setCandidateForReport(c); setScreen('report'); }}>
+                          <button className="linkbtn" onClick={() => { setActiveCandidate(c); setScreen('report'); }}>
                             Report
                           </button>
                         </div>
@@ -5019,6 +5019,7 @@ export default function EmployerPortal() {
     window.scrollTo({ top: 0 });
   }
 }
+
 
 
 
