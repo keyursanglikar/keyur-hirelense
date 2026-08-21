@@ -2369,6 +2369,12 @@ export default function EmployerPortal() {
                   Settings
                 </button>
               </li>
+              <li style={{ marginTop: 'auto', paddingTop: '20px' }}>
+                <button className="btn ghost" style={{ width: '100%', color: 'var(--rec)', display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', justifyContent: 'flex-start' }} onClick={() => handleSignOut()}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: '16px', height: '16px', flexShrink: 0 }}><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+                  Sign out
+                </button>
+              </li>
             </ul>
             <div className="side-user" style={{ position: 'relative', cursor: 'pointer' }} onClick={() => setUserMenuOpen(!userMenuOpen)}>
               <span className="avatar" style={{ overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
