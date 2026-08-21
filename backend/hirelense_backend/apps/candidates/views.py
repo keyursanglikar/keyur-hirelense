@@ -452,22 +452,93 @@ class CandidateTranscriptLineViewSet(viewsets.ModelViewSet):
         if not service_account_json or not folder_id:
             return Response({'error': 'Google Drive not configured for this firm'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Mock the Google Drive upload due to missing dependencies
-        import time
-        import random
-        time.sleep(1)
-        mock_file_id = f"1aBcD{random.randint(1000,9999)}EfGhIjK{random.randint(1000,9999)}"
-        mock_gdrive_url = f"https://drive.google.com/file/d/{mock_file_id}/view"
-
         import json
-        meta = {}
-        if candidate.meta_info:
-            try:
-                meta = json.loads(candidate.meta_info)
-            except:
-                pass
-        meta['video_drive_link'] = mock_gdrive_url
-        candidate.meta_info = json.dumps(meta)
-        candidate.save()
+        import datetime
+        from google.oauth2.service_account import Credentials
+        from googleapiclient.discovery import build
+        from googleapiclient.http import MediaIoBaseUpload
+        import io
 
-        return Response({'message': 'Video uploaded successfully to Google Drive', 'link': mock_gdrive_url}, status=status.HTTP_200_OK)
+        try:
+            creds_dict = json.loads(service_account_json)
+            scopes = ['https://www.googleapis.com/auth/drive']
+            credentials = Credentials.from_service_account_info(creds_dict, scopes=scopes)
+            drive_service = build('drive', 'v3', credentials=credentials)
+
+            # 1. Create or get Job Opening Folder
+            job_title = candidate.opening.title if candidate.opening else "UnknownJob"
+            job_title = job_title.replace('/', '-')
+            job_folder_name = f"{job_title}{datetime.date.today().strftime('%d/%m/%Y')}"
+            
+            query = f"name='{job_folder_name}' and mimeType='application/vnd.google-apps.folder' and '{folder_id}' in parents and trashed=false"
+            response = drive_service.files().list(q=query, spaces='drive', fields='files(id, name)').execute()
+            job_folder_id = None
+            if response.get('files', []):
+                job_folder_id = response.get('files')[0].get('id')
+            else:
+                file_metadata = {
+                    'name': job_folder_name,
+                    'mimeType': 'application/vnd.google-apps.folder',
+                    'parents': [folder_id]
+                }
+                folder = drive_service.files().create(body=file_metadata, fields='id').execute()
+                job_folder_id = folder.get('id')
+
+            # 2. Create Candidate Folder
+            candidate_folder_name = f"{candidate.name.replace(' ', '')}{candidate.id}{candidate.email}"
+            
+            query = f"name='{candidate_folder_name}' and mimeType='application/vnd.google-apps.folder' and '{job_folder_id}' in parents and trashed=false"
+            response = drive_service.files().list(q=query, spaces='drive', fields='files(id, name)').execute()
+            candidate_folder_id = None
+            if response.get('files', []):
+                candidate_folder_id = response.get('files')[0].get('id')
+            else:
+                file_metadata = {
+                    'name': candidate_folder_name,
+                    'mimeType': 'application/vnd.google-apps.folder',
+                    'parents': [job_folder_id]
+                }
+                folder = drive_service.files().create(body=file_metadata, fields='id').execute()
+                candidate_folder_id = folder.get('id')
+
+            # 3. Upload Video
+            video_bytes = video_file.read()
+            media = MediaIoBaseUpload(io.BytesIO(video_bytes), mimetype=video_file.content_type or 'video/webm', resumable=True)
+            
+            file_metadata = {
+                'name': f"interview.mp4",
+                'parents': [candidate_folder_id]
+            }
+            
+            file = drive_service.files().create(body=file_metadata, media_body=media, fields='id, webViewLink').execute()
+            
+            video_url = file.get('webViewLink')
+
+            try:
+                drive_service.permissions().create(
+                    fileId=file.get('id'),
+                    body={'type': 'anyone', 'role': 'reader'}
+                ).execute()
+            except Exception as perm_e:
+                pass
+
+            meta = {}
+            if candidate.meta_info:
+                try:
+                    meta = json.loads(candidate.meta_info)
+                except:
+                    pass
+            meta['video_drive_link'] = video_url
+            candidate.meta_info = json.dumps(meta)
+            candidate.video_link = video_url
+            candidate.save()
+
+            return Response({
+                'message': 'Video uploaded successfully to Google Drive',
+                'video_url': video_url
+            })
+            
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
