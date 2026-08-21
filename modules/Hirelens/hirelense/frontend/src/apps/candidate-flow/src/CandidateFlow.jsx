@@ -724,7 +724,7 @@ export default function CandidateFlow() {
     }
 
     return () => clearInterval(timerIntervalRef.current);
-  }, [screen, speakingState, caseStudyStage, isSavingQuestion, isAudioPlaying]);
+  }, [screen, speakingState, caseStudyStage, isSavingQuestion, isAudioPlaying, examStartTimer]);
 
   // --- SPEECH SYNTHESIS QUESTION AUDIO ---
   useEffect(() => {
@@ -3718,3 +3718,4 @@ const triggerToast = (msg, isError = false) => {
     }, 5000);
   }
 };
+
