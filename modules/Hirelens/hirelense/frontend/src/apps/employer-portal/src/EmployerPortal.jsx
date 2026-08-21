@@ -386,6 +386,48 @@ export default function EmployerPortal() {
 
   // Settings State
   const [settingsTab, setSettingsTab] = useState('team');
+  const [gdriveJson, setGdriveJson] = useState('');
+  const [gdriveFolderId, setGdriveFolderId] = useState('');
+  const [emailjsServiceId, setEmailjsServiceId] = useState('');
+  const [emailjsTemplateId, setEmailjsTemplateId] = useState('');
+  const [emailjsPublicKey, setEmailjsPublicKey] = useState('');
+  
+  const saveIntegrations = async () => {
+    try {
+      await mockClient.post('/api/firms/gdrive-settings/', {
+        service_account_json: gdriveJson,
+        folder_id: gdriveFolderId
+      });
+      await mockClient.post('/api/firms/email-settings/', {
+        service_id: emailjsServiceId,
+        template_id: emailjsTemplateId,
+        public_key: emailjsPublicKey
+      });
+      triggerToast('Integrations updated successfully.');
+    } catch (err) {
+      console.error(err);
+      triggerToast('Failed to save integrations.');
+    }
+  };
+
+  useEffect(() => {
+    if (screen === 'settings' && settingsTab === 'integrations') {
+      mockClient.get('/api/firms/gdrive-settings/').then(res => {
+        if (res.data) {
+          setGdriveJson(res.data.service_account_json || '');
+          setGdriveFolderId(res.data.folder_id || '');
+        }
+      }).catch(e => console.error(e));
+      
+      mockClient.get('/api/firms/email-settings/').then(res => {
+        if (res.data) {
+          setEmailjsServiceId(res.data.service_id || '');
+          setEmailjsTemplateId(res.data.template_id || '');
+          setEmailjsPublicKey(res.data.public_key || '');
+        }
+      }).catch(e => console.error(e));
+    }
+  }, [screen, settingsTab]);
   const [activeBrandColor, setActiveBrandColor] = useState('#155048');
 
   // Invitations Management State
@@ -2024,7 +2066,7 @@ export default function EmployerPortal() {
       return (
         <>
           <a href="#pipeline" onClick={(e) => { e.preventDefault(); setScreen('pipeline'); }}>Pipeline</a>
-          <span className="sep">/</span>{candidateForReport ? candidateForReport.n : 'Candidate report'}
+          <span className="sep">/</span>{candidateForReport ? candidateForReport.name : 'Candidate report'}
         </>
       );
     }
@@ -2704,11 +2746,11 @@ export default function EmployerPortal() {
                   );
                 })()}
                 <div className="rep-id">
-                  <div className="nm">{candidateForReport ? candidateForReport.n : 'Priya Sharma'}</div>
+                  <div className="nm">{candidateForReport ? candidateForReport.name : 'Priya Sharma'}</div>
                   <div className="rl">
                     {activeOpening ? activeOpening.title : 'Audit & Tax Executive'} · completed{' '}
-                    {candidateForReport && candidateForReport.d ? formatLocalTime(candidateForReport.d) : '16 Jul 2026'}
-                    , {candidateForReport && candidateForReport.fl ? 'with flags' : 'clean session'}
+                    {candidateForReport && candidateForReport.completed_at ? formatLocalTime(candidateForReport.completed_at) : '16 Jul 2026'}
+                    , {candidateForReport && candidateForReport.tab_switches ? 'with flags' : 'clean session'}
                   </div>
                   <div className="tags">
                     {candidateForReport && (
@@ -2717,8 +2759,8 @@ export default function EmployerPortal() {
                         {candidateForReport.highest_qualification && (
                           <span className="badge b-mute">{candidateForReport.highest_qualification}</span>
                         )}
-                        {candidateForReport.notice_period && (
-                          <span className="badge b-mute">Notice: {candidateForReport.notice_period}</span>
+                        {candidateForReport.nameotice_period && (
+                          <span className="badge b-mute">Notice: {candidateForReport.nameotice_period}</span>
                         )}
                         {candidateForReport.expected_ctc && (
                           <span className="badge b-mute">Expected: {candidateForReport.expected_ctc}</span>
@@ -3252,6 +3294,7 @@ export default function EmployerPortal() {
                 <button className={`tab ${settingsTab === 'team' ? 'on' : ''}`} onClick={() => setSettingsTab('team')}>Team &amp; roles</button>
                 <button className={`tab ${settingsTab === 'brand' ? 'on' : ''}`} onClick={() => setSettingsTab('brand')}>Candidate branding</button>
                 <button className={`tab ${settingsTab === 'billing' ? 'on' : ''}`} onClick={() => setSettingsTab('billing')}>Plan &amp; billing</button>
+                <button className={`tab ${settingsTab === 'integrations' ? 'on' : ''}`} onClick={() => setSettingsTab('integrations')}>Integrations</button>
               </div>
 
               {settingsTab === 'team' && (

@@ -1276,3 +1276,141 @@ class SuperAdminDashboardDataView(APIView):
             'planDetails': plan_details
         }, status=status.HTTP_200_OK)
 
+
+
+def ensure_gdrive_settings_table():
+
+    from django.db import connection
+
+    with connection.cursor() as cursor:
+
+        cursor.execute("""
+
+            CREATE TABLE IF NOT EXISTS gdrive_settings (
+
+                id INT AUTO_INCREMENT PRIMARY KEY,
+
+                firm_id INT NULL,
+
+                service_account_json TEXT,
+
+                folder_id VARCHAR(255),
+
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+
+            );
+
+        """)
+
+
+
+class FirmGDriveSettingsView(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+
+
+    def get(self, request):
+
+        ensure_gdrive_settings_table()
+
+        from accounts.models import CAFirmUser
+
+        firm_user = CAFirmUser.objects.filter(user=request.user, status='active').first()
+
+        if not firm_user:
+
+            return Response({'error': 'No active firm association found for this user'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+        firm_id = firm_user.firm.id
+
+        from django.db import connection
+
+        with connection.cursor() as cursor:
+
+            cursor.execute("SELECT service_account_json, folder_id FROM gdrive_settings WHERE firm_id = %s LIMIT 1", [firm_id])
+
+            row = cursor.fetchone()
+
+
+
+        if row:
+
+            return Response({
+
+                'service_account_json': row[0],
+
+                'folder_id': row[1]
+
+            }, status=status.HTTP_200_OK)
+
+
+
+        return Response({
+
+            'service_account_json': '',
+
+            'folder_id': ''
+
+        }, status=status.HTTP_200_OK)
+
+
+
+    def post(self, request):
+
+        ensure_gdrive_settings_table()
+
+        from accounts.models import CAFirmUser
+
+        firm_user = CAFirmUser.objects.filter(user=request.user, status='active').first()
+
+        if not firm_user:
+
+            return Response({'error': 'No active firm association found for this user'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+        firm_id = firm_user.firm.id
+
+        service_account_json = request.data.get('service_account_json', '')
+
+        folder_id = request.data.get('folder_id', '')
+
+
+
+        from django.db import connection
+
+        with connection.cursor() as cursor:
+
+            cursor.execute("SELECT id FROM gdrive_settings WHERE firm_id = %s LIMIT 1", [firm_id])
+
+            row = cursor.fetchone()
+
+            if row:
+
+                cursor.execute(
+
+                    "UPDATE gdrive_settings SET service_account_json = %s, folder_id = %s WHERE id = %s",
+
+                    [service_account_json, folder_id, row[0]]
+
+                )
+
+            else:
+
+                cursor.execute(
+
+                    "INSERT INTO gdrive_settings (firm_id, service_account_json, folder_id) VALUES (%s, %s, %s)",
+
+                    [firm_id, service_account_json, folder_id]
+
+                )
+
+
+
+        return Response({'message': 'Firm GDrive settings updated successfully'}, status=status.HTTP_200_OK)
+

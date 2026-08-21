@@ -40,6 +40,8 @@ class Candidate(models.Model):
     partner_note = models.TextField(blank=True, default='')
     consent_recorded = models.BooleanField(default=False)
     webcam_snapshot = models.TextField(blank=True, default='')
+    video_link = models.URLField(max_length=1000, blank=True, null=True)
+    meta_info = models.TextField(blank=True, default='{}')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

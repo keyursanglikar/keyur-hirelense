@@ -156,6 +156,8 @@ export default function CandidateFlow() {
   const activeUtteranceRef = useRef(null);
   const faceModelRef = useRef(null);
   const audioContextRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const recordedChunksRef = useRef([]);
 
   // --- INTERVIEW DATA STRUCTURES ---
   const ROUNDS_DATA = [
@@ -870,6 +872,51 @@ export default function CandidateFlow() {
   }, [screen]);
 
   const lastAlertTimeRef = useRef({});
+
+
+  // Start/stop video recording based on screen
+  useEffect(() => {
+    if (screen === 8 && cameraStream) {
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') return;
+      recordedChunksRef.current = [];
+      try {
+        const options = { mimeType: 'video/webm;codecs=vp8,opus' };
+        const recorder = new MediaRecorder(cameraStream, options);
+        recorder.ondataavailable = (e) => {
+          if (e.data && e.data.size > 0) {
+            recordedChunksRef.current.push(e.data);
+          }
+        };
+        recorder.start(1000); // chunk every second
+        mediaRecorderRef.current = recorder;
+        console.log("MediaRecorder started");
+      } catch (err) {
+        console.error("Failed to start MediaRecorder:", err);
+      }
+    } else if ((screen === 10 || screen === 11) && mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      mediaRecorderRef.current.stop();
+      console.log("MediaRecorder stopped");
+      // Upload the video file when stopped
+      mediaRecorderRef.current.onstop = async () => {
+        if (recordedChunksRef.current.length === 0) return;
+        const blob = new Blob(recordedChunksRef.current, { type: 'video/webm' });
+        const formData = new FormData();
+        formData.append('video', blob, 'interview_recording.webm');
+        
+        try {
+          if (candidateData && candidateData.id) {
+            console.log("Uploading video to Google Drive via backend...");
+            const res = await mockClient.post(`/api/candidates/${candidateData.id}/upload-video/`, formData, {
+              headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            console.log("Video uploaded successfully", res.data);
+          }
+        } catch(e) {
+          console.error("Failed to upload video:", e);
+        }
+      };
+    }
+  }, [screen, cameraStream, candidateData]);
 
   // Load integrity screenshots from localStorage on mount
   useEffect(() => {

@@ -15,7 +15,8 @@ from .views import (
     ModuleDetailView,
     SubscriptionPlanDetailView,
     LocalModulesDiscoveryView,
-    SuperAdminDashboardDataView
+    SuperAdminDashboardDataView,
+    FirmGDriveSettingsView
 )
 
 urlpatterns = [
@@ -24,6 +25,7 @@ urlpatterns = [
     path('', CAFirmsListCreateView.as_view(), name='firms_list_create'),
     path('system-email-settings/', SystemEmailSettingsView.as_view(), name='system_email_settings'),
     path('email-settings/', FirmEmailSettingsView.as_view(), name='firm_email_settings'),
+    path('gdrive-settings/', FirmGDriveSettingsView.as_view(), name='firm_gdrive_settings'),
     path('modules/', GetAvailableModulesPlansView.as_view(), name='available_modules_plans'),
     path('local-modules/', LocalModulesDiscoveryView.as_view(), name='local_modules_discovery'),
     path('modules/<int:pk>/', ModuleDetailView.as_view(), name='module_detail'),

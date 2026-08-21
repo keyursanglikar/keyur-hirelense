@@ -33,5 +33,5 @@ class CandidateSerializer(serializers.ModelSerializer):
             'position_applied_for', 'resume', 'highest_qualification', 'relevant_experience',
             'notice_period', 'expected_ctc', 'linkedin_profile', 'status', 'score',
             'completed_at', 'tab_switches', 'paste_events', 'replay_used', 'ai_summary',
-            'partner_note', 'consent_recorded', 'webcam_snapshot', 'scores', 'transcript', 'invitations', 'created_at', 'updated_at'
+            'partner_note', 'consent_recorded', 'webcam_snapshot', 'scores', 'transcript', 'invitations', 'created_at', 'updated_at', 'meta_info', 'video_link'
         ]
