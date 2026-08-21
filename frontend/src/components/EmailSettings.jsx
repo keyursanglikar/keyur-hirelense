@@ -832,6 +832,17 @@ const EmailSettings = ({ type, onSaveSuccess }) => {
         <Email sx={{ color: '#2d6a4f' }} /> 
         {type === 'system' ? 'SuperAdmin Onboarding Email setup' : 'CA Client Notifications Setup'}
       </Typography>
+      
+      {/* WHY SECTION */}
+      <Box sx={{ backgroundColor: '#eef5f0', border: '1px solid #d8eadd', borderRadius: 2, p: 2, mb: 3, mt: 2 }}>
+        <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#1b4332', mb: 0.5 }}>
+          ❓ Why do we need EmailJS?
+        </Typography>
+        <Typography variant="body2" sx={{ color: '#2d6a4f', lineHeight: 1.6 }}>
+          EmailJS allows your firm to send completely automated emails directly to candidates (like interview invites, reminders, and acceptances) <strong>without exposing your own passwords or setting up complicated SMTP servers</strong>. Using EmailJS ensures that all candidate communications are sent securely and arrive quickly from a verified mail server, protecting your firm's domain reputation.
+        </Typography>
+      </Box>
+
       <Typography variant="body2" sx={{ color: '#52796f', mb: 3.5 }}>
         Walk through the guided steps below to connect your dynamic EmailJS service and verify email sending.
       </Typography>

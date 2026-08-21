@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Paper, Typography, TextField, Button, Alert } from '@mui/material';
+import { Box, Paper, Typography, TextField, Button, Alert, Link } from '@mui/material';
 import api from '../api';
 
 const GDriveSettings = ({ onSaveSuccess }) => {
@@ -51,20 +51,51 @@ const GDriveSettings = ({ onSaveSuccess }) => {
   return (
     <Box sx={{ mt: 4 }}>
       <Typography variant="h5" sx={{ fontWeight: 800, color: '#1b4332', mb: 1 }}>
-        Google Drive Configuration
+        Google Drive Integration
       </Typography>
-      <Typography variant="body1" sx={{ color: '#40916c', mb: 3 }}>
-        Configure where candidate interview videos will be automatically saved. Videos will be uploaded as JobName_Date/CandidateName_ID/interview.mp4.
-      </Typography>
+      
+      {/* WHY SECTION */}
+      <Box sx={{ backgroundColor: '#eef5f0', border: '1px solid #d8eadd', borderRadius: 2, p: 2, mb: 3 }}>
+        <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#1b4332', mb: 0.5 }}>
+          ? Why do we need Google Drive?
+        </Typography>
+        <Typography variant="body2" sx={{ color: '#2d6a4f', lineHeight: 1.6 }}>
+          Video files from candidate interviews are massive and expensive to store on standard servers. By integrating directly with <strong>your firm's Google Drive</strong>, you maintain 100% ownership of your candidates' video data. The platform will automatically upload the recordings to your own secure Drive folders (organized by Job and Candidate), ensuring you never pay expensive markup for video storage. 
+        </Typography>
+      </Box>
 
       <Paper elevation={0} sx={{ p: 4, borderRadius: '16px', border: '1px solid #e2efe6' }}>
-        <Box sx={{ backgroundColor: '#f0f4f8', p: 2, borderRadius: 2, mb: 3 }}>
-          <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>Setup Instructions:</Typography>
-          <ol style={{ margin: 0, paddingLeft: '1.2rem', fontSize: '0.9rem' }}>
-            <li>Go to Google Cloud Console and create a Service Account.</li>
-            <li>Generate a JSON key and paste its entire contents into the "Service Account JSON" field below.</li>
-            <li>Create a folder in Google Drive, and share it with the Service Account email as Editor.</li>
-            <li>Copy the Folder ID from the Drive URL and paste it below.</li>
+        
+        {/* SETUP INSTRUCTIONS */}
+        <Box sx={{ backgroundColor: '#f0f4f8', p: 3, borderRadius: 2, mb: 4 }}>
+          <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2 }}>??? Step-by-Step Setup Instructions:</Typography>
+          <ol style={{ margin: 0, paddingLeft: '1.2rem', fontSize: '0.9rem', lineHeight: 1.7 }}>
+            <li>
+              Go to the <Link href="https://console.cloud.google.com/" target="_blank" rel="noopener">Google Cloud Console</Link> and log in with your Firm's Google account.
+            </li>
+            <li>
+              Create a new Project (or select an existing one), then navigate to <strong>IAM &amp; Admin {'>'} Service Accounts</strong>.
+            </li>
+            <li>
+              Click <strong>Create Service Account</strong>, name it "Hirelens Uploader", and click Done.
+            </li>
+            <li>
+              Click on the newly created Service Account, go to the <strong>Keys</strong> tab, click <strong>Add Key {'>'} Create New Key</strong>, and choose <strong>JSON</strong>.
+            </li>
+            <li>
+              A JSON file will download to your computer. Open it in Notepad, copy the <strong>entire contents</strong>, and paste it into the <strong>Service Account JSON</strong> field below.
+            </li>
+            <li>
+              Now open your actual <strong>Google Drive</strong> and create a new master folder (e.g. "Hirelens Interview Recordings").
+            </li>
+            <li>
+              Right-click the folder, click <strong>Share</strong>, and paste the <strong>email address of your Service Account</strong> (found inside the JSON file you just downloaded) and grant it <strong>Editor</strong> permissions.
+            </li>
+            <li>
+              Open the folder in your browser. Look at the URL at the top: <br/>
+              <code style={{ background: '#e0e0e0', padding: '2px 4px', borderRadius: '4px' }}>drive.google.com/drive/folders/<b>1aBcDeFgHiJkLmNoP_QrStUvWxYz</b></code><br/>
+              Copy that long ID at the end and paste it into the <strong>Google Drive Folder ID</strong> field below.
+            </li>
           </ol>
         </Box>
 
@@ -75,10 +106,10 @@ const GDriveSettings = ({ onSaveSuccess }) => {
           <TextField
             label="Service Account JSON"
             multiline
-            rows={4}
+            rows={6}
             value={gdriveJson}
             onChange={(e) => setGdriveJson(e.target.value)}
-            placeholder='{"type": "service_account", ...}'
+            placeholder='{"type": "service_account", "project_id": "...", ...}'
             fullWidth
             InputProps={{ sx: { fontFamily: 'monospace', fontSize: '0.85rem' } }}
           />
@@ -100,11 +131,12 @@ const GDriveSettings = ({ onSaveSuccess }) => {
               '&:hover': { backgroundColor: '#1b4332' },
               alignSelf: 'flex-start',
               px: 4,
-              py: 1,
-              borderRadius: '8px'
+              py: 1.5,
+              borderRadius: '8px',
+              fontWeight: 600
             }}
           >
-            {loading ? 'Saving...' : 'Save Settings'}
+            {loading ? 'Saving...' : 'Save Google Drive Settings'}
           </Button>
         </Box>
       </Paper>
