@@ -226,7 +226,7 @@ class CandidateViewSet(viewsets.ModelViewSet):
                 return Response({'error': 'This interview link has expired.'}, status=status.HTTP_400_BAD_REQUEST)
                 
             opening = candidate.opening
-            flow = opening.flow
+            flow = opening.flow if opening else None
             
             rounds_list = []
             if flow:
@@ -244,7 +244,7 @@ class CandidateViewSet(viewsets.ModelViewSet):
                         invitation=candidate.invitations.last(),
                         job_opening=opening,
                         interview_flow=flow,
-                        scorecard=opening.scorecard,
+                        scorecard=opening.scorecard if opening else None,
                         status='Not Started',
                         started_at=timezone.now(),
                         progress=0.0
@@ -266,7 +266,7 @@ class CandidateViewSet(viewsets.ModelViewSet):
 
             import json
             opening_meta = {}
-            if opening.meta_info:
+            if opening and opening.meta_info:
                 try:
                     opening_meta = json.loads(opening.meta_info)
                 except Exception:
@@ -292,12 +292,12 @@ class CandidateViewSet(viewsets.ModelViewSet):
                     'status': candidate.status
                 },
                 'opening': {
-                    'id': opening.id,
-                    'title': opening.title,
-                    'status': opening.status,
+                    'id': opening.id if opening else None,
+                    'title': opening.title if opening else None,
+                    'status': opening.status if opening else None,
                     'experience': opening_meta.get('experience', ''),
                     'salary': opening_meta.get('salary', '')
-                },
+                } if opening else None,
                 'flow': {
                     'id': flow.id if flow else None,
                     'name': flow.name if flow else '',

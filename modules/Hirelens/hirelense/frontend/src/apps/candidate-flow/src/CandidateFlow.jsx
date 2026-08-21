@@ -1214,14 +1214,14 @@ export default function CandidateFlow() {
       setFlowRounds(data.flow?.rounds || []);
       
       // Auto-populate About You fields from DB
-      setCandidateId(data.candidate.candidate_id || '');
-      setCandLoginEmail(data.candidate.email || '');
-      setPhone(data.candidate.phone_no || '');
-      setQualification(data.candidate.highest_qualification || '');
-      setExperience(data.candidate.relevant_experience || data.opening.experience || '');
-      setNoticePeriod(data.candidate.notice_period || '');
-      setExpectedCtc(data.candidate.expected_ctc || data.opening.salary || '');
-      setLinkedin(data.candidate.linkedin_profile || '');
+      setCandidateId(data.candidate?.candidate_id || '');
+      setCandLoginEmail(data.candidate?.email || '');
+      setPhone(data.candidate?.phone_no || '');
+      setQualification(data.candidate?.highest_qualification || '');
+      setExperience(data.candidate?.relevant_experience || data.opening?.experience || '');
+      setNoticePeriod(data.candidate?.notice_period || '');
+      setExpectedCtc(data.candidate?.expected_ctc || data.opening?.salary || '');
+      setLinkedin(data.candidate?.linkedin_profile || '');
       setExpiresAt(data.expires_at || '');
       
       // Dynamic rounds list update
