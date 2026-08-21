@@ -2516,7 +2516,15 @@ export default function EmployerPortal() {
                       <p style={{ fontSize: '13px', color: 'var(--muted)', marginTop: '8px' }}>No candidates scored yet.</p>
                     ) : latestScored.map((c, idx) => {
                       const ini = c.name ? c.name.split(" ").map(x => x[0]).join("") : "??";
-                      const scoreClass = c.score >= 71 ? "s-hi" : c.score >= 51 ? "s-mid" : "s-lo";
+                      let totalScore = 100;
+                      try {
+                        if (c.meta_info) {
+                          const meta = typeof c.meta_info === 'string' ? JSON.parse(c.meta_info) : c.meta_info;
+                          if (meta.total_score) totalScore = meta.total_score;
+                        }
+                      } catch(e) {}
+                      const pct = c.score !== null ? (c.score / totalScore) * 100 : 0;
+                      const scoreClass = pct >= 71 ? "s-hi" : pct >= 51 ? "s-mid" : "s-lo";
                       return (
                         <div className="r-item" key={idx}>
                           <span className="mini-av">{ini}</span>
@@ -2524,7 +2532,7 @@ export default function EmployerPortal() {
                             <b>{c.name}</b>
                             <small>{c.status === 'In progress' ? 'In progress' : `Completed ${formatLocalTime(c.completed_at)}`} · {c.tab_switches ? `⚑ ${c.tab_switches} tab switches` : '34 min'}</small>
                           </span>
-                          <span className={`scorechip ${scoreClass}`}>{c.score !== null ? c.score : '—'}</span>
+                          <span className={`scorechip ${scoreClass}`}>{c.score !== null ? `${c.score}/${totalScore}` : '—'}</span>
                           <button className="linkbtn" onClick={() => { setCandidateForReport(c); setScreen('report'); }}>
                             Report
                           </button>
@@ -2706,7 +2714,15 @@ export default function EmployerPortal() {
                   <tbody>
                     {filteredCandidates.map((c, idx) => {
                       const ini = c.name ? c.name.split(" ").map(x => x[0]).join("") : "??";
-                      const scoreClass = c.score === null ? "" : c.score >= 71 ? "s-hi" : c.score >= 51 ? "s-mid" : "s-lo";
+                      let totalScore = 100;
+                        try {
+                          if (c.meta_info) {
+                            const meta = typeof c.meta_info === 'string' ? JSON.parse(c.meta_info) : c.meta_info;
+                            if (meta.total_score) totalScore = meta.total_score;
+                          }
+                        } catch(e) {}
+                        const pct = c.score !== null ? (c.score / totalScore) * 100 : 0;
+                        const scoreClass = c.score === null ? "" : pct >= 71 ? "s-hi" : pct >= 51 ? "s-mid" : "s-lo";
                       return (
                         <tr key={idx}>
                           <td>
@@ -2720,7 +2736,7 @@ export default function EmployerPortal() {
                             </span>
                           </td>
                           <td>
-                            {c.score !== null ? <span className={`scorechip ${scoreClass}`}>{c.score}</span> : <span className="okcell">—</span>}
+                            {c.score !== null ? <span className={`scorechip ${scoreClass}`}>{`${c.score}/${totalScore}`}</span> : <span className="okcell">—</span>}
                           </td>
                           <td>
                             {c.tab_switches ? <span className="flagcell">⚑ {c.tab_switches} tab switch{c.tab_switches > 1 ? 'es' : ''}</span> : <span className="okcell">Clean</span>}
@@ -5003,5 +5019,7 @@ export default function EmployerPortal() {
     window.scrollTo({ top: 0 });
   }
 }
+
+
 
 
