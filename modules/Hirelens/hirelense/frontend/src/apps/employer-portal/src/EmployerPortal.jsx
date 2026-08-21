@@ -388,12 +388,7 @@ export default function EmployerPortal() {
 
   // Settings State
   const [settingsTab, setSettingsTab] = useState('team');
-  const [gdriveJson, setGdriveJson] = useState('');
-  const [gdriveFolderId, setGdriveFolderId] = useState('');
-  const [emailjsServiceId, setEmailjsServiceId] = useState('');
-  const [emailjsTemplateId, setEmailjsTemplateId] = useState('');
-  const [emailjsPublicKey, setEmailjsPublicKey] = useState('');
-  
+            
   const saveIntegrations = async () => {
     try {
       await mockClient.post('/api/firms/gdrive-settings/', {
@@ -3317,7 +3312,7 @@ export default function EmployerPortal() {
                 <button className={`tab ${settingsTab === 'team' ? 'on' : ''}`} onClick={() => setSettingsTab('team')}>Team &amp; roles</button>
                 <button className={`tab ${settingsTab === 'brand' ? 'on' : ''}`} onClick={() => setSettingsTab('brand')}>Candidate branding</button>
                 <button className={`tab ${settingsTab === 'billing' ? 'on' : ''}`} onClick={() => setSettingsTab('billing')}>Plan &amp; billing</button>
-                <button className={`tab ${settingsTab === 'integrations' ? 'on' : ''}`} onClick={() => setSettingsTab('integrations')}>Integrations</button>
+                
               </div>
 
               {settingsTab === 'team' && (
@@ -3369,65 +3364,7 @@ export default function EmployerPortal() {
                 </div>
               )}
 
-              {settingsTab === 'integrations' && (
-                <div className="set-pane on" id="t-integrations">
-                  <div className="card pad" style={{ maxWidth: '640px', marginBottom: '20px' }}>
-                    <h3 style={{ fontSize: '15px', marginBottom: '14px' }}>Google Drive Configuration</h3>
-                    <p style={{ fontSize: '13px', color: 'var(--muted)', marginBottom: '16px' }}>Configure where candidate interview videos will be saved. Videos will be saved as `JobName_Date/CandidateName_ID/interview.mp4`.</p>
-                    
-                    <div style={{ fontSize: '13px', backgroundColor: '#f0f4f8', padding: '12px', borderRadius: '6px', marginBottom: '16px' }}>
-                      <strong>Setup Instructions:</strong>
-                      <ol style={{ margin: '8px 0 0 16px', padding: 0 }}>
-                        <li>Go to Google Cloud Console and create a Service Account.</li>
-                        <li>Generate a JSON key and paste its entire contents into the "Service Account JSON" field.</li>
-                        <li>Create a folder in Google Drive, and share it with the Service Account email as Editor.</li>
-                        <li>Copy the Folder ID from the URL and paste it below.</li>
-                      </ol>
-                    </div>
-
-                    <div className="field-row">
-                      <label>Service Account JSON</label>
-                      <textarea 
-                        className="input" 
-                        value={gdriveJson} 
-                        onChange={(e) => setGdriveJson(e.target.value)} 
-                        rows="4"
-                        placeholder='{"type": "service_account", ...}'
-                      />
-                    </div>
-                    <div className="field-row" style={{ marginTop: '12px' }}>
-                      <label>Folder ID</label>
-                      <input 
-                        className="input" 
-                        value={gdriveFolderId} 
-                        onChange={(e) => setGdriveFolderId(e.target.value)} 
-                        placeholder="e.g. 1aBcDeFgHiJkLmNoP_QrStUvWxYz" 
-                      />
-                    </div>
-                  </div>
-
-                  <div className="card pad" style={{ maxWidth: '640px' }}>
-                    <h3 style={{ fontSize: '15px', marginBottom: '14px' }}>EmailJS Configuration</h3>
-                    <p style={{ fontSize: '13px', color: 'var(--muted)', marginBottom: '16px' }}>Configure automated emails sent to candidates.</p>
-                    <div className="field-row">
-                      <label>Service ID</label>
-                      <input className="input" value={emailjsServiceId} onChange={(e) => setEmailjsServiceId(e.target.value)} />
-                    </div>
-                    <div className="field-row" style={{ marginTop: '12px' }}>
-                      <label>Template ID</label>
-                      <input className="input" value={emailjsTemplateId} onChange={(e) => setEmailjsTemplateId(e.target.value)} />
-                    </div>
-                    <div className="field-row" style={{ marginTop: '12px' }}>
-                      <label>Public Key</label>
-                      <input className="input" value={emailjsPublicKey} onChange={(e) => setEmailjsPublicKey(e.target.value)} />
-                    </div>
-                    
-                    <div style={{ marginTop: '20px' }}>
-                      <button className="btn primary" onClick={saveIntegrations}>Save Integrations</button>
-                    </div>
-                  </div>
-                </div>
-              )}
+              
             </section>
 
             {/* ========== VIEW: PROFILE ========== */}

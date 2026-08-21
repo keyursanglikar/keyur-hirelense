@@ -34,7 +34,7 @@ import {
 import { useSelector } from 'react-redux'
 import { Helmet } from 'react-helmet-async'
 import api from '../api'
-import EmailSettings from "../components/EmailSettings";
+import FirmSettings from "./FirmSettings";
 import './FirmDashboard.css'
 
 const FirmModulesList = ({
@@ -376,7 +376,7 @@ const FirmDashboard = () => {
           />
         }
       />
-      <Route path="settings" element={<EmailSettings type="firm" />} />
+      <Route path="settings" element={<FirmSettings />} />
       <Route path="" element={<Navigate to="dashboard" />} />
     </Routes>
   )
