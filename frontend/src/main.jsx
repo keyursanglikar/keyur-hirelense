@@ -14,6 +14,22 @@ import App from './App'
 import { store } from './redux/store'
 import './index.css'
 
+
+// --- VITE CHUNK ERROR HANDLING ---
+// When Vercel deploys a new version, old chunk hashes are deleted.
+// If a user with a stale session tries to navigate, Vite throws a chunk load error.
+// We intercept this and force a hard reload to get the new chunks.
+window.addEventListener("vite:preloadError", (event) => {
+  window.location.reload();
+});
+
+window.addEventListener("unhandledrejection", (event) => {
+  if (event.reason && event.reason.message && event.reason.message.includes("Failed to fetch dynamically imported module")) {
+    event.preventDefault();
+    window.location.reload();
+  }
+});
+
 const theme = createTheme({
   palette: {
     primary: {
