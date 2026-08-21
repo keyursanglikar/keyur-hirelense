@@ -11,6 +11,43 @@ class CandidateViewSet(viewsets.ModelViewSet):
     queryset = Candidate.objects.all()
     serializer_class = CandidateSerializer
 
+    def get_queryset(self):
+        from django.db import connection
+        try:
+            with connection.cursor() as cursor:
+                # Safe for MySQL and Postgres
+                engine = connection.settings_dict['ENGINE']
+                if 'mysql' in engine:
+                    cursor.execute("SHOW COLUMNS FROM candidates LIKE 'video_link'")
+                    if not cursor.fetchone():
+                        cursor.execute("ALTER TABLE candidates ADD COLUMN video_link VARCHAR(1000) NULL")
+                    cursor.execute("SHOW COLUMNS FROM candidates LIKE 'meta_info'")
+                    if not cursor.fetchone():
+                        cursor.execute("ALTER TABLE candidates ADD COLUMN meta_info LONGTEXT NULL")
+                elif 'postgresql' in engine or 'psycopg' in engine:
+                    cursor.execute("SELECT column_name FROM information_schema.columns WHERE table_name='candidates' and column_name='video_link';")
+                    if not cursor.fetchone():
+                        cursor.execute("ALTER TABLE candidates ADD COLUMN video_link VARCHAR(1000) NULL")
+                    cursor.execute("SELECT column_name FROM information_schema.columns WHERE table_name='candidates' and column_name='meta_info';")
+                    if not cursor.fetchone():
+                        cursor.execute("ALTER TABLE candidates ADD COLUMN meta_info TEXT NULL")
+        except Exception as e:
+            pass # fallback to normal
+        return super().get_queryset()
+
+
+
+    def list(self, request, *args, **kwargs):
+        try:
+            return super().list(request, *args, **kwargs)
+        except Exception as e:
+            import traceback
+            error_trace = traceback.format_exc()
+            from rest_framework.response import Response
+            return Response({'error': str(e), 'trace': error_trace}, status=500)
+
+
+
     def get_permissions(self):
         if self.action in ['login', 'start_session', 'update_session', 'submit_interview', 'partial_update', 'update']:
             return [AllowAny()]
