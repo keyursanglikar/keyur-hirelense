@@ -2760,7 +2760,7 @@ Your Student ID/Exam ID is: ${newCand.student_id || newCand.id}`
                             ) : (
                               <button className="btn ghost sm" onClick={() => triggerToast('Reminder email queued.')}>Remind</button>
                             )}
-                              <button className="btn ghost sm" style={{ color: \'var(--rec)\', marginLeft: \'8px\' }} onClick={() => setDeleteCandidateConfirm(c)}>
+                              <button className="btn ghost sm" style={{ color: 'var(--rec)', marginLeft: '8px' }} onClick={() => setDeleteCandidateConfirm(c)}>
                                 Delete
                               </button>
                           </td>
