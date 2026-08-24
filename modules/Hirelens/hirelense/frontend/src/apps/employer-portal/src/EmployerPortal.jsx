@@ -476,6 +476,7 @@ export default function EmployerPortal() {
   
   // Step 2 & 3 Selections
   const [wizAttachedFlowId, setWizAttachedFlowId] = useState(null); // template ID
+  const [defaultFlowId, setDefaultFlowId] = useState(() => parseInt(localStorage.getItem('defaultFlowId')) || null);
   const [wizAttachedScorecardId, setWizAttachedScorecardId] = useState(null); // scorecard ID
   const [flowPreviewOpen, setFlowPreviewOpen] = useState(null); // ID of previewing flow
   const [scorecardPreviewOpen, setScorecardPreviewOpen] = useState(null); // ID of previewing scorecard
@@ -3809,24 +3810,36 @@ Your Student ID/Exam ID is: ${newCand.student_id || newCand.id}`
                   )}
                 </div>
 
-                {(!wizAttachedFlowId || wizSearchFlowOpen) && (
+                {true && (
                   <div style={{ marginTop: '10px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                       <p style={{ fontSize: '12.5px', fontWeight: 600, color: 'var(--muted)', margin: 0 }}>Select from available templates:</p>
-                      {wizSearchFlowOpen && <button className="linkbtn" onClick={() => setWizSearchFlowOpen(false)}>Collapse List</button>}
+                      
                     </div>
                     <div id="wizTmpls" style={{ maxHeight: '240px', overflowY: 'auto' }}>
                       {getRankedFlowTemplates().map(({ template: t, score }) => (
-                        <div className={`pick ${wizAttachedFlowId === t.id ? 'on' : ''}`} key={t.id} onClick={() => { setWizAttachedFlowId(t.id); setWizSearchFlowOpen(false); }}>
-                          <input type="radio" name="wt" checked={wizAttachedFlowId === t.id} readOnly />
-                          <span className="grow">
-                            <span style={{ display: 'flex', alignItems: 'center' }}>
-                              <b>{t.name}</b>
-                              <span className={`match-badge ${score >= 75 ? 'high' : ''}`}>{score}% Match</span>
+                        <div className={`pick ${wizAttachedFlowId === t.id ? 'on' : ''}`} key={t.id} onClick={() => { setWizAttachedFlowId(t.id); }}>
+                            <input type="radio" name="wt" checked={wizAttachedFlowId === t.id} readOnly />
+                            <span className="grow" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <div>
+                                <span style={{ display: 'flex', alignItems: 'center' }}>
+                                  <b>{t.name}</b>
+                                  <span className={`match-badge ${score >= 75 ? 'high' : ''}`}>{score}% Match</span>
+                                </span>
+                                <small>{t.description} · Calculated duration: <b>{getFlowCalculatedDuration(t)} mins</b></small>
+                              </div>
+                              <button 
+                                className={`btn sm ${defaultFlowId === t.id ? 'primary' : 'ghost'}`} 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setDefaultFlowId(t.id);
+                                  localStorage.setItem('defaultFlowId', t.id);
+                                }}
+                              >
+                                {defaultFlowId === t.id ? 'Default' : 'Set as Default'}
+                              </button>
                             </span>
-                            <small>{t.description} · Calculated duration: <b>{getFlowCalculatedDuration(t)} mins</b></small>
-                          </span>
-                        </div>
+                          </div>
                       ))}
                     </div>
                   </div>

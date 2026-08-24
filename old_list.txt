@@ -1,0 +1,10 @@
+﻿                          <div className={pick ${wizAttachedFlowId === t.id ? 'on' : ''}} key={t.id} onClick={() => { setWizAttachedFlowId(t.id); setWizSearchFlowOpen(false); }}>
+                            <input type="radio" name="wt" checked={wizAttachedFlowId === t.id} readOnly />
+                            <span className="grow">
+                              <span style={{ display: 'flex', alignItems: 'center' }}>
+                                <b>{t.name}</b>
+                                <span className={match-badge ${score >= 75 ? 'high' : ''}}>{score}% Match</span>
+                              </span>
+                              <small>{t.description} · Calculated duration: <b>{getFlowCalculatedDuration(t)} mins</b></small>
+                            </span>
+                          </div>
