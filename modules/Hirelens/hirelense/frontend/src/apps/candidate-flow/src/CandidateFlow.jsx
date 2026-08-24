@@ -2162,7 +2162,7 @@ export default function CandidateFlow() {
       `}</style>
 
       {/* Invisible persistent webcam feed to prevent browser suspension when modal is closed */}
-      {hasCameraPermission && (screen === 8 || screen === 10) && (
+      {hasCameraPermission && (screen === 8 || screen === 10 || screen === 11) && (
         <video
           ref={hiddenVideoRef}
           autoPlay
