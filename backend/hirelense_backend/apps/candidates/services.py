@@ -194,7 +194,7 @@ Feeds Parameter: {dq['feeds_parameter']}
                         mcq_str += f"- Question: {mr['question_text']} | Score: {mr['score_value']}/10 | Parameter: {mr['parameter']}\n"
 
                 prompt = f"""
-You are an expert AI recruiting system evaluating an interview for the job opening: "{candidate.opening.title}".
+You are an expert AI recruiting system evaluating an interview for the job opening: "{candidate.opening.title if candidate.opening else "Generic Role"}".
 Candidate name: "{candidate.name}"
 
 Here are the parameters defined in the scorecard for this role:

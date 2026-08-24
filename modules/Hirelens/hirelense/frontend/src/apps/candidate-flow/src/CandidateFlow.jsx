@@ -123,6 +123,7 @@ export default function CandidateFlow() {
   const [tabSwitches, setTabSwitches] = useState(0);
   const [pasteEvents, setPasteEvents] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [answersList, setAnswersList] = useState({});
   const [currentTranscript, setCurrentTranscript] = useState('');
   const recognitionRef = useRef(null);
@@ -727,7 +728,7 @@ export default function CandidateFlow() {
     }
 
     return () => clearInterval(timerIntervalRef.current);
-  }, [screen, speakingState, caseStudyStage, isSavingQuestion, isAudioPlaying, examStartTimer]);
+  }, [screen, speakingState, caseStudyStage, isSavingQuestion, isAudioPlaying]);
 
   // --- SPEECH SYNTHESIS QUESTION AUDIO ---
   useEffect(() => {
@@ -1205,6 +1206,7 @@ export default function CandidateFlow() {
       triggerToast({ bold: "Input Required:", normal: "Please enter both Email and Student ID." }, true);
       return;
     }
+    setIsLoggingIn(true);
     try {
       const response = await mockClient.post('/api/candidates/login/', {
         student_id: candRefCode.trim(),
@@ -1351,9 +1353,16 @@ export default function CandidateFlow() {
 
   const handleBeginRound = async () => {
     if (currentRoundIdx === 0) {
-      await handleStartSession(candidateData.id);
+      try {
+        if (document.documentElement.requestFullscreen) {
+          document.documentElement.requestFullscreen();
+        }
+      } catch (e) {
+        console.warn('Fullscreen request failed', e);
+      }
       setScreen(75);
-      setExamStartTimer(2);
+      setExamStartTimer(5);
+      handleStartSession(candidateData.id);
     } else {
       proceedToRound();
     }
@@ -2690,6 +2699,7 @@ export default function CandidateFlow() {
           )}
 
           {/* ================= SCREEN 5: DEVICE CHECK ================= */}
+
           {screen === 5 && (
             <div className="c-card">
               <span className="eyebrow" style={{ display: 'block', marginBottom: '8px' }}>DEVICE CALIBRATION</span>
@@ -2708,7 +2718,7 @@ export default function CandidateFlow() {
                   gap: '12px',
                   color: 'var(--rec)'
                 }}>
-                  <span style={{ fontSize: '18px', marginTop: '-2px' }}>⚠️</span>
+                  <span style={{ fontSize: '18px', marginTop: '-2px' }}>ΓÜá∩╕Å</span>
                   <div style={{ fontSize: '13px', lineHeight: 1.5, flex: 1 }}>
                     <strong style={{ display: 'block', marginBottom: '3px', fontWeight: '700' }}>
                       {hasCameraPermission === false && hasMicPermission === false ? "Camera and Microphone Access Blocked" :
@@ -2742,7 +2752,7 @@ export default function CandidateFlow() {
                         transition: 'all 0.2s'
                       }}
                     >
-                      🔄 Reconnect Camera &amp; Microphone
+                      ≡ƒöä Reconnect Camera &amp; Microphone
                     </button>
                   </div>
                 </div>
@@ -2761,7 +2771,7 @@ export default function CandidateFlow() {
                       ></video>
                     ) : (
                       <div className="camera-placeholder">
-                        <span style={{ fontSize: '32px' }}>📷</span>
+                        <span style={{ fontSize: '32px' }}>≡ƒô╖</span>
                         <span>
                           {hasCameraPermission === false && hasMicPermission === false ? "Camera & Microphone Access Denied" :
                            hasCameraPermission === false ? "Camera Access Denied" : "Microphone Access Denied"}
@@ -2775,16 +2785,16 @@ export default function CandidateFlow() {
                   
                   <div style={{ display: 'flex', gap: '10px', marginTop: '14px' }}>
                     <button className="btn ghost sm" onClick={capturePhoto} disabled={!hasCameraPermission}>
-                      📸 Capture Profile Snapshot
+                      ≡ƒô╕ Capture Profile Snapshot
                     </button>
                     {capturedPhoto && (
-                      <span className="badge b-ok" style={{ display: 'inline-flex', alignItems: 'center' }}>✓ Photo Captured Successfully</span>
+                      <span className="badge b-ok" style={{ display: 'inline-flex', alignItems: 'center' }}>Γ£ô Photo Captured Successfully</span>
                     )}
                   </div>
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  <div style={{ padding: '16px', border: '1.5px solid var(--line)', borderRadius: '12px' }}>
+                  <div style={{ padding: '16px', border: hasMicPermission ? '1.5px solid var(--ok)' : '1.5px solid var(--amber)', borderRadius: '12px', background: hasMicPermission ? 'rgba(76,175,80,0.05)' : 'transparent' }}>
                     <h4 style={{ fontSize: '13.5px', fontWeight: 600, marginBottom: '8px' }}>Microphone Check</h4>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                       <div className="vol-bars">
@@ -2802,11 +2812,11 @@ export default function CandidateFlow() {
                     </div>
                   </div>
 
-                  <div style={{ padding: '16px', border: '1.5px solid var(--line)', borderRadius: '12px' }}>
+                  <div style={{ padding: '16px', border: speakerState === 'verified' ? '1.5px solid var(--ok)' : '1.5px solid var(--amber)', borderRadius: '12px', background: speakerState === 'verified' ? 'rgba(76,175,80,0.05)' : 'transparent' }}>
                     <h4 style={{ fontSize: '13.5px', fontWeight: 600, marginBottom: '8px' }}>Speaker Check</h4>
                     {speakerState === 'untested' && (
                       <button className="btn ghost sm" onClick={() => { playTestSound(); setSpeakerState('tested'); }}>
-                        🔊 Play Test Beep
+                        ≡ƒöè Play Test Beep
                       </button>
                     )}
                     {speakerState === 'tested' && (
@@ -2814,7 +2824,7 @@ export default function CandidateFlow() {
                         <p style={{ fontSize: '12px', color: 'var(--muted)', margin: 0 }}>Did you hear the beep?</p>
                         <div style={{ display: 'flex', gap: '8px' }}>
                           <button className="btn ghost sm" onClick={playTestSound} style={{ padding: '6px 12px', fontSize: '11.5px' }}>
-                            🔊 Replay
+                            ≡ƒöè Replay
                           </button>
                           <button className="btn primary sm" onClick={() => setSpeakerState('verified')} style={{ padding: '6px 12px', fontSize: '11.5px', backgroundColor: 'var(--ok)', color: '#fff', borderColor: 'var(--ok)' }}>
                             Yes, I heard it
@@ -2824,7 +2834,7 @@ export default function CandidateFlow() {
                     )}
                     {speakerState === 'verified' && (
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <span className="badge b-ok">✓ Speaker verified</span>
+                        <span className="badge b-ok">Γ£ô Speaker verified</span>
                         <button className="linkbtn" onClick={() => { playTestSound(); setSpeakerState('tested'); }} style={{ fontSize: '11px' }}>
                           Retest
                         </button>
@@ -2832,7 +2842,7 @@ export default function CandidateFlow() {
                     )}
                   </div>
 
-                  <div style={{ padding: '16px', border: '1.5px solid var(--line)', borderRadius: '12px' }}>
+                  <div style={{ padding: '16px', border: latency !== null ? '1.5px solid var(--ok)' : '1.5px solid var(--amber)', borderRadius: '12px', background: latency !== null ? 'rgba(76,175,80,0.05)' : 'transparent' }}>
                     <h4 style={{ fontSize: '13.5px', fontWeight: 600, marginBottom: '8px' }}>Network Connection</h4>
                     <span className={`badge ${
                       latency === null ? 'b-mute' :
@@ -2848,15 +2858,16 @@ export default function CandidateFlow() {
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '32px' }}>
-                <button className="btn ghost" onClick={() => setScreen(4)}>← Back</button>
+                <button className="btn ghost" onClick={() => setScreen(4)}>ΓåÉ Back</button>
                 <button className="btn primary" onClick={handleSaveAndContinue}>
-                  Save &amp; Continue →
+                  Save &amp; Continue ΓåÆ
                 </button>
               </div>
             </div>
           )}
 
-          {/* ================= SCREEN 6: ABOUT YOU (FORM DETAILS) ================= */}
+          
+            {/* ================= SCREEN 6: ABOUT YOU (FORM DETAILS) ================= */}
           {/* ================= SCREEN 6: ABOUT YOU PROFILE QUESTIONNAIRE ================= */}
           {screen === 6 && (
             <div className="c-card">
@@ -3010,7 +3021,7 @@ export default function CandidateFlow() {
               <div style={{ width: '80px', height: '80px', borderRadius: '50%', backgroundColor: 'rgba(239, 176, 54, 0.1)', border: '2px solid var(--amber)', display: 'grid', placeItems: 'center', margin: '0 auto 24px auto', position: 'relative' }}>
                 <span style={{ fontSize: '36px', fontWeight: 'bold', color: 'var(--amber)' }}>{examStartTimer}</span>
                 <svg style={{ position: 'absolute', top: '-2px', left: '-2px', width: '84px', height: '84px', transform: 'rotate(-90deg)' }}>
-                  <circle cx="42" cy="42" r="40" fill="none" stroke="var(--amber)" strokeWidth="4" strokeDasharray="251" strokeDashoffset={251 - (251 * (examStartTimer / 10))} style={{ transition: 'stroke-dashoffset 1s linear' }} />
+                  <circle cx="42" cy="42" r="40" fill="none" stroke="var(--amber)" strokeWidth="4" strokeDasharray="251" strokeDashoffset={251 - (251 * (examStartTimer / 5))} style={{ transition: 'stroke-dashoffset 1s linear' }} />
                 </svg>
               </div>
               <h2 style={{ fontFamily: 'var(--font-d)', fontSize: '24px', margin: '0 0 12px 0' }}>Get Ready</h2>
