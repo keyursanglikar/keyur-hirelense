@@ -281,7 +281,7 @@ export default function CandidateFlow() {
               if (window.confirm("An incomplete interview session was found. Would you like to resume where you left off?")) {
                 setScreen(p.screen);
                 setCurrentRoundIdx(p.currentRoundIdx || 0);
-                setCurrentQIdx(p.currentQIdx || 0);
+                setCurrentQuestionIdx(p.currentQuestionIdx || 0);
                 setAnswersList(p.answersList || []);
                 setMcqAnswers(p.mcqAnswers || {});
                 setTimerSecs(p.timerSecs || 0);
@@ -1230,7 +1230,7 @@ export default function CandidateFlow() {
       const stateToSave = {
         screen,
         currentRoundIdx,
-        currentQIdx,
+        currentQuestionIdx,
         answersList,
         mcqAnswers,
         timerSecs,
@@ -1243,7 +1243,7 @@ export default function CandidateFlow() {
       };
       localStorage.setItem(sessionKey, JSON.stringify(stateToSave));
     }
-  }, [screen, currentRoundIdx, currentQIdx, answersList, mcqAnswers, timerSecs, mcqTimer, caseAnswerTimer, tabSwitches, pasteEvents, replayUsed, totalFacesFlags, candidateData]);
+  }, [screen, currentRoundIdx, currentQuestionIdx, answersList, mcqAnswers, timerSecs, mcqTimer, caseAnswerTimer, tabSwitches, pasteEvents, replayUsed, totalFacesFlags, candidateData]);
 
   const handleFinalSubmission = async () => {
     if (!candidateData) return;
