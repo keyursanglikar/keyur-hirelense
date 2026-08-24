@@ -2718,7 +2718,7 @@ export default function CandidateFlow() {
                   gap: '12px',
                   color: 'var(--rec)'
                 }}>
-                  <span style={{ fontSize: '18px', marginTop: '-2px' }}>ΓÜá∩╕Å</span>
+                  <span style={{ fontSize: '18px', marginTop: '-2px' }}>⚠️</span>
                   <div style={{ fontSize: '13px', lineHeight: 1.5, flex: 1 }}>
                     <strong style={{ display: 'block', marginBottom: '3px', fontWeight: '700' }}>
                       {hasCameraPermission === false && hasMicPermission === false ? "Camera and Microphone Access Blocked" :
@@ -2752,7 +2752,7 @@ export default function CandidateFlow() {
                         transition: 'all 0.2s'
                       }}
                     >
-                      ≡ƒöä Reconnect Camera &amp; Microphone
+                      🔄 Reconnect Camera &amp; Microphone
                     </button>
                   </div>
                 </div>
@@ -2771,7 +2771,7 @@ export default function CandidateFlow() {
                       ></video>
                     ) : (
                       <div className="camera-placeholder">
-                        <span style={{ fontSize: '32px' }}>≡ƒô╖</span>
+                        <span style={{ fontSize: '32px' }}>📸</span>
                         <span>
                           {hasCameraPermission === false && hasMicPermission === false ? "Camera & Microphone Access Denied" :
                            hasCameraPermission === false ? "Camera Access Denied" : "Microphone Access Denied"}
@@ -2784,11 +2784,11 @@ export default function CandidateFlow() {
                   </div>
                   
                   <div style={{ display: 'flex', gap: '10px', marginTop: '14px' }}>
-                    <button className="btn ghost sm" onClick={capturePhoto} disabled={!hasCameraPermission}>
-                      ≡ƒô╕ Capture Profile Snapshot
+                    <button className="btn ghost sm" onClick={capturePhoto} disabled={!(hasCameraPermission && hasMicPermission && speakerState === 'verified')} style={{ opacity: (hasCameraPermission && hasMicPermission && speakerState === 'verified') ? 1 : 0.4 }}>
+                      📸 Capture Profile Snapshot
                     </button>
                     {capturedPhoto && (
-                      <span className="badge b-ok" style={{ display: 'inline-flex', alignItems: 'center' }}>Γ£ô Photo Captured Successfully</span>
+                      <span className="badge b-ok" style={{ display: 'inline-flex', alignItems: 'center' }}>✓ Photo Captured Successfully</span>
                     )}
                   </div>
                 </div>
@@ -2812,11 +2812,11 @@ export default function CandidateFlow() {
                     </div>
                   </div>
 
-                  <div style={{ padding: '16px', border: speakerState === 'verified' ? '1.5px solid var(--ok)' : '1.5px solid var(--amber)', borderRadius: '12px', background: speakerState === 'verified' ? 'rgba(76,175,80,0.05)' : 'transparent' }}>
+                  <div style={{ padding: '16px', border: speakerState === 'verified' ? '1.5px solid var(--ok)' : '1.5px solid var(--amber)', borderRadius: '12px', background: speakerState === 'verified' ? 'rgba(76,175,80,0.05)' : 'transparent', opacity: (hasCameraPermission && hasMicPermission) ? 1 : 0.4, pointerEvents: (hasCameraPermission && hasMicPermission) ? 'auto' : 'none' }}>
                     <h4 style={{ fontSize: '13.5px', fontWeight: 600, marginBottom: '8px' }}>Speaker Check</h4>
                     {speakerState === 'untested' && (
                       <button className="btn ghost sm" onClick={() => { playTestSound(); setSpeakerState('tested'); }}>
-                        ≡ƒöè Play Test Beep
+                        🔊 Play Test Beep
                       </button>
                     )}
                     {speakerState === 'tested' && (
@@ -2824,7 +2824,7 @@ export default function CandidateFlow() {
                         <p style={{ fontSize: '12px', color: 'var(--muted)', margin: 0 }}>Did you hear the beep?</p>
                         <div style={{ display: 'flex', gap: '8px' }}>
                           <button className="btn ghost sm" onClick={playTestSound} style={{ padding: '6px 12px', fontSize: '11.5px' }}>
-                            ≡ƒöè Replay
+                            🔊 Replay
                           </button>
                           <button className="btn primary sm" onClick={() => setSpeakerState('verified')} style={{ padding: '6px 12px', fontSize: '11.5px', backgroundColor: 'var(--ok)', color: '#fff', borderColor: 'var(--ok)' }}>
                             Yes, I heard it
@@ -2834,7 +2834,7 @@ export default function CandidateFlow() {
                     )}
                     {speakerState === 'verified' && (
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <span className="badge b-ok">Γ£ô Speaker verified</span>
+                        <span className="badge b-ok">✓ Speaker verified</span>
                         <button className="linkbtn" onClick={() => { playTestSound(); setSpeakerState('tested'); }} style={{ fontSize: '11px' }}>
                           Retest
                         </button>
@@ -2858,9 +2858,9 @@ export default function CandidateFlow() {
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '32px' }}>
-                <button className="btn ghost" onClick={() => setScreen(4)}>ΓåÉ Back</button>
-                <button className="btn primary" onClick={handleSaveAndContinue}>
-                  Save &amp; Continue ΓåÆ
+                <button className="btn ghost" onClick={() => setScreen(4)}>← Back</button>
+                <button className="btn primary" onClick={handleSaveAndContinue} disabled={!(hasCameraPermission && hasMicPermission && speakerState === 'verified' && capturedPhoto)}>
+                  Save &amp; Continue →
                 </button>
               </div>
             </div>
