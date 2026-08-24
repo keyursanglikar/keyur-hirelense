@@ -506,6 +506,7 @@ export default function EmployerPortal() {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [openCardMenuId, setOpenCardMenuId] = useState(null);
   const [deleteJobConfirmOp, setDeleteJobConfirmOp] = useState(null);
+  const [deleteCandidateConfirm, setDeleteCandidateConfirm] = useState(null);
   const [openFlowMenuId, setOpenFlowMenuId] = useState(null);
   const [openScorecardMenuId, setOpenScorecardMenuId] = useState(null);
   const [deleteFlowConfirmOp, setDeleteFlowConfirmOp] = useState(null);
@@ -2759,6 +2760,9 @@ Your Student ID/Exam ID is: ${newCand.student_id || newCand.id}`
                             ) : (
                               <button className="btn ghost sm" onClick={() => triggerToast('Reminder email queued.')}>Remind</button>
                             )}
+                              <button className="btn ghost sm" style={{ color: \'var(--rec)\', marginLeft: \'8px\' }} onClick={() => setDeleteCandidateConfirm(c)}>
+                                Delete
+                              </button>
                           </td>
                         </tr>
                       );
@@ -4202,7 +4206,7 @@ Your Student ID/Exam ID is: ${newCand.student_id || newCand.id}`
                         <div>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '10px' }}>
                             <span style={{ fontSize: '12px', color: 'var(--muted)', whiteSpace: 'nowrap' }}>
-                              Round Duration: <b>{getRoundCalculatedDuration(flowWizRounds[flowWizSelectedRoundIdx])} mins</b> · ({flowWizRounds[flowWizSelectedRoundIdx]?.questions?.length || 0} Questions)
+                              Round Duration: <b>{getRoundCalculatedDuration(flowWizRounds[flowWizSelectedRoundIdx])} mins</b> · ({flowWizRounds[flowWizSelectedRoundIdx]?.questions?.filter(q => q._selected || q._selected === undefined).length || 0} Questions Selected) &middot; (Total Marks: {flowWizRounds[flowWizSelectedRoundIdx]?.questions?.filter(q => q._selected || q._selected === undefined).reduce((sum, q) => sum + (Number(q.marks) || 10), 0) || 0})
                               </span>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginLeft: '12px', borderLeft: '1px solid var(--border)', paddingLeft: '12px' }}>
                                 <span style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 500 }}>Shuffle count:</span>
@@ -4375,6 +4379,40 @@ Your Student ID/Exam ID is: ${newCand.student_id || newCand.id}`
                 </button>
                 <button className="btn ghost" style={{ width: '100%', padding: '10px 14px' }} onClick={() => setConfirmUnsavedOpen(false)}>
                   Continue Editing
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================= MODAL: DELETE CANDIDATE CONFIRMATION ================= */}
+      {deleteCandidateConfirm && (
+        <div className="overlay on" id="deleteCandModal" style={{ zIndex: 100 }} onClick={(e) => { if (e.target.id === 'deleteCandModal') setDeleteCandidateConfirm(null); }}>
+          <div className="modal" style={{ width: '420px', padding: 0, overflow: 'hidden' }}>
+            <div className="pad" style={{ padding: '24px' }}>
+              <h3 style={{ margin: '0 0 16px 0', fontSize: '18px', fontWeight: 700, color: 'var(--ink)' }}>Delete Candidate</h3>
+              
+              <p style={{ margin: '0 0 16px 0', fontSize: '14px', lineHeight: '1.5', color: '#444' }}>
+                Are you sure you want to delete <br />
+                <b style={{ color: 'var(--ink)' }}>"{deleteCandidateConfirm.n || deleteCandidateConfirm.name}"</b>?
+              </p>
+
+              <p style={{ margin: '0 0 20px 0', fontSize: '12.5px', fontWeight: 600, color: 'var(--rec)' }}>
+                This action cannot be undone. All interview reports and transcripts will be permanently lost.
+              </p>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <button className="btn ghost" onClick={() => setDeleteCandidateConfirm(null)}>Cancel</button>
+                <button className="btn" style={{ background: 'var(--rec)', color: '#fff', border: 'none' }} onClick={() => {
+                  candidateService.deleteCandidate(deleteCandidateConfirm.id).then(() => {
+                    const newList = candidates.filter(c => c.id !== deleteCandidateConfirm.id);
+                    setCandidates(newList);
+                    triggerToast(`Candidate deleted.`);
+                    setDeleteCandidateConfirm(null);
+                  });
+                }}>
+                  Delete
                 </button>
               </div>
             </div>
