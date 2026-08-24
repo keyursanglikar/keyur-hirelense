@@ -284,7 +284,6 @@ export default function CandidateFlow() {
                 setCurrentQuestionIdx(p.currentQuestionIdx || 0);
                 setAnswersList(p.answersList || []);
                 setMcqAnswers(p.mcqAnswers || {});
-                setTimerSecs(p.timerSecs || 0);
                 setMcqTimer(p.mcqTimer || 480);
                 setCaseAnswerTimer(p.caseAnswerTimer || 0);
                 setTabSwitches(p.tabSwitches || 0);
@@ -1233,7 +1232,6 @@ export default function CandidateFlow() {
         currentQuestionIdx,
         answersList,
         mcqAnswers,
-        timerSecs,
         mcqTimer,
         caseAnswerTimer,
         tabSwitches,
@@ -1243,7 +1241,8 @@ export default function CandidateFlow() {
       };
       localStorage.setItem(sessionKey, JSON.stringify(stateToSave));
     }
-  }, [screen, currentRoundIdx, currentQuestionIdx, answersList, mcqAnswers, timerSecs, mcqTimer, caseAnswerTimer, tabSwitches, pasteEvents, replayUsed, totalFacesFlags, candidateData]);
+  }, [screen, currentRoundIdx, currentQuestionIdx, answersList, mcqAnswers,
+        mcqTimer, caseAnswerTimer, tabSwitches, pasteEvents, replayUsed, totalFacesFlags, candidateData]);
 
   const handleFinalSubmission = async () => {
     if (!candidateData) return;
