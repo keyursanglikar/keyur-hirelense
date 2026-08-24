@@ -1551,27 +1551,7 @@ export default function CandidateFlow() {
   };
 
   // Sidebar Steps Data
-  const SIDEBAR_STEPS = [
-    { title: "Invitation", screens: [1, 2] },
-    { title: "Verify identity", screens: [3] },
-    { title: "Consent", screens: [4] },
-    { title: "Device check", screens: [5] },
-    { title: "About you", screens: [6] },
-    { title: "AI interview", screens: [7, 8, 9] },
-    { title: "Case study", screens: [10] },
-    { title: "Knowledge test", screens: [11] },
-    { title: "Done", screens: [12] }
-  ];
-
-  const getStepStatus = (stepIndex) => {
-    const step = SIDEBAR_STEPS[stepIndex];
-    if (step.screens.includes(screen)) return "active";
-    
-    // Check if current screen is past this step
-    const maxScreenInStep = Math.max(...step.screens);
-    if (screen > maxScreenInStep) return "done";
-    return "upcoming";
-  };
+  
 
   return (
     <div className={`cand-app ${isDarkMode ? 'dark-stage' : 'light-mist'}`}>
@@ -2309,19 +2289,64 @@ export default function CandidateFlow() {
           </div>
         </div>
         
-        <ul className="step-list">
-          {SIDEBAR_STEPS.map((step, idx) => {
-            const status = getStepStatus(idx);
-            return (
-              <li className={`step-item ${status}`} key={idx}>
-                <span className="step-num">
-                  {idx + 1}
-                </span>
-                <span className="step-title">{step.title}</span>
-              </li>
-            );
-          })}
-        </ul>
+                  <ul className="step-list">
+            {(() => {
+              const dynamicSidebarSteps = [
+                { title: "Invitation", maxScreen: 2 },
+                { title: "Verify identity", maxScreen: 3 },
+                { title: "Consent", maxScreen: 4 },
+                { title: "Device check", maxScreen: 5 },
+                { title: "About you", maxScreen: 6 },
+              ];
+              
+              if (roundsList && roundsList.length > 0) {
+                roundsList.forEach((r, idx) => {
+                  dynamicSidebarSteps.push({
+                    title: `Round ${idx + 1}: ${r.name || r.type_display || r.type}`,
+                    isRound: true,
+                    roundIdx: idx
+                  });
+                });
+              } else {
+                dynamicSidebarSteps.push({ title: "AI Interview", isRound: true, roundIdx: 0 });
+              }
+              
+              dynamicSidebarSteps.push({ title: "Done", isDone: true });
+
+              const getStepStatusLocal = (idx) => {
+                const step = dynamicSidebarSteps[idx];
+                if (step.maxScreen !== undefined) {
+                  if (screen === step.maxScreen || (step.maxScreen === 2 && screen === 1)) return "active";
+                  if (screen > step.maxScreen) return "done";
+                  return "upcoming";
+                }
+                if (step.isRound) {
+                  if (screen < 7) return "upcoming";
+                  if (screen === 12) return "done";
+                  if (currentRoundIdx > step.roundIdx) return "done";
+                  if (currentRoundIdx === step.roundIdx) return "active";
+                  return "upcoming";
+                }
+                if (step.isDone) {
+                  if (screen === 12) return "active";
+                  return "upcoming";
+                }
+                return "upcoming";
+              };
+
+              return dynamicSidebarSteps.map((step, idx) => {
+                const status = getStepStatusLocal(idx);
+                return (
+                  <li className={`step-item ${status}`} key={idx}>
+                    <span className="step-num">
+                      {idx + 1}
+                    </span>
+                    <span className="step-title" style={{textTransform: 'capitalize'}}>{step.title}</span>
+                  </li>
+                );
+              });
+            })()}
+          </ul>
 
         {/* PROTOTYPE SCREENS & INTEGRITY SWITCHER WIDGET */}
         <div style={{ margin: 'auto 0 16px 0', display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center', position: 'relative', width: '100%' }}>
@@ -2530,7 +2555,7 @@ export default function CandidateFlow() {
         {/* TOPBAR HEADER */}
         <header className="cand-topbar">
           <span className="emp-name">
-            Kulkarni Mehta &amp; Associates LLP <span style={{ opacity: 0.4, margin: '0 8px' }}>·</span> <span style={{ fontWeight: 400, opacity: 0.8 }}>Audit &amp; Tax Executive Screening</span>
+              {openingData?.tenant_name || 'Kulkarni Mehta & Associates LLP'} <span style={{ opacity: 0.4, margin: '0 8px' }}>·</span> <span style={{ fontWeight: 400, opacity: 0.8 }}>Job Interview Flow: {openingData?.title || 'Audit & Tax Executive'}</span>
           </span>
           <span className="meta-pill mono">
             {screen === 11 ? `Objective · camera off · tab switches are flagged` : screen === 8 ? `Live Recording Round` : `Candidate Setup`}
