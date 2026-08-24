@@ -15,7 +15,6 @@ class CandidateViewSet(viewsets.ModelViewSet):
         from django.db import connection
         try:
             with connection.cursor() as cursor:
-                # Safe for MySQL and Postgres
                 engine = connection.settings_dict['ENGINE']
                 if 'mysql' in engine:
                     cursor.execute("SHOW COLUMNS FROM candidates LIKE 'video_link'")
@@ -24,6 +23,9 @@ class CandidateViewSet(viewsets.ModelViewSet):
                     cursor.execute("SHOW COLUMNS FROM candidates LIKE 'meta_info'")
                     if not cursor.fetchone():
                         cursor.execute("ALTER TABLE candidates ADD COLUMN meta_info LONGTEXT NULL")
+                    cursor.execute("SHOW COLUMNS FROM candidate_transcript_lines LIKE 'expected_answer'")
+                    if not cursor.fetchone():
+                        cursor.execute("ALTER TABLE candidate_transcript_lines ADD COLUMN expected_answer LONGTEXT NULL")
                 elif 'postgresql' in engine or 'psycopg' in engine:
                     cursor.execute("SELECT column_name FROM information_schema.columns WHERE table_name='candidates' and column_name='video_link';")
                     if not cursor.fetchone():
@@ -31,6 +33,9 @@ class CandidateViewSet(viewsets.ModelViewSet):
                     cursor.execute("SELECT column_name FROM information_schema.columns WHERE table_name='candidates' and column_name='meta_info';")
                     if not cursor.fetchone():
                         cursor.execute("ALTER TABLE candidates ADD COLUMN meta_info TEXT NULL")
+                    cursor.execute("SELECT column_name FROM information_schema.columns WHERE table_name='candidate_transcript_lines' and column_name='expected_answer';")
+                    if not cursor.fetchone():
+                        cursor.execute("ALTER TABLE candidate_transcript_lines ADD COLUMN expected_answer TEXT NULL")
         except Exception as e:
             pass # fallback to normal
         return super().get_queryset()
