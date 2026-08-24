@@ -4295,7 +4295,16 @@ Your Student ID/Exam ID is: ${newCand.student_id || newCand.id}`
 
                           <div className="q-list-container" style={{ maxHeight: '280px', overflowY: 'auto', border: '1px solid #eee', borderRadius: '8px' }}>
                             {flowWizRounds[flowWizSelectedRoundIdx]?.questions?.map((q, qIdx) => (
-                              <div className="q-list-item" key={q.id || qIdx} style={{ padding: '12px 16px', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: (q._selected || q._selected === undefined) ? '#fff5b8' : 'transparent', borderLeft: (q._selected || q._selected === undefined) ? '4px solid #f1c40f' : '4px solid transparent' }}>
+                              <div className="q-list-item" key={q.id || qIdx} style={{ padding: '12px 16px', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: (q._selected || q._selected === undefined) ? '#fff5b8' : 'transparent', borderLeft: (q._selected || q._selected === undefined) ? '4px solid #f1c40f' : '4px solid transparent', cursor: 'pointer' }} onClick={(e) => {
+                                if (e.target.closest('button')) return;
+                                const updated = [...flowWizRounds];
+                                const currentQ = updated[flowWizSelectedRoundIdx].questions[qIdx];
+                                currentQ._selected = currentQ._selected === undefined ? false : !currentQ._selected;
+                                setFlowWizRounds(updated);
+                              }}>
+                                <div style={{ marginRight: '12px' }}>
+                                  <input type="checkbox" checked={q._selected || q._selected === undefined} readOnly style={{ cursor: 'pointer' }} />
+                                </div>
                                 <span style={{ flex: 1, marginRight: '14px', fontSize: '12.5px', lineHeight: 1.4 }}>
                                   <b>Q:</b> {q.question} <span style={{ color: 'var(--muted)', fontSize: '11px', marginLeft: '6px' }}>(Type: {q.type || 'MCQ'} · Time: {q.timeLimit} min · Max Marks: {q.marks || 10} · {q.difficulty})</span>
                                 </span>
