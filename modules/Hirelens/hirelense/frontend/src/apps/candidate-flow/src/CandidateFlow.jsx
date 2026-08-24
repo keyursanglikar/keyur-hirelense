@@ -126,6 +126,8 @@ export default function CandidateFlow() {
   const [currentTranscript, setCurrentTranscript] = useState('');
   const recognitionRef = useRef(null);
   const [showCameraModal, setShowCameraModal] = useState(false);
+  const [showExpiredModal, setShowExpiredModal] = useState(false);
+  const [expiredMessage, setExpiredMessage] = useState('');
   const [showProtoSwitcher, setShowProtoSwitcher] = useState(false);
   const [showIntegrityPanel, setShowIntegrityPanel] = useState(false);
   const [integrityScreenshots, setIntegrityScreenshots] = useState([]);
@@ -1261,7 +1263,12 @@ export default function CandidateFlow() {
       }
     } catch (err) {
       console.error(err);
-      triggerToast({ bold: "Access Denied:", normal: err.message || "Invalid Student ID or Email ID." }, true);
+      if (err.message && err.message.toLowerCase().includes('expired')) {
+        setExpiredMessage(err.message);
+        setShowExpiredModal(true);
+      } else {
+        triggerToast({ bold: "Access Denied:", normal: err.message || "Invalid Student ID or Email ID." }, true);
+      }
     }
   };
 
@@ -3682,6 +3689,24 @@ export default function CandidateFlow() {
         <span className="tdot"></span>
         <span id="toastTxt"></span>
       </div>
+
+      {/* Expired Link Modal */}
+      {showExpiredModal && (
+        <div style={{ display: 'grid', position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)', placeItems: 'center', zIndex: 1000 }}>
+          <div className="c-card" style={{ maxWidth: '420px', textAlign: 'center', padding: '32px 24px', margin: '0 20px', borderRadius: '16px', background: 'var(--card)', border: '1px solid var(--line-soft)', boxShadow: '0 12px 24px rgba(0,0,0,0.1)' }}>
+            <div style={{ width: '56px', height: '56px', borderRadius: '50%', backgroundColor: 'var(--red-soft)', color: 'var(--red)', display: 'grid', placeItems: 'center', margin: '0 auto 16px auto', fontSize: '28px', border: '4px solid #fff' }}>
+              ✕
+            </div>
+            <h3 style={{ fontSize: '20px', fontWeight: '700', color: 'var(--ink)', marginBottom: '12px' }}>Link Expired</h3>
+            <p style={{ fontSize: '14.5px', color: 'var(--muted)', lineHeight: '1.5', marginBottom: '24px' }}>
+              {expiredMessage || "Your interview invitation link has expired. Please contact the employer for a new link."}
+            </p>
+            <button className="btn primary" onClick={() => setShowExpiredModal(false)} style={{ width: '100%', height: '44px', fontSize: '15px' }}>
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
