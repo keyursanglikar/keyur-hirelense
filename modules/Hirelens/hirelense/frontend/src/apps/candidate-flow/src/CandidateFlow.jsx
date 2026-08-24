@@ -1653,21 +1653,21 @@ export default function CandidateFlow() {
           flex-direction: column;
         }
         .sidebar-title {
-          font-weight: 700;
-          font-size: 14.5px;
-          line-height: 1.25;
-          letter-spacing: -0.015em;
-          color: var(--ink);
-        }
+            font-weight: 700;
+            font-size: 14.5px;
+            line-height: 1.25;
+            letter-spacing: -0.015em;
+            color: #EDF4F0;
+          }
         .dark-stage .sidebar-title {
           color: #EDF4F0;
         }
         .sidebar-subtitle {
-          font-size: 11px;
-          color: var(--muted);
-          margin-top: 2px;
-          font-weight: 500;
-        }
+            font-size: 11px;
+            color: #7E978E;
+            margin-top: 2px;
+            font-weight: 500;
+          }
         .dark-stage .sidebar-subtitle {
           color: #7E978E;
         }
@@ -1681,32 +1681,32 @@ export default function CandidateFlow() {
           flex: 1;
         }
         .step-item {
-          display: flex;
-          align-items: center;
-          gap: 16px;
-          font-size: 14px;
-          font-weight: 500;
-          color: #8AA09A;
-          transition: all 0.3s;
-        }
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #7E978E;
+            transition: all 0.3s;
+          }
         .dark-stage .step-item {
           color: #7E978E;
         }
         .step-num {
-          width: 28px;
-          height: 28px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-family: var(--font-b);
-          font-size: 12.5px;
-          font-weight: 700;
-          border: 1.5px solid #D9E1DD;
-          transition: all 0.3s;
-          color: #8AA09A;
-          background-color: transparent;
-        }
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-b);
+            font-size: 12.5px;
+            font-weight: 700;
+            border: 1.5px solid rgba(255, 255, 255, 0.15);
+            transition: all 0.3s;
+            color: #7E978E;
+            background-color: transparent;
+          }
         .dark-stage .step-num {
           border-color: rgba(255, 255, 255, 0.15);
           color: #7E978E;
@@ -1714,18 +1714,18 @@ export default function CandidateFlow() {
 
         /* Active State */
         .step-item.active {
-          color: var(--ink);
-          font-weight: 700;
-        }
+            color: var(--amber);
+            font-weight: 700;
+          }
         .dark-stage .step-item.active {
           color: var(--amber);
         }
         .step-item.active .step-num {
-          border-color: var(--amber);
-          background-color: var(--amber);
-          color: #FFF;
-          box-shadow: 0 0 0 4px var(--amber-soft);
-        }
+            border-color: var(--amber);
+            background-color: var(--amber);
+            color: var(--deep);
+            box-shadow: 0 0 0 4px rgba(221, 160, 50, 0.25);
+          }
         .dark-stage .step-item.active .step-num {
           border-color: var(--amber);
           background-color: var(--amber);
@@ -1735,16 +1735,16 @@ export default function CandidateFlow() {
 
         /* Done State */
         .step-item.done {
-          color: var(--muted);
-        }
+            color: #A9C0B8;
+          }
         .dark-stage .step-item.done {
           color: #A9C0B8;
         }
         .step-item.done .step-num {
-          border-color: var(--ok);
-          background-color: var(--ok-soft);
-          color: var(--ok);
-        }
+            border-color: var(--ok);
+            background-color: rgba(46, 125, 91, 0.2);
+            color: var(--ok);
+          }
         .dark-stage .step-item.done .step-num {
           border-color: var(--ok);
           background-color: rgba(46, 125, 91, 0.2);
