@@ -733,6 +733,34 @@ export default function CandidateFlow() {
     return () => clearInterval(timerIntervalRef.current);
   }, [screen, speakingState, caseStudyStage, isSavingQuestion, isAudioPlaying]);
 
+
+  // TRIGGER ACTIONS WHEN TIMERS REACH 0
+  useEffect(() => {
+    if (screen === 11 && mcqTimer === 0) {
+      if (currentRoundIdx < roundsList.length - 1) {
+        setScreen(9);
+      } else {
+        handleFinalSubmission();
+      }
+    }
+  }, [mcqTimer, screen, currentRoundIdx, roundsList.length]);
+
+  useEffect(() => {
+    if (screen === 8 && speakingState === 'listening' && answerTimer === 0) {
+      handleSaveAndNextQuestion();
+    }
+  }, [answerTimer, screen, speakingState]);
+
+
+  useEffect(() => {
+    if (screen === 10 && caseStudyStage === 'answering' && caseAnswerTimer > 0) {
+      const currentLimit = getQuestionTimeLimitSeconds(currentRoundIdx, currentQuestionIdx);
+      if (caseAnswerTimer >= currentLimit) {
+        handleFinishCaseAnswer();
+      }
+    }
+  }, [caseAnswerTimer, screen, caseStudyStage, currentRoundIdx, currentQuestionIdx]);
+
   // --- SPEECH SYNTHESIS QUESTION AUDIO ---
   useEffect(() => {
     if (screen === 8) {
