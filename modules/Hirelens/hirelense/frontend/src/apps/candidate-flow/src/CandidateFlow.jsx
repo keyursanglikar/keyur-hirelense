@@ -1043,7 +1043,7 @@ export default function CandidateFlow() {
     let detectionInterval = null;
 
     // Checks the active webcam feed every 1.5 seconds if camera is active
-    if ((screen === 8 || screen === 10) && hasCameraPermission) {
+    if ((screen === 8 || screen === 10 || screen === 11) && hasCameraPermission) {
       detectionInterval = setInterval(async () => {
         const video = hiddenVideoRef.current || videoRef.current;
         if (faceModelRef.current && video) {
