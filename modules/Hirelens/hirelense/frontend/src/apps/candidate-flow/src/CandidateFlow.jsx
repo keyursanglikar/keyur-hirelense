@@ -289,8 +289,7 @@ export default function CandidateFlow() {
                 setTabSwitches(p.tabSwitches || 0);
                 setPasteEvents(p.pasteEvents || 0);
                 setReplayUsed(p.replayUsed || 0);
-                setTotalFacesFlags(p.totalFacesFlags || 0);
-              } else {
+                } else {
                 localStorage.removeItem(sessionKey);
               }
             }
@@ -1237,12 +1236,11 @@ export default function CandidateFlow() {
         tabSwitches,
         pasteEvents,
         replayUsed,
-        totalFacesFlags,
       };
       localStorage.setItem(sessionKey, JSON.stringify(stateToSave));
     }
   }, [screen, currentRoundIdx, currentQuestionIdx, answersList, mcqAnswers,
-        mcqTimer, caseAnswerTimer, tabSwitches, pasteEvents, replayUsed, totalFacesFlags, candidateData]);
+        mcqTimer, caseAnswerTimer, tabSwitches, pasteEvents, replayUsed, candidateData]);
 
   const handleFinalSubmission = async () => {
     if (!candidateData) return;
