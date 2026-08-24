@@ -244,7 +244,7 @@ class CandidateViewSet(viewsets.ModelViewSet):
                         invitation=candidate.invitations.last(),
                         job_opening=opening,
                         interview_flow=flow,
-                        scorecard=opening.scorecard if opening else None,
+                        scorecard=opening.scorecard if opening else None if opening else None,
                         status='Not Started',
                         started_at=timezone.now(),
                         progress=0.0
@@ -423,8 +423,8 @@ class CandidateViewSet(viewsets.ModelViewSet):
                 candidate=candidate,
                 answers=answers,
                 mcq_answers=mcq_answers,
-                flow=opening.flow,
-                scorecard=opening.scorecard
+                flow=opening.flow if opening else None,
+                scorecard=opening.scorecard if opening else None
             )
 
         # Finalize active Interview Session and Invitation outside the transaction lock

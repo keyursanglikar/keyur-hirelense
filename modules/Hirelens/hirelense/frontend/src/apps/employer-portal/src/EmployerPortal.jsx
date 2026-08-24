@@ -4201,7 +4201,7 @@ Your Student ID/Exam ID is: ${newCand.student_id || newCand.id}`
                               Round Duration: <b>{getRoundCalculatedDuration(flowWizRounds[flowWizSelectedRoundIdx])} mins</b> · ({flowWizRounds[flowWizSelectedRoundIdx]?.questions?.length || 0} Questions)
                               </span>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginLeft: '12px', borderLeft: '1px solid var(--border)', paddingLeft: '12px' }}>
-                                <span style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 500 }}>Ask candidates:</span>
+                                <span style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 500 }}>Shuffle count:</span>
                                 <select 
                                   className=""
                                   style={{ background: 'transparent', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: '4px', fontSize: '11px', padding: '2px 4px' }}
@@ -4213,9 +4213,31 @@ Your Student ID/Exam ID is: ${newCand.student_id || newCand.id}`
                                   }}
                                 >
                                   {Array.from({length: Math.max(1, flowWizRounds[flowWizSelectedRoundIdx]?.questions?.length || 1)}, (_, i) => i + 1).map(num => (
-                                    <option key={num} value={num}>{num} randomly</option>
+                                    <option key={num} value={num}>{num} questions</option>
                                   ))}
                                 </select>
+                                <button
+                                  className="btn ghost sm"
+                                  style={{ marginLeft: '6px', fontSize: '11px', padding: '2px 6px', height: 'auto' }}
+                                  onClick={() => {
+                                    const currentRound = flowWizRounds[flowWizSelectedRoundIdx];
+                                    if (!currentRound || !currentRound.questions) return;
+                                    const keepCount = currentRound.ask_count || currentRound.questions.length;
+                                    if (keepCount >= currentRound.questions.length) {
+                                      triggerToast('Already at maximum questions.');
+                                      return;
+                                    }
+                                    const shuffled = [...currentRound.questions].sort(() => 0.5 - Math.random());
+                                    const kept = shuffled.slice(0, keepCount);
+                                    const updated = [...flowWizRounds];
+                                    updated[flowWizSelectedRoundIdx].questions = kept;
+                                    updated[flowWizSelectedRoundIdx].ask_count = kept.length;
+                                    setFlowWizRounds(updated);
+                                    triggerToast(`Shuffled and kept ${kept.length} questions.`);
+                                  }}
+                                >
+                                  Shuffle & Keep
+                                </button>
                               </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                               <select 
