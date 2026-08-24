@@ -127,8 +127,9 @@ export default function CandidateFlow() {
   const [answersList, setAnswersList] = useState({});
   const [currentTranscript, setCurrentTranscript] = useState('');
   const currentTranscriptRef = useRef('');
-  const recognitionRef = useRef(null);
+  const currentTranscriptRef = useRef('');
   const finalTranscriptRef = useRef('');
+  const recognitionRef = useRef(null);
   const [showCameraModal, setShowCameraModal] = useState(false);
   const [showExpiredModal, setShowExpiredModal] = useState(false);
   const [expiredMessage, setExpiredMessage] = useState('');
@@ -3408,7 +3409,192 @@ export default function CandidateFlow() {
                 </div>
               </div>
 
+              {/* Camera Feed Modal */}
+              <div style={{ display: showCameraModal ? 'grid' : 'none', position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(6px)', placeItems: 'center', zIndex: 1000 }}>
+                <div className="c-card" style={{ width: '460px', background: 'var(--deep)', border: '1px solid rgba(255,255,255,0.1)', padding: '24px', borderRadius: '20px', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
+                  
+                  {/* Header */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                    <h4 style={{ margin: 0, fontSize: '16px', fontWeight: '600', color: '#EDF4F0' }}>Live Interview Camera Feed</h4>
+                    <button 
+                      onClick={() => setShowCameraModal(false)}
+                      style={{ background: 'none', border: 'none', color: '#7E978E', fontSize: '24px', cursor: 'pointer', padding: '0 4px', lineHeight: 1 }}
+                    >
+                      &times;
+                    </button>
+                  </div>
+
+                  {/* Camera Container */}
+                  <div className="camera-container" style={{ border: '1.5px solid rgba(255, 255, 255, 0.08)', borderRadius: '12px', overflow: 'hidden', position: 'relative', width: '100%', height: '280px', backgroundColor: '#000', margin: '0 auto' }}>
+                    <video 
+                      ref={videoRef} 
+                      autoPlay 
+                      playsInline 
+                      muted 
+                      style={{ display: hasCameraPermission ? 'block' : 'none', width: '100%', height: '100%', objectFit: 'cover' }}
+                    ></video>
+                    {!hasCameraPermission && (
+                      <div className="camera-placeholder">
+                        <span style={{ fontSize: '32px' }}>📹</span>
+                        <span>webcam stream offline</span>
+                      </div>
+                    )}
+                    
+                    <div className="pulse-rec" style={{ top: '16px', left: '16px', backgroundColor: 'rgba(11,30,26,0.75)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                      <span className="dot" style={{ backgroundColor: speakingState === 'listening' ? 'var(--rec)' : '#7E978E', animation: speakingState === 'listening' ? 'rec-blink 1.2s infinite' : 'none' }}></span>
+                      <span style={{ color: speakingState === 'listening' ? '#EDF4F0' : '#A9C0B8' }}>
+                        {speakingState === 'listening' ? 'REC ACTIVE' : 'CAMERA ACTIVE'}
+                      </span>
+                    </div>
+
+                    <div className="mono" style={{ position: 'absolute', bottom: '16px', left: '16px', backgroundColor: 'rgba(11,30,26,0.75)', padding: '4px 10px', borderRadius: '6px', fontSize: '11px', color: '#EDF4F0', border: '1px solid rgba(255,255,255,0.06)', fontWeight: '600' }}>
+                      You · Jay Patil
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '16px', fontSize: '11.5px', color: '#7E978E', padding: '0 4px' }}>
+                    <span>Camera: <b style={{ color: '#EDF4F0' }}>HD Webcam (Active)</b></span>
+                    <span>Microphone: <b style={{ color: '#EDF4F0' }}>{speakingState === 'listening' ? 'Recording' : 'Muted'}</b></span>
+                  </div>
+
+                  <button 
+                    className="btn primary" 
+                    onClick={() => setShowCameraModal(false)} 
+                    style={{ width: '100%', marginTop: '20px', height: '42px', fontSize: '13.5px', borderRadius: '10px' }}
+                  >
+                    Close Preview
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ================= SCREEN 9: ROUND COMPLETION INTERSTITIAL ================= */}
+          {screen === 9 && (
+            <div className="c-card" style={{ maxWidth: '580px', margin: '0 auto', textAlign: 'center' }}>
+              <div style={{ width: '64px', height: '64px', borderRadius: '50%', backgroundColor: 'rgba(46, 125, 91, 0.2)', border: '2.5px solid var(--ok)', display: 'grid', placeItems: 'center', margin: '0 auto 20px auto' }}>
+                <span style={{ fontSize: '28px', color: 'var(--ok)' }}>✓</span>
+              </div>
               
+              <h2 style={{ fontFamily: 'var(--font-d)', fontSize: '26px', marginBottom: '8px' }}>Round Completed Successfully</h2>
+              <p style={{ color: '#A9C0B8', fontSize: '14px', marginBottom: '24px' }}>
+                Your responses for <b>Round {currentRoundIdx + 1}: {roundsList[currentRoundIdx]?.name || roundsList[currentRoundIdx]?.type_display || roundsList[currentRoundIdx]?.type?.toUpperCase()}</b> have been saved and compiled.
+              </p>
+
+              <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', padding: '16px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '28px' }}>
+                <div>
+                  <span className="mono" style={{ fontSize: '10px', display: 'block', color: '#7E978E' }}>ROUND</span>
+                  <b style={{ fontSize: '13px' }}>Round {currentRoundIdx + 1}</b>
+                </div>
+                <div>
+                  <span className="mono" style={{ fontSize: '10px', display: 'block', color: '#7E978E' }}>QUESTIONS</span>
+                  <b style={{ fontSize: '13px' }}>{(roundsList[currentRoundIdx]?.questions?.length || 0)} answered</b>
+                </div>
+                <div>
+                  <span className="mono" style={{ fontSize: '10px', display: 'block', color: '#7E978E' }}>INTEGRITY STATUS</span>
+                  <b style={{ fontSize: '13px', color: 'var(--ok)' }}>Verified</b>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <button className="btn primary" onClick={handleContinueNextRound}>
+                  {currentRoundIdx < roundsList.length - 1 
+                    ? `Continue to Round ${currentRoundIdx + 2} · ${roundsList[currentRoundIdx + 1]?.name || roundsList[currentRoundIdx + 1]?.type_display || roundsList[currentRoundIdx + 1]?.type?.toUpperCase()} →`
+                    : "Submit Assessment ✓"}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ================= SCREEN 10: CASE STUDY ================= */}
+          {screen === 10 && (
+            <div className="c-card">
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#7E978E', marginBottom: '8px' }}>
+                <span>Assessment Component: Case Analysis Study (Question {currentQuestionIdx + 1} of {roundsList[currentRoundIdx]?.questions?.length || 1})</span>
+                <span className="mono">
+                  {caseStudyStage === 'reading' ? (
+                    isAudioPlaying ? (
+                      <span style={{ color: '#4facfe', fontWeight: 'bold' }}>🔊 Aanya reading case study...</span>
+                    ) : (
+                      `Reading Time remaining: ${formatTime(caseReadingTimer)}`
+                    )
+                  ) : (
+                    `Recording: ${formatTime(caseAnswerTimer)}`
+                  )}
+                </span>
+              </div>
+              <div className="progress-indicator">
+                <div className="fill" style={{ 
+                  width: caseStudyStage === 'reading' 
+                    ? `${(caseReadingTimer / maxCaseReadingTime) * 100}%` 
+                    : '100%',
+                  backgroundColor: caseStudyStage === 'reading' ? 'var(--amber)' : 'var(--rec)'
+                }}></div>
+              </div>
+
+              <div className="staged-grid">
+                
+                {/* Left column: Case brief */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', padding: '24px', borderRadius: '14px' }}>
+                    <span className="mono" style={{ fontSize: '10px', letterSpacing: '0.1em', color: 'var(--amber)' }}>CASE STUDY SCENARIO</span>
+                    <h4 style={{ fontSize: '16px', fontWeight: 600, margin: '6px 0 10px 0' }}>{activeCaseData.title}</h4>
+                    <p style={{ fontSize: '13px', lineHeight: 1.5, color: '#EDF4F0', marginBottom: '14px', whiteSpace: 'pre-line' }}>
+                      {activeCaseData.scenario}
+                    </p>
+                    
+                    <span className="mono" style={{ fontSize: '10px', letterSpacing: '0.1em', color: 'var(--amber)', display: 'block', marginTop: '14px' }}>SPECIFIC ASSIGNED TASK</span>
+                    <p style={{ fontSize: '13px', lineHeight: 1.5, color: '#A9C0B8', fontWeight: 500 }}>
+                      {activeCaseData.task}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Right column: camera / recorder */}
+                <div>
+                  <div className="camera-container">
+                    <video 
+                      ref={videoRef} 
+                      autoPlay 
+                      playsInline 
+                      muted 
+                      style={{ display: hasCameraPermission ? 'block' : 'none', width: '100%', height: '100%', objectFit: 'cover' }}
+                    ></video>
+                    {!hasCameraPermission && (
+                      <div className="camera-placeholder">
+                        <span style={{ fontSize: '32px' }}>📹</span>
+                        <span>webcam stream offline</span>
+                      </div>
+                    )}
+                    {caseStudyStage === 'answering' && (
+                      <div className="pulse-rec">
+                        <span className="dot"></span>
+                        <span>REC ON-AIR</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div style={{ marginTop: '20px', padding: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', textAlign: 'center' }}>
+                    {caseStudyStage === 'reading' ? (
+                      <div>
+                        <p style={{ fontSize: '12px', color: '#7E978E', marginBottom: '10px' }}>Review the brief. Your camera turns on automatically when reading timer reaches zero.</p>
+                        <button className="btn primary amber sm" onClick={() => { setCaseStudyStage('answering'); setCaseAnswerTimer(0); }}>
+                          Start Answer Now
+                        </button>
+                      </div>
+                    ) : (
+                      <div>
+                        <p style={{ fontSize: '12px', color: '#7E978E', marginBottom: '10px' }}>Your response is being recorded. Clicks finish when you have stated your investigation workflow.</p>
+
+
+                        <button className="btn primary sm" style={{ backgroundColor: 'var(--rec)', color: '#fff' }} onClick={handleFinishCaseAnswer}>
+                          Finish Answer
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 
