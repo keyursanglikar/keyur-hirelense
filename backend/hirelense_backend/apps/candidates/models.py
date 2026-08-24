@@ -82,6 +82,7 @@ class CandidateTranscriptLine(models.Model):
     question_text = models.TextField()
     timestamp = models.CharField(max_length=20)
     answer_text = models.TextField()
+    expected_answer = models.TextField(blank=True, null=True)
     score_value = models.FloatField()
     feedback = models.TextField(blank=True, default='')
 

@@ -91,6 +91,10 @@ class CandidateEvaluationService:
                             ans_text = f"[Invalid: idx={selected_idx}, len={len(clean_options)}, type={type(options_list).__name__}, val={selected_val}]"
                         
                         correct_ans = flat_mcq["correct_answer"]
+                        try:
+                            flat_mcq["correct_answer_text"] = clean_options[int(correct_ans)] if str(correct_ans).isdigit() else str(correct_ans)
+                        except:
+                            flat_mcq["correct_answer_text"] = str(correct_ans)
                         is_correct = False
                         
                         if str(selected_idx) == str(correct_ans):
@@ -110,6 +114,7 @@ class CandidateEvaluationService:
                     mcq_results.append({
                         "question_text": flat_mcq["question_text"],
                         "answer_text": ans_text,
+                        "expected_answer": flat_mcq.get("correct_answer_text", ""),
                         "score_value": score_val,
                         "parameter": flat_mcq["parameter"],
                         "marks": flat_mcq.get("marks", 10)
@@ -289,6 +294,7 @@ Do not include any thinking, explanations, or code blocks outside the JSON. Retu
                         question_text=dq["question_text"],
                         timestamp="0:45",
                         answer_text=dq["candidate_answer"],
+                        expected_answer=dq.get("expected_answer", ""),
                         score_value=score_val
                     )
                     
@@ -359,6 +365,7 @@ Do not include any thinking, explanations, or code blocks outside the JSON. Retu
                         question_text=mr["question_text"],
                         timestamp="0:00",
                         answer_text=mr["answer_text"],
+                        expected_answer=mr.get("expected_answer", ""),
                         score_value=mr["score_value"]
                     )
                     
@@ -420,6 +427,7 @@ Do not include any thinking, explanations, or code blocks outside the JSON. Retu
                     question_text=dq["question_text"],
                     timestamp="0:45",
                     answer_text=clean_ans,
+                    expected_answer=dq.get("expected_answer", ""),
                     score_value=score_val
                 )
                 
@@ -435,6 +443,7 @@ Do not include any thinking, explanations, or code blocks outside the JSON. Retu
                     question_text=mr["question_text"],
                     timestamp="0:00",
                     answer_text=mr["answer_text"],
+                    expected_answer=mr.get("expected_answer", ""),
                     score_value=mr["score_value"]
                 )
 

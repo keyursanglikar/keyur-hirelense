@@ -2851,24 +2851,34 @@ Your Student ID/Exam ID is: ${newCand.student_id || newCand.id}`
                     {((candidateForReport && candidateForReport.transcript && candidateForReport.transcript.length > 0) ? candidateForReport.transcript : TRANSCRIPT).map((t, idx) => {
                       const qText = t.question_text || t.q || "";
                       const tsText = t.timestamp || t.ts || "00:00";
-                      const aText = t.answer_text || t.a || "";
-                      const scoreVal = t.score_value !== undefined ? t.score_value : (t.sc || 0);
-                      const feedback = t.feedback || "";
-                      return (
-                        <div className="tr-block" key={idx} id={`tr${idx}`}>
-                          <div className="tr-q">
-                            <b>{qText}</b>
-                            <span className="ts">{tsText}</span>
+                        const aText = t.answer_text || t.a || "";
+                        const expectedText = t.expected_answer || "";
+                        const scoreVal = t.score_value !== undefined ? t.score_value : (t.sc || 0);
+                        const feedback = t.feedback || "";
+                        return (
+                          <div className="tr-block" key={idx} id={`tr${idx}`}>
+                            <div className="tr-q">
+                              <b>{qText}</b>
+                              <span className="ts">{tsText}</span>
+                            </div>
+                            <div style={{ display: 'flex', gap: '16px', marginTop: '12px', flexDirection: 'column' }}>
+                              <div>
+                                <strong style={{ fontSize: '11px', color: 'var(--faint)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Candidate Answer</strong>
+                                <p className="tr-a" style={{ marginTop: '4px' }}>{aText}</p>
+                              </div>
+                              {expectedText && (
+                                <div>
+                                  <strong style={{ fontSize: '11px', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Expected Answer</strong>
+                                  <p className="tr-a" style={{ marginTop: '4px', backgroundColor: 'var(--surface2)', padding: '10px', borderRadius: '6px' }}>{expectedText}</p>
+                                </div>
+                              )}
+                            </div>
+                            {feedback && <div style={{marginTop: '12px', padding: '10px', background: 'var(--surface2)', borderRadius: '4px', fontSize: '12px', borderLeft: '3px solid var(--primary)'}}>
+                              <strong>AI Feedback: </strong>
+                              {feedback}
+                            </div>}
                           </div>
-                          <p className="tr-a">{aText}</p>
-                          {feedback && <div style={{marginTop: '8px', padding: '10px', background: 'var(--surface2)', borderRadius: '4px', fontSize: '12px', borderLeft: '3px solid var(--primary)'}}>
-                            <b>AI Feedback:</b> {feedback}
-                          </div>}
-                          <div className="tr-score">
-                            <span className={`scorechip ${parseFloat(scoreVal) >= 7.1 ? 's-hi' : parseFloat(scoreVal) >= 5.1 ? 's-mid' : 's-lo'}`}>{scoreVal} / 10</span>
-                          </div>
-                        </div>
-                      );
+                        );
                     })}
                   </div>
                 </div>
