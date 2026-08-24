@@ -464,15 +464,15 @@ export default function EmployerPortal() {
   const [wizOpen, setWizOpen] = useState(false);
   const [wizStep, setWizStep] = useState(1);
   // Step 1 Details
-  const [wizTitle, setWizTitle] = useState('Senior Backend Developer');
-  const [wizDesc, setWizDesc] = useState('Responsible for microservices design, REST API endpoints, and SQL queries.');
-  const [wizDept, setWizDept] = useState('Engineering');
-  const [wizLocation, setWizLocation] = useState('Pune, hybrid');
-  const [wizSalary, setWizSalary] = useState('₹8.0 - ₹12.0 LPA');
-  const [wizHiringManager, setWizHiringManager] = useState('Jay Sir');
-  const [wizType, setWizType] = useState('Full-time');
-  const [wizExp, setWizExp] = useState('2–5 years');
-  const [wizDefaultDuration, setWizDefaultDuration] = useState('60 Minutes');
+  const [wizTitle, setWizTitle] = useState('');
+  const [wizDesc, setWizDesc] = useState('');
+  const [wizDept, setWizDept] = useState('');
+  const [wizLocation, setWizLocation] = useState('');
+  const [wizSalary, setWizSalary] = useState('');
+  const [wizHiringManager, setWizHiringManager] = useState('');
+  const [wizType, setWizType] = useState('');
+  const [wizExp, setWizExp] = useState('');
+  const [wizDefaultDuration, setWizDefaultDuration] = useState('');
   
   // Step 2 & 3 Selections
   const [wizAttachedFlowId, setWizAttachedFlowId] = useState(null); // template ID
@@ -2560,15 +2560,15 @@ Your Student ID/Exam ID is: ${newCand.student_id || newCand.id}`
                 </div>
                 <button className="btn primary" onClick={() => { 
                   setWizEditingJobId(null);
-                  setWizTitle('Senior Backend Developer');
-                  setWizDesc('Responsible for microservices design, REST API endpoints, and SQL queries.');
-                  setWizDept('Engineering');
-                  setWizLocation('Pune, hybrid');
-                  setWizSalary('₹8.0 - ₹12.0 LPA');
-                  setWizHiringManager('Jay Sir');
-                  setWizType('Full-time');
-                  setWizExp('2–5 years');
-                  setWizDefaultDuration('60 Minutes');
+                  setWizTitle('');
+                  setWizDesc('');
+                  setWizDept('');
+                  setWizLocation('');
+                  setWizSalary('');
+                  setWizHiringManager('');
+                  setWizType('');
+                  setWizExp('');
+                  setWizDefaultDuration('');
                   setWizAttachedFlowId(null);
                   setWizAttachedScorecardId(null);
                   setWizSearchFlowOpen(false);
@@ -3668,27 +3668,28 @@ Your Student ID/Exam ID is: ${newCand.student_id || newCand.id}`
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
                   <div className="lfield">
                     <label>Job Title</label>
-                    <input value={wizTitle} onChange={(e) => setWizTitle(e.target.value)} placeholder="e.g. React Frontend Engineer" />
+                    <input value={wizTitle} onChange={(e) => setWizTitle(e.target.value)} placeholder="Senior Backend Developer" />
                   </div>
                   <div className="lfield">
                     <label>Department</label>
-                    <input value={wizDept} onChange={(e) => setWizDept(e.target.value)} placeholder="e.g. Audit, Engineering" />
+                    <input value={wizDept} onChange={(e) => setWizDept(e.target.value)} placeholder="Engineering" />
                   </div>
                   <div className="lfield">
                     <label>Location</label>
-                    <input value={wizLocation} onChange={(e) => setWizLocation(e.target.value)} placeholder="e.g. Pune, hybrid" />
+                    <input value={wizLocation} onChange={(e) => setWizLocation(e.target.value)} placeholder="Pune, hybrid" />
                   </div>
                   <div className="lfield">
                     <label>Salary Band</label>
-                    <input value={wizSalary} onChange={(e) => setWizSalary(e.target.value)} placeholder="e.g. ₹6.0 - ₹9.0 LPA" />
+                    <input value={wizSalary} onChange={(e) => setWizSalary(e.target.value)} placeholder="₹8.0 - ₹12.0 LPA" />
                   </div>
                   <div className="lfield">
                     <label>Hiring Manager</label>
-                    <input value={wizHiringManager} onChange={(e) => setWizHiringManager(e.target.value)} placeholder="e.g. Meera Kulkarni" />
+                    <input value={wizHiringManager} onChange={(e) => setWizHiringManager(e.target.value)} placeholder="Jay Sir" />
                   </div>
                   <div className="lfield">
                     <label>Employment Type</label>
                     <select value={wizType} onChange={(e) => setWizType(e.target.value)}>
+                        <option value="" disabled>Full-time</option>
                       <option>Full-time</option>
                       <option>Articleship</option>
                       <option>Internship</option>
@@ -3698,6 +3699,7 @@ Your Student ID/Exam ID is: ${newCand.student_id || newCand.id}`
                   <div className="lfield">
                     <label>Experience Level</label>
                     <select value={wizExp} onChange={(e) => setWizExp(e.target.value)}>
+                        <option value="" disabled>2-5 years</option>
                       <option>Fresher</option>
                       <option>0–2 years</option>
                       <option>2–5 years</option>
@@ -3707,6 +3709,7 @@ Your Student ID/Exam ID is: ${newCand.student_id || newCand.id}`
                   <div className="lfield">
                     <label>Default Interview Duration (Optional Display)</label>
                     <select value={wizDefaultDuration} onChange={(e) => setWizDefaultDuration(e.target.value)}>
+                        <option value="" disabled>60 Minutes</option>
                       <option>30 Minutes</option>
                       <option>45 Minutes</option>
                       <option>60 Minutes</option>
