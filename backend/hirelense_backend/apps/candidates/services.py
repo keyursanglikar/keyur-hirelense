@@ -452,7 +452,6 @@ Do not include any thinking, explanations, or code blocks outside the JSON. Retu
                 clean_ans = dq["candidate_answer"]
                 q_score = 7.0
                 if expected_text:
-                    import re
                     words_ans = set(re.findall(r'\w+', clean_ans.lower()))
                     words_exp = set(re.findall(r'\w+', expected_text.lower()))
                     if words_exp:
