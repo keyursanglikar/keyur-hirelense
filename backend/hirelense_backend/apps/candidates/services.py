@@ -330,6 +330,14 @@ Do not include any thinking, explanations, or code blocks outside the JSON. Retu
                     total_max_marks += max_m
                     total_earned_marks += (mr.get('score_value', 0.0) / 10.0) * max_m
                     
+                    CandidateTranscriptLine.objects.create(
+                        candidate=candidate,
+                        question_text=mr["question_text"],
+                        timestamp="0:00",
+                        answer_text=mr["answer_text"],
+                        score_value=mr["score_value"]
+                    )
+                    
                 # Save overall score and summary
                 import json
                 candidate.score = int(round(total_earned_marks))

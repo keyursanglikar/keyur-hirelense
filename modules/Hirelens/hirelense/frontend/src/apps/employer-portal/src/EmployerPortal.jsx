@@ -2145,7 +2145,7 @@ export default function EmployerPortal() {
     triggerToast("Interview link copied to clipboard!");
   };
 
-  const candidateForReport = activeCandidate || candidates.find(c => c.st === 'Scored' || c.st === 'Shortlisted') || candidates[0];
+  const candidateForReport = activeCandidate || candidates.find(c => c.status === 'Scored' || c.status === 'Shortlisted') || candidates[0];
 
   const handleStatusChange = async (newStatus) => {
     if (!candidateForReport) return;
@@ -2773,7 +2773,7 @@ Your Student ID/Exam ID is: ${newCand.student_id || newCand.id}`
             <section className={`view ${screen === 'report' ? 'on' : ''}`} id="v-report">
               <div className="rep-head">
                 {(() => {
-                  const scoreValForRing = candidateForReport ? (candidateForReport.sc !== null ? candidateForReport.sc : 82) : 82;
+                  const scoreValForRing = candidateForReport ? (candidateForReport.score !== null ? candidateForReport.score : 82) : 82;
                   const scoreColorForRing = scoreValForRing >= 71 ? 'var(--ok)' : scoreValForRing >= 51 ? 'var(--amber)' : 'var(--rec)';
                   const scoreAngleForRing = Math.round(scoreValForRing * 3.6);
                   const ringStyle = {
@@ -2782,7 +2782,7 @@ Your Student ID/Exam ID is: ${newCand.student_id || newCand.id}`
                   return (
                     <div className="ring" style={ringStyle}>
                       <i>
-                        {candidateForReport ? (candidateForReport.sc !== null ? candidateForReport.sc : '—') : '82'}
+                        {candidateForReport ? (candidateForReport.score !== null ? candidateForReport.score : '—') : '82'}
                         <small>/ 100</small>
                       </i>
                     </div>
@@ -2798,7 +2798,7 @@ Your Student ID/Exam ID is: ${newCand.student_id || newCand.id}`
                   <div className="tags">
                     {candidateForReport && (
                       <>
-                        <span className="badge b-ok">{candidateForReport.st || 'Scored'}</span>
+                        <span className="badge b-ok">{candidateForReport.status || 'Scored'}</span>
                         {candidateForReport.highest_qualification && (
                           <span className="badge b-mute">{candidateForReport.highest_qualification}</span>
                         )}
