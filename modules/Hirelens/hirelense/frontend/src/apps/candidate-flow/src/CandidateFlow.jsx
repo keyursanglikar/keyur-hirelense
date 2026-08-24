@@ -270,8 +270,35 @@ export default function CandidateFlow() {
       });
       setFlowRounds(data.flow?.rounds || []);
       setExpiresAt(data.expires_at || '');
-      
-      if (data.flow?.rounds && data.flow.rounds.length > 0) {
+
+        // Session Restore Check
+        const sessionKey = `hl_session_${data.candidate_id}`;
+        const saved = localStorage.getItem(sessionKey);
+        if (saved) {
+          try {
+            const p = JSON.parse(saved);
+            if (p.screen >= 6 && p.screen !== 14) {
+              if (window.confirm("An incomplete interview session was found. Would you like to resume where you left off?")) {
+                setScreen(p.screen);
+                setCurrentRoundIdx(p.currentRoundIdx || 0);
+                setCurrentQIdx(p.currentQIdx || 0);
+                setAnswersList(p.answersList || []);
+                setMcqAnswers(p.mcqAnswers || {});
+                setTimerSecs(p.timerSecs || 0);
+                setMcqTimer(p.mcqTimer || 480);
+                setCaseAnswerTimer(p.caseAnswerTimer || 0);
+                setTabSwitches(p.tabSwitches || 0);
+                setPasteEvents(p.pasteEvents || 0);
+                setReplayUsed(p.replayUsed || 0);
+                setTotalFacesFlags(p.totalFacesFlags || 0);
+              } else {
+                localStorage.removeItem(sessionKey);
+              }
+            }
+          } catch(e) {}
+        }
+        
+        if (data.flow?.rounds && data.flow.rounds.length > 0) {
         const mappedRounds = data.flow.rounds.map(r => ({
           id: r.type,
           name: r.name || (r.type === 'hr' ? 'HR Conversation' : r.type === 'tech' ? 'Technical Q&A' : r.type === 'case' ? 'Case Study' : r.type === 'mcq' ? 'Knowledge Test (MCQ)' : r.type.toUpperCase()),
@@ -1053,12 +1080,18 @@ export default function CandidateFlow() {
               
               // If more than 1 face is in the camera frame, throw warning toast!
               if (predictions.length > 1) {
-                triggerToast({
-                  bold: "Multiple persons detected.",
-                  normal: "Please ensure only one person is in front of the camera."
-                }, true);
-                captureIntegrityScreenshot("Multiple Persons Detected");
-              }
+                  triggerToast({
+                    bold: "Multiple persons detected.",
+                    normal: "Please ensure only one person is in front of the camera."
+                  }, true);
+                  captureIntegrityScreenshot("Multiple Persons Detected");
+                } else if (predictions.length === 0) {
+                  triggerToast({
+                    bold: "No face detected.",
+                    normal: "Please ensure your face is clearly visible in the camera feed."
+                  }, true);
+                  captureIntegrityScreenshot("No Face Detected");
+                }
             }
           } catch (err) {
             console.error("[FaceAPI] Detection error:", err);
@@ -1190,6 +1223,28 @@ export default function CandidateFlow() {
     }
   };
 
+  // Session Restore / Autosave
+  useEffect(() => {
+    if (candidateData && candidateData.id && screen >= 6 && screen !== 14) {
+      const sessionKey = `hl_session_${candidateData.id}`;
+      const stateToSave = {
+        screen,
+        currentRoundIdx,
+        currentQIdx,
+        answersList,
+        mcqAnswers,
+        timerSecs,
+        mcqTimer,
+        caseAnswerTimer,
+        tabSwitches,
+        pasteEvents,
+        replayUsed,
+        totalFacesFlags,
+      };
+      localStorage.setItem(sessionKey, JSON.stringify(stateToSave));
+    }
+  }, [screen, currentRoundIdx, currentQIdx, answersList, mcqAnswers, timerSecs, mcqTimer, caseAnswerTimer, tabSwitches, pasteEvents, replayUsed, totalFacesFlags, candidateData]);
+
   const handleFinalSubmission = async () => {
     if (!candidateData) return;
     setIsSubmitting(true);
@@ -1204,7 +1259,11 @@ export default function CandidateFlow() {
         }
       });
       
-      // Calculate and format dynamic submission timestamp
+      // Clear session on submit
+        if (candidateData) {
+            localStorage.removeItem(`hl_session_${candidateData.id}`);
+        }
+        // Calculate and format dynamic submission timestamp
       const date = new Date();
       const pad = (num) => String(num).padStart(2, '0');
       const yyyy = date.getFullYear();
