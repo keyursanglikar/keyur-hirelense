@@ -1587,13 +1587,15 @@ export default function CandidateFlow() {
           transition: border-color 0.4s ease, background 0.4s ease;
         }
         .light-mist .cand-rail {
-          background-color: #F8FAFA;
-          border-color: var(--line);
-        }
+            background-color: var(--petrol-2);
+            border-color: var(--petrol);
+            color: #EDF4F0;
+          }
         .dark-stage .cand-rail {
-          background: linear-gradient(180deg, var(--deep-2), var(--deep));
-          border-color: rgba(255, 255, 255, 0.08);
-        }
+            background: var(--petrol-2);
+            border-color: rgba(255, 255, 255, 0.08);
+            color: #EDF4F0;
+          }
         .cand-rail .wordmark {
           display: flex;
           align-items: center;
@@ -1604,7 +1606,7 @@ export default function CandidateFlow() {
           letter-spacing: -0.01em;
           margin-bottom: 40px;
         }
-        .light-mist .cand-rail .wordmark { color: var(--ink); }
+        .light-mist .cand-rail .wordmark { color: #EDF4F0; }
         .dark-stage .cand-rail .wordmark { color: #EDF4F0; }
         
         .lens-logo {

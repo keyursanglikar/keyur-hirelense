@@ -223,7 +223,11 @@ class CandidateViewSet(viewsets.ModelViewSet):
             return Response({'error': 'Student ID and Email are required.'}, status=status.HTTP_400_BAD_REQUEST)
             
         try:
-            candidate = Candidate.objects.get(student_id=student_id, email=email)
+            candidate = Candidate.objects.select_related(
+                'opening', 'opening__flow', 'opening__tenant', 'opening__scorecard'
+            ).prefetch_related(
+                'invitations', 'sessions', 'opening__flow__rounds'
+            ).get(student_id=student_id, email=email)
             # Check link expiry against last invitation
             invitation = candidate.invitations.last()
             from django.utils import timezone

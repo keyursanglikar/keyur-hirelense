@@ -55,7 +55,16 @@ class TokenValidationView(APIView):
     def get(self, request, token):
         try:
             # Look up invitation by UUID token
-            invitation = InterviewInvitation.objects.get(interview_token=token, is_active=True)
+            invitation = InterviewInvitation.objects.select_related(
+                'candidate',
+                'job_opening',
+                'job_opening__flow',
+                'job_opening__tenant',
+                'job_opening__scorecard'
+            ).prefetch_related(
+                'candidate__sessions',
+                'job_opening__flow__rounds'
+            ).get(interview_token=token, is_active=True)
         except (InterviewInvitation.DoesNotExist, ValueError):
             return Response({"error": "Invalid interview link."}, status=status.HTTP_404_NOT_FOUND)
 
