@@ -3740,34 +3740,40 @@ Your Student ID/Exam ID is: ${newCand.student_id || newCand.id}`
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
                         <b style={{ color: 'var(--amber-deep)' }}>⚠️ No Interview Flow Attached</b>
                         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                          <button className="btn ghost sm" onClick={() => setWizSearchFlowOpen(true)}>Search Templates</button>
                           <button className="btn primary sm" onClick={() => {
-                            const defFlow = templates[0] || { id: 1 };
-                            setWizAttachedFlowId(defFlow.id);
-                            triggerToast("Attached Default Flow.");
-                          }}>Use Default Flow</button>
-                          <button className="btn ghost sm" onClick={() => {
-                            setFlowWizEditingId(null);
-                            const defaultRounds = [{ id: Date.now(), type: 'hr', name: 'HR Screening', description: 'Initial screening round', questions: [] }];
-                            setFlowWizRounds(defaultRounds);
-                            setFlowWizName('');
-                            setFlowWizTitle(wizTitle);
-                            setFlowWizDept(wizDept);
-                            setFlowWizDesc(wizDesc);
-                            setFlowWizTab('rounds');
-                            setFlowWizModel('sonnet');
-                            setFlowWizStep(1);
-                            setFlowWizOriginalData({
-                              name: '',
-                              jobTitle: wizTitle,
-                              department: wizDept,
-                              description: wizDesc,
-                              rounds: defaultRounds,
-                              ai_model: 'sonnet'
-                            });
-                            setFlowWizOpen(true);
-                          }}>Create New Flow</button>
-                          <button className="btn ghost sm" onClick={() => setWizSearchFlowOpen(true)}>Attach Existing Flow</button>
+                              if (defaultFlowId && templates.find(t => t.id === defaultFlowId)) {
+                                setWizAttachedFlowId(defaultFlowId);
+                                triggerToast("Attached Default Flow.");
+                              } else if (templates.length > 0) {
+                                setWizAttachedFlowId(templates[0].id);
+                                setDefaultFlowId(templates[0].id);
+                                localStorage.setItem('defaultFlowId', templates[0].id);
+                                triggerToast("Attached Default Flow.");
+                              } else {
+                                triggerToast({ bold: "Error:", normal: "No flows available to set as default." }, true);
+                              }
+                            }}>Use Default Flow</button>
+                            <button className="btn ghost sm" onClick={() => {
+                              setFlowWizEditingId(null);
+                              const defaultRounds = [{ id: Date.now(), type: 'hr', name: 'HR Screening', description: 'Initial screening round', questions: [] }];
+                              setFlowWizRounds(defaultRounds);
+                              setFlowWizName('');
+                              setFlowWizTitle(wizTitle);
+                              setFlowWizDept(wizDept);
+                              setFlowWizDesc(wizDesc);
+                              setFlowWizTab('rounds');
+                              setFlowWizModel('sonnet');
+                              setFlowWizStep(1);
+                              setFlowWizOriginalData({
+                                name: '',
+                                jobTitle: wizTitle,
+                                department: wizDept,
+                                description: wizDesc,
+                                rounds: defaultRounds,
+                                ai_model: 'sonnet'
+                              });
+                              setFlowWizOpen(true);
+                            }}>Create New Flow</button>
                         </div>
                       </div>
                     </div>
