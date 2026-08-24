@@ -62,6 +62,7 @@ export default function CandidateFlow() {
   const [otpVerified, setOtpVerified] = useState(false);
   const [otpTimer, setOtpTimer] = useState(112);
   const [consentChecked, setConsentChecked] = useState(false);
+  const [speakerTested, setSpeakerTested] = useState(false);
   
   // Media Devices
   const [hasCameraPermission, setHasCameraPermission] = useState(null);
@@ -1328,10 +1329,9 @@ export default function CandidateFlow() {
     });
     setCurrentTranscript('');
 
-    setIsSavingQuestion(true);
+    setIsSavingQuestion(false);
 
-    setTimeout(() => {
-      setIsSavingQuestion(false);
+    {
       if (currentQuestionIdx < round.questions.length - 1) {
         // Go to next question in same round
         const nextLimit = getQuestionTimeLimitSeconds(currentRoundIdx, currentQuestionIdx + 1);
@@ -1346,14 +1346,14 @@ export default function CandidateFlow() {
         // Current round complete
         setScreen(9);
       }
-    }, 900);
+    }
   };
 
   const handleBeginRound = async () => {
     if (currentRoundIdx === 0) {
       await handleStartSession(candidateData.id);
       setScreen(75);
-      setExamStartTimer(10);
+      setExamStartTimer(2);
     } else {
       proceedToRound();
     }
