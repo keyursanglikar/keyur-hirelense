@@ -2852,7 +2852,15 @@ Your Student ID/Exam ID is: ${newCand.student_id || newCand.id}`
                       const qText = t.question_text || t.q || "";
                       const tsText = t.timestamp || t.ts || "00:00";
                         const aText = t.answer_text || t.a || "";
-                        const expectedText = t.expected_answer || "";
+                        let expectedText = t.expected_answer || "";
+                          if (expectedText && expectedText.startsWith("{")) {
+                            try {
+                              const parsed = JSON.parse(expectedText);
+                              if (parsed && parsed.answer) {
+                                expectedText = parsed.answer;
+                              }
+                            } catch (e) {}
+                          }
                         const scoreVal = t.score_value !== undefined ? t.score_value : (t.sc || 0);
                         const feedback = t.feedback || "";
                         return (
