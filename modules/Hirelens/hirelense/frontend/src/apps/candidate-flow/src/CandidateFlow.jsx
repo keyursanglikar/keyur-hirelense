@@ -652,13 +652,16 @@ export default function CandidateFlow() {
         });
       }, 1000);
     } else if (screen === 75) {
-      if (examStartTimer > 0) {
-        timerIntervalRef.current = setInterval(() => {
-          setExamStartTimer(prev => prev - 1);
-        }, 1000);
-      } else {
-        proceedToRound();
-      }
+      timerIntervalRef.current = setInterval(() => {
+        setExamStartTimer(prev => {
+          if (prev <= 1) {
+            clearInterval(timerIntervalRef.current);
+            setTimeout(() => proceedToRound(), 0);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
     } else if (screen === 8) {
       // AI Interview Timers
       const currentLimit = getQuestionTimeLimitSeconds(currentRoundIdx, currentQuestionIdx);
