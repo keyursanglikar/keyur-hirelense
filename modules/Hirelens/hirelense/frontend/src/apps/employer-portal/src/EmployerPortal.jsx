@@ -4306,7 +4306,7 @@ Your Student ID/Exam ID is: ${newCand.student_id || newCand.id}`
                                   <input type="checkbox" checked={q._selected || q._selected === undefined} readOnly style={{ cursor: 'pointer' }} />
                                 </div>
                                 <span style={{ flex: 1, marginRight: '14px', fontSize: '12.5px', lineHeight: 1.4 }}>
-                                  <b>Q:</b> {q.question} <span style={{ color: 'var(--muted)', fontSize: '11px', marginLeft: '6px' }}>(Type: {q.type || 'MCQ'} · Time: {q.timeLimit} min · Max Marks: {q.marks || 10} · {q.difficulty})</span>
+                                  <b>Q{qIdx + 1}:</b> {q.question} <span style={{ color: 'var(--muted)', fontSize: '11px', marginLeft: '6px' }}>(Type: {q.type || 'MCQ'} · Time: {q.timeLimit} min · Max Marks: {q.marks || 10} · {q.difficulty})</span>
                                 </span>
                                 <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                                   <button 
