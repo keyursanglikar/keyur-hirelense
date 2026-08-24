@@ -127,7 +127,6 @@ export default function CandidateFlow() {
   const [answersList, setAnswersList] = useState({});
   const [currentTranscript, setCurrentTranscript] = useState('');
   const currentTranscriptRef = useRef('');
-  const currentTranscriptRef = useRef('');
   const finalTranscriptRef = useRef('');
   const recognitionRef = useRef(null);
   const [showCameraModal, setShowCameraModal] = useState(false);
