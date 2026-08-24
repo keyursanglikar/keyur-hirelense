@@ -388,37 +388,42 @@ class CandidateViewSet(viewsets.ModelViewSet):
         import logging
         logger = logging.getLogger(__name__)
         
-        with transaction.atomic():
-            try:
-                candidate = Candidate.objects.select_for_update().get(pk=pk)
-            except Candidate.DoesNotExist:
-                return Response({'error': 'Candidate not found'}, status=status.HTTP_404_NOT_FOUND)
-                
-            # If the candidate has already been evaluated successfully, skip to prevent duplicates
-            if candidate.status == 'Scored' and candidate.transcript.exists():
-                logger.info(f"Candidate {candidate.id} has already been evaluated. Skipping duplicate submission request.")
-                return Response({'status': 'Interview already submitted and evaluated successfully.'}, status=status.HTTP_200_OK)
-                
-            answers = request.data.get('answers', {})
-            mcq_answers = request.data.get('mcq_answers', {})
-            proctoring = request.data.get('proctoring', {})
-
-            # 1. Update candidate status and proctoring stats
-            candidate.status = 'Scored'
-            candidate.completed_at = timezone.now()
-            candidate.tab_switches = proctoring.get('tab_switches', candidate.tab_switches)
-            candidate.paste_events = proctoring.get('paste_events', candidate.paste_events)
-            candidate.replay_used = proctoring.get('replay_used', candidate.replay_used)
-            candidate.save()
+        try:
+            candidate = Candidate.objects.get(pk=pk)
+        except Candidate.DoesNotExist:
+            return Response({'error': 'Candidate not found'}, status=status.HTTP_404_NOT_FOUND)
             
-            # Delete existing transcript and scorecard detail records
-            candidate.transcript.all().delete()
-            candidate.scores.all().delete()
+        # If the candidate has already been evaluated successfully, skip to prevent duplicates
+        if candidate.status == 'Scored' and candidate.transcript.exists():
+            logger.info(f"Candidate {candidate.id} has already been evaluated. Skipping duplicate submission request.")
+            return Response({'status': 'Interview already submitted and evaluated successfully.'}, status=status.HTTP_200_OK)
+            
+        answers = request.data.get('answers', {})
+        mcq_answers = request.data.get('mcq_answers', {})
+        proctoring = request.data.get('proctoring', {})
 
-            opening = candidate.opening
+        # 1. Update candidate status and proctoring stats
+        candidate.status = 'Scored'
+        candidate.completed_at = timezone.now()
+        
+        try:
+            candidate.tab_switches = int(proctoring.get('tab_switches', candidate.tab_switches) or 0)
+            candidate.paste_events = int(proctoring.get('paste_events', candidate.paste_events) or 0)
+            candidate.replay_used = int(proctoring.get('replay_used', candidate.replay_used) or 0)
+        except (ValueError, TypeError):
+            pass
+            
+        candidate.save()
+        
+        # Delete existing transcript and scorecard detail records
+        candidate.transcript.all().delete()
+        candidate.scores.all().delete()
 
-            # 2. Evaluate candidate interview using the Evaluation Service
-            from hirelense_backend.apps.candidates.services import CandidateEvaluationService
+        opening = candidate.opening
+
+        # 2. Evaluate candidate interview using the Evaluation Service
+        from hirelense_backend.apps.candidates.services import CandidateEvaluationService
+        try:
             CandidateEvaluationService.evaluate_interview(
                 candidate=candidate,
                 answers=answers,
@@ -426,6 +431,12 @@ class CandidateViewSet(viewsets.ModelViewSet):
                 flow=opening.flow if opening else None,
                 scorecard=opening.scorecard if opening else None
             )
+        except Exception as e:
+            logger.error(f"Error evaluating interview for candidate {candidate.id}: {str(e)}", exc_info=True)
+            # Revert status if completely failed
+            candidate.status = 'In progress'
+            candidate.save()
+            return Response({'error': 'An internal error occurred during evaluation.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         # Finalize active Interview Session and Invitation outside the transaction lock
         # 4. Finalize active Interview Session

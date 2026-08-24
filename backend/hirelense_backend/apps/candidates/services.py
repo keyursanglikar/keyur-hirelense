@@ -62,9 +62,15 @@ class CandidateEvaluationService:
                         })
 
                 for i, flat_mcq in enumerate(flat_mcqs):
-                    selected_val = mcq_answers.get(str(i)) or mcq_answers.get(i)
-                    if selected_val is not None:
-                        selected_idx = int(selected_val)
+                    selected_val = mcq_answers.get(str(i))
+                    if selected_val is None:
+                        selected_val = mcq_answers.get(i)
+                    
+                    if selected_val is not None and str(selected_val).strip() != '':
+                        try:
+                            selected_idx = int(selected_val)
+                        except (ValueError, TypeError):
+                            selected_idx = -1
                         options_list = flat_mcq["options"]
                         ans_text = options_list[selected_idx] if selected_idx < len(options_list) else "[Invalid Choice]"
                         
