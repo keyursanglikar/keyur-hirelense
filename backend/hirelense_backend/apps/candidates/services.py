@@ -71,10 +71,24 @@ class CandidateEvaluationService:
                             selected_idx = int(selected_val)
                         except (ValueError, TypeError):
                             selected_idx = -1
-                        options_list = flat_mcq["options"]
+                        options_list = flat_mcq.get("options", [])
                         # Flatten if dict
-                        clean_options = [opt.get('text', opt) if isinstance(opt, dict) else opt for opt in options_list]
-                        ans_text = clean_options[selected_idx] if selected_idx >= 0 and selected_idx < len(clean_options) else "[Invalid Choice]"
+                        clean_options = []
+                        if isinstance(options_list, list):
+                            for opt in options_list:
+                                if isinstance(opt, dict):
+                                    clean_options.append(str(opt.get('text', opt)))
+                                else:
+                                    clean_options.append(str(opt))
+                        elif isinstance(options_list, dict):
+                            clean_options = [str(v) for v in options_list.values()]
+                        else:
+                            clean_options = []
+                            
+                        if selected_idx >= 0 and selected_idx < len(clean_options):
+                            ans_text = clean_options[selected_idx]
+                        else:
+                            ans_text = f"[Invalid: idx={selected_idx}, len={len(clean_options)}, type={type(options_list).__name__}, val={selected_val}]"
                         
                         correct_ans = flat_mcq["correct_answer"]
                         is_correct = False
