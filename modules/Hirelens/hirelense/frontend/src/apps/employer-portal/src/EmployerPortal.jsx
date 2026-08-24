@@ -974,7 +974,8 @@ export default function EmployerPortal() {
       
       if (response && response.questions) {
         const updated = [...flowWizRounds];
-        updated[flowWizSelectedRoundIdx].questions = response.questions.map((q, idx) => {
+          const existing = updated[flowWizSelectedRoundIdx].questions || [];
+          const newQuestions = response.questions.map((q, idx) => {
           let mcqList = undefined;
           let correctAnswer = null;
           if (activeRound.type === 'mcq') {
@@ -1016,11 +1017,14 @@ export default function EmployerPortal() {
             difficulty: q.difficulty || 'Medium',
             marks: q.marks || 10,
             required: true,
-            hints: ''
-          };
-        });
-        setFlowWizRounds(updated);
-        triggerToast(`${generateCount} questions successfully generated for this round!`);
+              hints: '',
+              _selected: true
+            };
+          });
+          updated[flowWizSelectedRoundIdx].questions = [...existing, ...newQuestions];
+          updated[flowWizSelectedRoundIdx].ask_count = updated[flowWizSelectedRoundIdx].questions.length;
+          setFlowWizRounds(updated);
+          triggerToast(`${generateCount} questions successfully generated for this round!`);
       }
     } catch (err) {
       console.error(err);
@@ -1524,9 +1528,9 @@ export default function EmployerPortal() {
         version: flowWizVersion,
         is_live: publish,
         ai_model: flowWizModel,
-        rounds: flowWizRounds
-      };
-      flowService.updateFlow(flowWizEditingId, payload).then(updatedFlow => {
+          rounds: flowWizRounds.map(r => ({ ...r, questions: (r.questions || []).filter(q => q._selected !== false) }))
+        };
+        flowService.updateFlow(flowWizEditingId, payload).then(updatedFlow => {
         setTemplates(templates.map(t => t.id === flowWizEditingId ? updatedFlow : t));
         setFlowWizOriginalData(JSON.parse(JSON.stringify(updatedFlow)));
         setFlowWizOpen(false);
@@ -1538,11 +1542,11 @@ export default function EmployerPortal() {
         jobTitle: (flowWizTitle || '').trim() || "Generic Role",
         department: (flowWizDept || '').trim() || "General",
         description: (flowWizDesc || '').trim() || "No description provided.",
-        rounds: flowWizRounds,
-        is_live: publish,
-        ai_model: flowWizModel
-      };
-      flowService.createFlow(payload).then(newFlow => {
+        rounds: flowWizRounds.map(r => ({ ...r, questions: (r.questions || []).filter(q => q._selected !== false) })),
+          is_live: publish,
+          ai_model: flowWizModel
+        };
+        flowService.createFlow(payload).then(newFlow => {
         setTemplates([...templates, newFlow]);
         if (wizOpen && publish) {
           setWizAttachedFlowId(newFlow.id);
@@ -1781,9 +1785,9 @@ export default function EmployerPortal() {
       version: t.version || 'v1',
       is_live: false,
       ai_model: t.ai_model || 'sonnet',
-      rounds: JSON.parse(JSON.stringify(t.rounds || []))
-    };
-    flowService.createFlow(payload).then(newFlow => {
+      rounds: JSON.parse(JSON.stringify(t.rounds || [])).map(r => ({ ...r, questions: (r.questions || []).filter(q => q._selected !== false) }))
+      };
+      flowService.createFlow(payload).then(newFlow => {
       setTemplates([...templates, newFlow]);
       triggerToast(`Flow "${newFlow.name}" duplicated successfully.`);
     });
@@ -4223,20 +4227,24 @@ Your Student ID/Exam ID is: ${newCand.student_id || newCand.id}`
                                     const currentRound = flowWizRounds[flowWizSelectedRoundIdx];
                                     if (!currentRound || !currentRound.questions) return;
                                     const keepCount = currentRound.ask_count || currentRound.questions.length;
-                                    if (keepCount >= currentRound.questions.length) {
-                                      triggerToast('Already at maximum questions.');
+                                    if (keepCount > currentRound.questions.length) {
+                                      triggerToast('Cannot select more than available questions.');
                                       return;
                                     }
-                                    const shuffled = [...currentRound.questions].sort(() => 0.5 - Math.random());
-                                    const kept = shuffled.slice(0, keepCount);
                                     const updated = [...flowWizRounds];
-                                    updated[flowWizSelectedRoundIdx].questions = kept;
-                                    updated[flowWizSelectedRoundIdx].ask_count = kept.length;
+                                    const totalQuestions = [...currentRound.questions];
+                                    totalQuestions.forEach(q => q._selected = false);
+                                    const shuffledIndices = totalQuestions.map((_, i) => i).sort(() => 0.5 - Math.random());
+                                    const selectedIndices = shuffledIndices.slice(0, keepCount);
+                                    selectedIndices.forEach(idx => {
+                                      totalQuestions[idx]._selected = true;
+                                    });
+                                    updated[flowWizSelectedRoundIdx].questions = totalQuestions;
                                     setFlowWizRounds(updated);
-                                    triggerToast(`Shuffled and kept ${kept.length} questions.`);
+                                    triggerToast(`Shuffled and highlighted ${keepCount} questions.`);
                                   }}
                                 >
-                                  Shuffle & Keep
+                                  Shuffle Selection
                                 </button>
                               </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
@@ -4287,7 +4295,7 @@ Your Student ID/Exam ID is: ${newCand.student_id || newCand.id}`
 
                           <div className="q-list-container" style={{ maxHeight: '280px', overflowY: 'auto', border: '1px solid #eee', borderRadius: '8px' }}>
                             {flowWizRounds[flowWizSelectedRoundIdx]?.questions?.map((q, qIdx) => (
-                              <div className="q-list-item" key={q.id || qIdx} style={{ padding: '12px 16px', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <div className="q-list-item" key={q.id || qIdx} style={{ padding: '12px 16px', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: (q._selected || q._selected === undefined) ? 'rgba(79, 172, 254, 0.05)' : 'transparent', borderLeft: (q._selected || q._selected === undefined) ? '3px solid var(--amber)' : 'none' }}>
                                 <span style={{ flex: 1, marginRight: '14px', fontSize: '12.5px', lineHeight: 1.4 }}>
                                   <b>Q:</b> {q.question} <span style={{ color: 'var(--muted)', fontSize: '11px', marginLeft: '6px' }}>(Type: {q.type || 'MCQ'} · Time: {q.timeLimit} min · Max Marks: {q.marks || 10} · {q.difficulty})</span>
                                 </span>
