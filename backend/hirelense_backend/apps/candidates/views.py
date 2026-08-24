@@ -432,11 +432,13 @@ class CandidateViewSet(viewsets.ModelViewSet):
                 scorecard=opening.scorecard if opening else None
             )
         except Exception as e:
+            import traceback
+            tb = traceback.format_exc()
             logger.error(f"Error evaluating interview for candidate {candidate.id}: {str(e)}", exc_info=True)
             # Revert status if completely failed
             candidate.status = 'In progress'
             candidate.save()
-            return Response({'error': 'An internal error occurred during evaluation.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({'error': f'An internal error occurred during evaluation: {str(e)} | {tb}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         # Finalize active Interview Session and Invitation outside the transaction lock
         # 4. Finalize active Interview Session
