@@ -507,6 +507,7 @@ export default function EmployerPortal() {
   const [openCardMenuId, setOpenCardMenuId] = useState(null);
   const [deleteJobConfirmOp, setDeleteJobConfirmOp] = useState(null);
   const [deleteCandidateConfirm, setDeleteCandidateConfirm] = useState(null);
+  const [isDeletingCandidate, setIsDeletingCandidate] = useState(false);
   const [openFlowMenuId, setOpenFlowMenuId] = useState(null);
   const [openScorecardMenuId, setOpenScorecardMenuId] = useState(null);
   const [deleteFlowConfirmOp, setDeleteFlowConfirmOp] = useState(null);
@@ -4404,15 +4405,20 @@ Your Student ID/Exam ID is: ${newCand.student_id || newCand.id}`
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <button className="btn ghost" onClick={() => setDeleteCandidateConfirm(null)}>Cancel</button>
-                <button className="btn" style={{ background: 'var(--rec)', color: '#fff', border: 'none' }} onClick={() => {
+                <button className="btn" disabled={isDeletingCandidate} style={{ background: 'var(--rec)', color: '#fff', border: 'none', opacity: isDeletingCandidate ? 0.6 : 1 }} onClick={() => {
+                  setIsDeletingCandidate(true);
                   candidateService.deleteCandidate(deleteCandidateConfirm.id).then(() => {
                     const newList = candidates.filter(c => c.id !== deleteCandidateConfirm.id);
                     setCandidates(newList);
                     triggerToast(`Candidate deleted.`);
                     setDeleteCandidateConfirm(null);
+                  }).catch(e => {
+                    triggerToast('Failed to delete candidate.');
+                  }).finally(() => {
+                    setIsDeletingCandidate(false);
                   });
                 }}>
-                  Delete
+                  {isDeletingCandidate ? 'Deleting...' : 'Delete'}
                 </button>
               </div>
             </div>
