@@ -21,7 +21,6 @@ class CandidateEvaluationService:
         mcq_results = []
         
         # Keep track of which question maps to which parameter
-        # e.g. {"Domain knowledge": [8.0, 9.0]}
         parameter_scores_map = {}
         
         if not flow:
@@ -34,23 +33,36 @@ class CandidateEvaluationService:
             if not pool:
                 continue
 
-            if round_item.type == 'mcq':
-                # Programmatically evaluate MCQ answers (exact matching)
-                flat_mcqs = []
-                for q in pool.questions.all():
-                    try:
-                        parsed = json.loads(q.marking_guide) if q.marking_guide else {}
-                    except Exception:
-                        parsed = {}
+            # Build flat list of MCQs for this round (dynamic round check)
+            flat_mcqs = []
+            for q in pool.questions.all():
+                try:
+                    parsed = json.loads(q.marking_guide) if q.marking_guide else {}
+                except Exception:
+                    parsed = {}
+                
+                is_mcq_q = (
+                    round_item.type == 'mcq' or 
+                    parsed.get('type') == 'MCQ' or 
+                    parsed.get('type') == 'mcq' or 
+                    len(parsed.get('mcqs', [])) > 0 or 
+                    len(parsed.get('options', [])) > 0
+                )
+                
+                if is_mcq_q:
                     mcqs = parsed.get('mcqs', [])
-                    max_marks = int(parsed.get('marks', 10))
                     if isinstance(mcqs, list) and len(mcqs) > 0:
                         for m in mcqs:
+                            opts = m.get("options", [])
+                            if not opts:
+                                opts = parsed.get("options", [])
                             flat_mcqs.append({
-                                "question_text": m.get("question", ""),
-                                "options": m.get("options", []),
-                                "correct_answer": m.get("correctAnswer") or m.get("answer"),
-                                "parameter": q.feeds_parameter or "Domain knowledge"
+                                "question_text": m.get("question", "") or q.question_text,
+                                "options": opts,
+                                "correct_answer": m.get("correctAnswer") if m.get("correctAnswer") is not None else m.get("answer"),
+                                "parameter": q.feeds_parameter or "Domain knowledge",
+                                "marks": int(m.get('marks', 10)),
+                                "pool_q_id": q.id
                             })
                     else:
                         flat_mcqs.append({
@@ -58,83 +70,101 @@ class CandidateEvaluationService:
                             "options": parsed.get("options", []),
                             "correct_answer": parsed.get("answer"),
                             "parameter": q.feeds_parameter or "Domain knowledge",
-                            "marks": max_marks
+                            "marks": int(parsed.get('marks', 10)),
+                            "pool_q_id": q.id
                         })
 
-                for i, flat_mcq in enumerate(flat_mcqs):
-                    selected_val = mcq_answers.get(str(i))
-                    if selected_val is None:
-                        selected_val = mcq_answers.get(i)
-                    
-                    if selected_val is not None and str(selected_val).strip() != '':
-                        try:
-                            selected_idx = int(selected_val)
-                        except (ValueError, TypeError):
-                            selected_idx = -1
-                        options_list = flat_mcq.get("options", [])
-                        # Flatten if dict
-                        clean_options = []
-                        if isinstance(options_list, list):
-                            for opt in options_list:
-                                if isinstance(opt, dict):
-                                    clean_options.append(str(opt.get('text', opt)))
-                                else:
-                                    clean_options.append(str(opt))
-                        elif isinstance(options_list, dict):
-                            clean_options = [str(v) for v in options_list.values()]
+            # Now evaluate the programmatically graded MCQs for this round
+            for i, flat_mcq in enumerate(flat_mcqs):
+                selected_val = mcq_answers.get(str(i))
+                if selected_val is None:
+                    selected_val = mcq_answers.get(i)
+                
+                # Check options
+                options_list = flat_mcq.get("options", [])
+                clean_options = []
+                if isinstance(options_list, list):
+                    for opt in options_list:
+                        if isinstance(opt, dict):
+                            clean_options.append(str(opt.get('text', opt)))
                         else:
-                            clean_options = []
-                            
-                        if selected_idx >= 0 and selected_idx < len(clean_options):
-                            ans_text = clean_options[selected_idx]
-                        else:
-                            ans_text = f"[Invalid: idx={selected_idx}, len={len(clean_options)}, type={type(options_list).__name__}, val={selected_val}]"
-                        
-                        correct_ans = flat_mcq["correct_answer"]
-                        try:
-                            flat_mcq["correct_answer_text"] = clean_options[int(correct_ans)] if str(correct_ans).isdigit() else str(correct_ans)
-                        except:
-                            flat_mcq["correct_answer_text"] = str(correct_ans)
-                        is_correct = False
-                        
-                        if str(selected_idx) == str(correct_ans):
-                            is_correct = True
-                        elif str(correct_ans).isdigit() and str(selected_idx) == str(correct_ans):
-                            is_correct = True
-                        elif chr(65 + selected_idx) == str(correct_ans).upper():
-                            is_correct = True
-                        elif str(ans_text).strip().lower() == str(correct_ans).strip().lower():
-                            is_correct = True
-                        
-                        score_val = 10.0 if is_correct else 0.0
+                            clean_options.append(str(opt))
+                elif isinstance(options_list, dict):
+                    clean_options = [str(v) for v in options_list.values()]
+                
+                # Correct answer text mapping
+                correct_ans = flat_mcq["correct_answer"]
+                try:
+                    if str(correct_ans).isdigit() and int(correct_ans) < len(clean_options):
+                        flat_mcq["correct_answer_text"] = clean_options[int(correct_ans)]
                     else:
-                        ans_text = "[No Answer / Skipped]"
-                        score_val = 0.0
-                        
-                    mcq_results.append({
-                        "question_text": flat_mcq["question_text"],
-                        "answer_text": ans_text,
-                        "expected_answer": flat_mcq.get("correct_answer_text", ""),
-                        "score_value": score_val,
-                        "parameter": flat_mcq["parameter"],
-                        "marks": flat_mcq.get("marks", 10)
-                    })
+                        flat_mcq["correct_answer_text"] = str(correct_ans)
+                except Exception:
+                    flat_mcq["correct_answer_text"] = str(correct_ans)
+                
+                if selected_val is not None and str(selected_val).strip() != '':
+                    try:
+                        selected_idx = int(selected_val)
+                    except (ValueError, TypeError):
+                        selected_idx = -1
                     
-                    # Accumulate score for parameter
-                    param_name = flat_mcq["parameter"]
-                    if param_name not in parameter_scores_map:
-                        parameter_scores_map[param_name] = []
-                    parameter_scores_map[param_name].append(score_val)
-            else:
-                # Descriptive technical/HR questions
-                for q in pool.questions.all():
+                    if selected_idx >= 0 and selected_idx < len(clean_options):
+                        ans_text = clean_options[selected_idx]
+                    else:
+                        ans_text = f"[Invalid: idx={selected_idx}, len={len(clean_options)}, type={type(options_list).__name__}, val={selected_val}]"
+                    
+                    is_correct = False
+                    if str(selected_idx) == str(correct_ans):
+                        is_correct = True
+                    elif str(correct_ans).isdigit() and str(selected_idx) == str(correct_ans):
+                        is_correct = True
+                    elif chr(65 + selected_idx) == str(correct_ans).upper():
+                        is_correct = True
+                    elif str(ans_text).strip().lower() == str(correct_ans).strip().lower():
+                        is_correct = True
+                    
+                    score_val = 10.0 if is_correct else 0.0
+                else:
+                    ans_text = "[No Answer / Skipped]"
+                    score_val = 0.0
+                
+                mcq_results.append({
+                    "question_text": flat_mcq["question_text"],
+                    "answer_text": ans_text,
+                    "expected_answer": flat_mcq.get("correct_answer_text", ""),
+                    "score_value": score_val,
+                    "parameter": flat_mcq["parameter"],
+                    "marks": flat_mcq.get("marks", 10)
+                })
+                
+                # Accumulate score for parameter
+                param_name = flat_mcq["parameter"]
+                if param_name not in parameter_scores_map:
+                    parameter_scores_map[param_name] = []
+                parameter_scores_map[param_name].append(score_val)
+
+            # Now collect descriptive questions for this round
+            for q in pool.questions.all():
+                try:
+                    parsed = json.loads(q.marking_guide) if q.marking_guide else {}
+                except Exception:
+                    parsed = {}
+                
+                is_mcq_q = (
+                    round_item.type == 'mcq' or 
+                    parsed.get('type') == 'MCQ' or 
+                    parsed.get('type') == 'mcq' or 
+                    len(parsed.get('mcqs', [])) > 0 or 
+                    len(parsed.get('options', [])) > 0
+                )
+                
+                if not is_mcq_q:
                     ans_key = f"q-{q.id}"
                     user_ans = answers.get(ans_key, {})
                     ans_text = user_ans.get('answer') if isinstance(user_ans, dict) else None
                     
                     expected_text = ""
                     try:
-                        parsed = json.loads(q.marking_guide) if q.marking_guide else {}
                         expected_text = parsed.get("answer", "")
                         max_marks = int(parsed.get("marks", 10))
                     except Exception:
@@ -147,7 +177,6 @@ class CandidateEvaluationService:
                     if is_fallback:
                         ans_text = clean_ans or "[No Answer / Skipped]"
                         score_val = 0.0
-                        # For skipped answers, we don't need Gemini to grade them, we score them 0.0
                         CandidateTranscriptLine.objects.create(
                             candidate=candidate,
                             question_text=q.question_text,
@@ -168,6 +197,8 @@ class CandidateEvaluationService:
                             "feeds_parameter": q.feeds_parameter or "Communication",
                             "marks": max_marks
                         })
+
+        
 
         # 2. Get Scorecard parameters to score
         scorecard_params = []
@@ -230,7 +261,8 @@ Here are the parameters defined in the scorecard for this role:
 {params_str}
 
 Evaluate the candidate's descriptive answers against the expected answers.
-For each descriptive answer, assign a mark from 0.0 to 10.0. Be objective: a partial or incorrect answer should score low, while a complete and accurate answer should score high.
+Compare the candidate's answer to the expected answer to see if they demonstrate correct understanding of the core concept.
+Be highly flexible and intelligent: even if the candidate's answer does not strictly match the expected answer's phrasing or precise details, if their answer is technically correct, logical, and correctly answers the question, grade them highly. Assess whether the candidate's response is correct in the context of the question itself, rather than strictly comparing it word-for-word against the expected answer text.
 
 Descriptive Questions and Answers:
 {questions_str}
