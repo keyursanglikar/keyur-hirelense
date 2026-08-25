@@ -128,6 +128,10 @@ export default function CandidateFlow() {
   const [currentTranscript, setCurrentTranscript] = useState('');
   const currentTranscriptRef = useRef('');
   const finalTranscriptRef = useRef('');
+
+  useEffect(() => {
+    currentTranscriptRef.current = currentTranscript;
+  }, [currentTranscript]);
   const recognitionRef = useRef(null);
   const [showCameraModal, setShowCameraModal] = useState(false);
   const [showExpiredModal, setShowExpiredModal] = useState(false);
@@ -1248,6 +1252,15 @@ export default function CandidateFlow() {
     if (!candidateData) return;
     setIsSubmitting(true);
     try {
+      let integrityAlerts = [];
+      try {
+        const stored = localStorage.getItem('hl_integrity_alerts');
+        if (stored) {
+          integrityAlerts = JSON.parse(stored);
+        }
+      } catch (e) {
+        console.warn("Failed to read integrity alerts", e);
+      }
       await mockClient.post(`/api/candidates/${candidateData.id}/submit_interview/`, {
         answers: answersList,
         mcq_answers: mcqAnswers,
@@ -1255,7 +1268,8 @@ export default function CandidateFlow() {
           tab_switches: tabSwitches,
           paste_events: pasteEvents,
           replay_used: replayUsed
-        }
+        },
+        integrity_alerts: integrityAlerts
       });
       
       // Clear session on submit

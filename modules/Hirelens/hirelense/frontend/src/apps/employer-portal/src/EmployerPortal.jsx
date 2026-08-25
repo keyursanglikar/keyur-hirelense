@@ -2975,6 +2975,39 @@ Your Student ID/Exam ID is: ${newCand.student_id || newCand.id}`
                     </div>
                   </div>
 
+                  {(() => {
+                    let alerts = [];
+                    try {
+                      if (candidateForReport && candidateForReport.meta_info) {
+                        const meta = typeof candidateForReport.meta_info === 'string' ? JSON.parse(candidateForReport.meta_info) : candidateForReport.meta_info;
+                        if (meta && meta.integrity_alerts) {
+                          alerts = meta.integrity_alerts;
+                        }
+                      }
+                    } catch(e){}
+                    if (alerts && alerts.length > 0) {
+                      return (
+                        <div className="card pad" style={{ marginTop: '14px' }}>
+                          <div className="eyebrow" style={{ color: 'var(--rec)', display: 'flex', alignItems: 'center', gap: '6px' }}>⚠️ Proctoring Warnings ({alerts.length})</div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '10px' }}>
+                            {alerts.map((al, idx) => (
+                              <div key={idx} style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '10px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: 600 }}>
+                                  <span style={{ color: 'var(--rec)' }}>{al.type}</span>
+                                  <span style={{ color: 'var(--faint)' }}>{new Date(al.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                                </div>
+                                {al.screenshot && (
+                                  <img src={al.screenshot} alt={al.type} style={{ width: '100%', maxHeight: '160px', objectFit: 'contain', marginTop: '8px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)' }} />
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
+
                   <div className="card pad" style={{ marginTop: '14px' }}>
                     <div className="eyebrow">Partner note · overrides AI score</div>
                     <textarea

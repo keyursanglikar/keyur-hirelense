@@ -454,6 +454,7 @@ class CandidateViewSet(viewsets.ModelViewSet):
         answers = request.data.get('answers', {})
         mcq_answers = request.data.get('mcq_answers', {})
         proctoring = request.data.get('proctoring', {})
+        integrity_alerts = request.data.get('integrity_alerts', [])
 
         # 1. Update candidate status and proctoring stats
         candidate.status = 'Scored'
@@ -466,6 +467,17 @@ class CandidateViewSet(viewsets.ModelViewSet):
         except (ValueError, TypeError):
             pass
             
+        # Save integrity alerts inside meta_info
+        import json
+        meta = {}
+        try:
+            if candidate.meta_info:
+                meta = json.loads(candidate.meta_info)
+        except Exception:
+            pass
+        meta['integrity_alerts'] = integrity_alerts
+        candidate.meta_info = json.dumps(meta)
+        
         candidate.save()
         
         # Delete existing transcript and scorecard detail records
