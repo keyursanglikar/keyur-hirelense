@@ -343,6 +343,19 @@ export default function CandidateFlow() {
         setCurrentQuestionIdx(data.session.current_question || 0);
         setScreen(7);
         triggerToast({ bold: "Session Restored:", normal: `Resuming your interview at Round ${data.session.current_round + 1}.` });
+        
+        // Log integrity alert for re-login
+        try {
+          const newAlert = {
+            id: Date.now(),
+            timestamp: new Date().toISOString(),
+            type: "Session Logout/Login Detected",
+            screenshot: null
+          };
+          const stored = localStorage.getItem('hl_integrity_alerts') ? JSON.parse(localStorage.getItem('hl_integrity_alerts')) : [];
+          stored.push(newAlert);
+          localStorage.setItem('hl_integrity_alerts', JSON.stringify(stored));
+        } catch(e) {}
       } else {
         setScreen(2);
       }
@@ -2308,10 +2321,12 @@ export default function CandidateFlow() {
       {/* --- PERSISTENT LEFT SIDEBAR RAIL --- */}
       <aside className="cand-rail">
         <div className="sidebar-brand">
-          <div className={`sidebar-logo ${isDarkMode ? 'dark' : ''}`}>KM</div>
+          <div className={`sidebar-logo ${isDarkMode ? 'dark' : ''}`}>
+            {candidateData && candidateData.company_name ? candidateData.company_name.substring(0, 2).toUpperCase() : 'HL'}
+          </div>
           <div className="sidebar-info">
-            <span className="sidebar-title">Kulkarni Mehta &amp; Associates LLP</span>
-            <span className="sidebar-subtitle">Chartered Accountants · Pune</span>
+            <span className="sidebar-title">{candidateData ? candidateData.company_name : 'Hirelens Platform'}</span>
+            <span className="sidebar-subtitle">{candidateData ? candidateData.job_title : 'Candidate Screening'}</span>
           </div>
         </div>
         
@@ -2594,8 +2609,8 @@ export default function CandidateFlow() {
           {screen === 2 && (
             <div className="c-card c-hero">
               <span className="eyebrow" style={{ display: 'block', marginBottom: '8px' }}>OFFICIAL INTERVIEW INVITATION</span>
-              <h2>Welcome, {candidateData ? candidateData.name : 'Jay Patil'}</h2>
-              <p className="sub-tagline">You have been invited by {openingData?.tenant_name || 'Kulkarni & Co.'} to complete the automated screening interview for the <b>{openingData ? openingData.title : 'Audit & Tax Executive'}</b> opening.</p>
+              <h2>Welcome, {candidateData ? candidateData.name : 'Candidate'}</h2>
+              <p className="sub-tagline">You have been invited by {candidateData?.company_name || 'our partner firm'} to complete the automated screening interview for the <b>{candidateData?.job_title || 'open position'}</b>.</p>
               
               <div style={{ margin: '24px 0', borderTop: '1px solid var(--line-soft)', paddingTop: '24px' }}>
                 <h4 className="mono" style={{ fontSize: '11px', letterSpacing: '0.1em', color: 'var(--amber-deep)', marginBottom: '16px' }}>INTERVIEW OUTLINE &amp; ESTIMATED DURATIONS</h4>
@@ -2804,7 +2819,7 @@ export default function CandidateFlow() {
                   <span style={{ fontSize: '16px', padding: '4px' }}>🕒</span>
                   <div>
                     <h4 style={{ fontSize: '14px', fontWeight: 600 }}>Data Retention &amp; Deletion</h4>
-                    <p style={{ fontSize: '12.5px', color: 'var(--muted)' }}>Your recorded video files and assessment parameters will be retained securely in Kulkarni Mehta &amp; Associates' portal for 30 days, after which they will be permanently purged.</p>
+                    <p style={{ fontSize: '12.5px', color: 'var(--muted)' }}>Your recorded video files and assessment parameters will be retained securely in {candidateData?.company_name || 'our partner firm'}'s portal for 30 days, after which they will be permanently purged.</p>
                   </div>
                 </div>
               </div>
@@ -2846,6 +2861,16 @@ export default function CandidateFlow() {
               <span className="eyebrow" style={{ display: 'block', marginBottom: '8px' }}>DEVICE CALIBRATION</span>
               <h3 style={{ fontFamily: 'var(--font-d)', fontSize: '24px', marginBottom: '8px' }}>Webcam &amp; Audio Check</h3>
               <p style={{ color: 'var(--muted)', fontSize: '13.5px', marginBottom: '20px' }}>Confirm your camera and microphone are configured correctly. We will also capture your profile snapshot for verification.</p>
+
+              <div style={{ background: 'var(--surface2)', padding: '16px', borderRadius: '12px', marginBottom: '24px' }}>
+                <h4 style={{ fontSize: '13px', fontWeight: 600, color: 'var(--petrol)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Pre-flight Checklist</h4>
+                <ol style={{ fontSize: '13px', color: 'var(--text)', paddingLeft: '24px', margin: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <li><strong>Camera:</strong> Allow browser permissions. Ensure you are clearly visible in the preview box below.</li>
+                  <li><strong>Microphone:</strong> Speak normally. Ensure the green mic bar moves when you talk.</li>
+                  <li><strong>Sound:</strong> Click the "Test Audio Speaker" button below to verify you can hear the system voice.</li>
+                  <li><strong>Profile Snapshot:</strong> Click "Capture verification snapshot" while looking directly at the camera.</li>
+                </ol>
+              </div>
 
               {(hasCameraPermission === false || hasMicPermission === false) && (
                 <div style={{
@@ -3730,6 +3755,21 @@ export default function CandidateFlow() {
 
               {/* Right Side: Sidebar */}
               <div className="mcq-side">
+                {/* Camera Card */}
+                <div className="camera-card" style={{ background: '#121212', borderRadius: '12px', padding: '4px', border: '1px solid rgba(255,255,255,0.08)', marginBottom: '16px', position: 'relative', aspectRatio: '4/3', overflow: 'hidden' }}>
+                  <video
+                    ref={videoRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px' }}
+                  ></video>
+                  <div style={{ position: 'absolute', top: '12px', right: '12px', display: 'flex', gap: '6px', alignItems: 'center', background: 'rgba(0,0,0,0.6)', padding: '4px 8px', borderRadius: '4px' }}>
+                    <span className="dot" style={{ background: 'var(--rec)', width: '8px', height: '8px', borderRadius: '50%', display: 'inline-block', animation: 'pulse 1.5s infinite' }}></span>
+                    <span style={{ fontSize: '10px', color: '#fff', fontWeight: 600, letterSpacing: '0.05em' }}>REC</span>
+                  </div>
+                </div>
+
                 {/* Timer Card */}
                 <div className="timer-card">
                   <div className="t">{formatTime(mcqTimer)}</div>
@@ -3742,7 +3782,8 @@ export default function CandidateFlow() {
                   <div className="pal-grid">
                     {activeMcqs.map((_, idx) => {
                       let isCurrent = idx === selectedMcqIdx;
-                      let isAnswered = mcqAnswers[idx] !== undefined;
+                      let qIdStr = String(activeMcqs[idx].id);
+                      let isAnswered = mcqAnswers[qIdStr] !== undefined;
                       let isFlagged = mcqFlagged[idx];
 
                       let palClass = "pal";
@@ -3760,8 +3801,6 @@ export default function CandidateFlow() {
                         </button>
                       );
                     })}
-                  </div>
-
                   <div className="legend">
                     <span>
                       <i style={{ backgroundColor: '#1B4437', border: '1px solid #2E7D5B', width: '11px', height: '11px', borderRadius: '4px', display: 'inline-block' }}></i>
