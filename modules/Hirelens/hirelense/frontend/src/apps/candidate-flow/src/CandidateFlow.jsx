@@ -1444,8 +1444,8 @@ export default function CandidateFlow() {
     const currentLimit = getQuestionTimeLimitSeconds(currentRoundIdx, currentQuestionIdx);
     
     // Save response to local map (simulating answer upload)
-    setAnswersList({
-      ...answersList,
+    setAnswersList(prev => ({
+      ...prev,
       [`q-${question.id}`]: {
         round: round.name,
         question: question.text,
@@ -1453,7 +1453,7 @@ export default function CandidateFlow() {
         videoCaptured: true,
         answer: currentTranscriptRef.current.trim() || `Candidate's verbal explanation for: ${question.text}`
       }
-    });
+    }));
     setCurrentTranscript('');
     currentTranscriptRef.current = '';
     finalTranscriptRef.current = '';
@@ -1544,8 +1544,8 @@ export default function CandidateFlow() {
     const currentLimit = getQuestionTimeLimitSeconds(currentRoundIdx, currentQuestionIdx);
 
     // Save response to local map (simulating answer upload)
-    setAnswersList({
-      ...answersList,
+    setAnswersList(prev => ({
+      ...prev,
       [`q-${question.id}`]: {
         round: round.name,
         question: question.text,
@@ -1553,7 +1553,7 @@ export default function CandidateFlow() {
         videoCaptured: true,
         answer: currentTranscriptRef.current.trim() || `Candidate's verbal explanation for case study: ${question.text}`
       }
-    });
+    }));
     setCurrentTranscript(''); currentTranscriptRef.current = '';
 
     if (round && currentQuestionIdx < round.questions.length - 1) {
