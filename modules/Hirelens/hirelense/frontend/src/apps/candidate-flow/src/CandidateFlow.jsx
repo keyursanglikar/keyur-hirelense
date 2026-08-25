@@ -145,6 +145,7 @@ export default function CandidateFlow() {
   const [latency, setLatency] = useState(null);
   const [networkStatus, setNetworkStatus] = useState('Measuring Connection...');
   const [hasMicPermission, setHasMicPermission] = useState(null);
+  const [isSpeechSupported, setIsSpeechSupported] = useState(true); // track if Web Speech API works
 
   // Case Study Logic
   const [caseStudyStage, setCaseStudyStage] = useState('reading'); // 'reading', 'answering', 'done'
@@ -619,7 +620,15 @@ export default function CandidateFlow() {
 
     if (typeof window !== 'undefined') {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      
+      // If browser does not support Web Speech API, mark as unsupported
+      if (!SpeechRecognition) {
+        setIsSpeechSupported(false);
+        return;
+      }
+
       if (SpeechRecognition && speakingState === 'listening' && !isMcq) {
+        setIsSpeechSupported(true);
         const recognition = new SpeechRecognition();
         recognition.continuous = true;
         recognition.interimResults = true;
@@ -641,6 +650,10 @@ export default function CandidateFlow() {
 
         recognition.onerror = (event) => {
           console.error("Speech recognition error:", event.error);
+          // 'not-allowed', 'service-not-allowed', 'audio-capture' indicate unsupported/no permission
+          if (['not-allowed', 'service-not-allowed', 'audio-capture'].includes(event.error)) {
+            setIsSpeechSupported(false);
+          }
         };
 
         recognition.onend = () => {
@@ -663,6 +676,7 @@ export default function CandidateFlow() {
           recognition.start();
         } catch (e) {
           console.error("Failed to start speech recognition:", e);
+          setIsSpeechSupported(false);
         }
 
         return () => {
@@ -1428,11 +1442,13 @@ export default function CandidateFlow() {
 
   // Save Interview Question
   const handleSaveAndNextQuestion = () => {
+    if (isSavingQuestion) return; // Prevent double-clicks
     const round = roundsList[currentRoundIdx];
     const question = round.questions[currentQuestionIdx];
     const currentLimit = getQuestionTimeLimitSeconds(currentRoundIdx, currentQuestionIdx);
     
-    // Save response to local map (simulating answer upload)
+    // Save response to local map
+    const capturedAnswer = currentTranscriptRef.current.trim() || '';
     setAnswersList(prev => ({
       ...prev,
       [`q-${question.id}`]: {
@@ -1440,7 +1456,7 @@ export default function CandidateFlow() {
         question: question.text,
         timeTaken: currentLimit - answerTimer,
         videoCaptured: true,
-        answer: currentTranscriptRef.current.trim() || `Candidate's verbal explanation for: ${question.text}`
+        answer: capturedAnswer
       }
     }));
     setCurrentTranscript('');
@@ -1540,7 +1556,7 @@ export default function CandidateFlow() {
         question: question.text,
         timeTaken: currentLimit - caseAnswerTimer,
         videoCaptured: true,
-        answer: currentTranscriptRef.current.trim() || `Candidate's verbal explanation for case study: ${question.text}`
+        answer: currentTranscriptRef.current.trim() || ''
       }
     }));
     setCurrentTranscript(''); currentTranscriptRef.current = '';
@@ -2853,7 +2869,7 @@ export default function CandidateFlow() {
 
               {/* Horizontal Step Guidance Bar */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '14px 18px', marginBottom: '24px', flexWrap: 'wrap' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', opacity: hasMicPermission ? 1 : 0.6 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span style={{ width: '22px', height: '22px', borderRadius: '50%', background: hasMicPermission ? 'var(--ok)' : 'rgba(255,255,255,0.15)', color: '#fff', fontSize: '11px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {hasMicPermission ? '✓' : '1'}
                   </span>
@@ -2861,7 +2877,7 @@ export default function CandidateFlow() {
                 </div>
                 <span style={{ color: 'rgba(255,255,255,0.2)' }}>➔</span>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', opacity: speakerState === 'verified' ? 1 : 0.6 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span style={{ width: '22px', height: '22px', borderRadius: '50%', background: speakerState === 'verified' ? 'var(--ok)' : 'rgba(255,255,255,0.15)', color: '#fff', fontSize: '11px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {speakerState === 'verified' ? '✓' : '2'}
                   </span>
@@ -2869,7 +2885,7 @@ export default function CandidateFlow() {
                 </div>
                 <span style={{ color: 'rgba(255,255,255,0.2)' }}>➔</span>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', opacity: latency !== null ? 1 : 0.6 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span style={{ width: '22px', height: '22px', borderRadius: '50%', background: latency !== null ? 'var(--ok)' : 'rgba(255,255,255,0.15)', color: '#fff', fontSize: '11px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {latency !== null ? '✓' : '3'}
                   </span>
@@ -2877,7 +2893,7 @@ export default function CandidateFlow() {
                 </div>
                 <span style={{ color: 'rgba(255,255,255,0.2)' }}>➔</span>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', opacity: capturedPhoto ? 1 : 0.6 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span style={{ width: '22px', height: '22px', borderRadius: '50%', background: capturedPhoto ? 'var(--ok)' : 'rgba(255,255,255,0.15)', color: '#fff', fontSize: '11px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {capturedPhoto ? '✓' : '4'}
                   </span>
@@ -3347,14 +3363,22 @@ export default function CandidateFlow() {
 
                       {/* Live Speech Recognition Feedback (only for descriptive audio questions) */}
                       {!roundsList[currentRoundIdx]?.questions?.[currentQuestionIdx]?.options?.length && speakingState === 'listening' && (
-                        <div style={{ marginBottom: '20px', padding: '14px 18px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', textAlign: 'left' }}>
+                        <div style={{ marginBottom: '20px', padding: '14px 18px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', border: `1px solid ${isSpeechSupported ? 'rgba(255,255,255,0.08)' : 'rgba(255, 90, 90, 0.35)'}`, textAlign: 'left' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                            <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--ok)', animation: 'pulse 1.2s infinite' }}></span>
-                            <span style={{ fontSize: '11px', color: '#7E978E', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Live Voice Transcription</span>
+                            <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: isSpeechSupported ? 'var(--ok)' : '#ff5a5a', animation: isSpeechSupported ? 'pulse 1.2s infinite' : 'none' }}></span>
+                            <span style={{ fontSize: '11px', color: isSpeechSupported ? '#7E978E' : '#ff8080', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                              {isSpeechSupported ? 'Live Voice Transcription' : '⚠ Voice Not Supported on This Browser'}
+                            </span>
                           </div>
-                          <p style={{ margin: 0, fontSize: '13.5px', color: currentTranscript ? '#EDF4F0' : '#7E978E', fontStyle: currentTranscript ? 'normal' : 'italic', lineHeight: 1.5 }}>
-                            {currentTranscript || "Listening for your voice... Speak clearly into your microphone."}
-                          </p>
+                          {isSpeechSupported ? (
+                            <p style={{ margin: 0, fontSize: '13.5px', color: currentTranscript ? '#EDF4F0' : '#7E978E', fontStyle: currentTranscript ? 'normal' : 'italic', lineHeight: 1.5 }}>
+                              {currentTranscript || "Listening for your voice... Speak clearly into your microphone."}
+                            </p>
+                          ) : (
+                            <p style={{ margin: 0, fontSize: '13px', color: '#ff9090', lineHeight: 1.5 }}>
+                              Voice recording is not supported on this browser/device. Your answer will be marked as <b>"Voice not recorded"</b> in the report. Please use <b>Google Chrome on a desktop</b> for best results.
+                            </p>
+                          )}
                         </div>
                       )}
                       
