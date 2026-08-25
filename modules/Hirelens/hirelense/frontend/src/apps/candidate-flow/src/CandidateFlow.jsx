@@ -132,6 +132,13 @@ export default function CandidateFlow() {
   useEffect(() => {
     currentTranscriptRef.current = currentTranscript;
   }, [currentTranscript]);
+
+  // Keep speakingStateRef always in sync so async callbacks (recognition.onend) read fresh value
+  useEffect(() => {
+    speakingStateRef.current = speakingState;
+    isListeningRef.current = speakingState === 'listening';
+  }, [speakingState]);
+
   const recognitionRef = useRef(null);
   const [showCameraModal, setShowCameraModal] = useState(false);
   const [showExpiredModal, setShowExpiredModal] = useState(false);
@@ -170,6 +177,9 @@ export default function CandidateFlow() {
   const audioContextRef = useRef(null);
   const mediaRecorderRef = useRef(null);
   const recordedChunksRef = useRef([]);
+  // Ref that mirrors speakingState — avoids stale closure in recognition.onend
+  const speakingStateRef = useRef('idle');
+  const isListeningRef = useRef(false); // true while recognition should be active
 
   // --- INTERVIEW DATA STRUCTURES ---
   const ROUNDS_DATA = [
@@ -618,76 +628,110 @@ export default function CandidateFlow() {
   useEffect(() => {
     const isMcq = roundsList[currentRoundIdx]?.questions?.[currentQuestionIdx]?.options?.length > 0;
 
-    if (typeof window !== 'undefined') {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      
-      // If browser does not support Web Speech API, mark as unsupported
-      if (!SpeechRecognition) {
-        setIsSpeechSupported(false);
-        return;
+    if (typeof window === 'undefined') return;
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    // If browser does not support Web Speech API, mark as unsupported and exit
+    if (!SpeechRecognition) {
+      setIsSpeechSupported(false);
+      return;
+    }
+
+    // Only start recognition when the candidate is expected to answer verbally
+    if (speakingState !== 'listening' || isMcq) {
+      // Stop any running recognition when we leave listening state
+      if (recognitionRef.current) {
+        recognitionRef.current.onend = null;
+        recognitionRef.current.onerror = null;
+        try { recognitionRef.current.stop(); } catch (e) {}
+        recognitionRef.current = null;
       }
+      isListeningRef.current = false;
+      return;
+    }
 
-      if (SpeechRecognition && speakingState === 'listening' && !isMcq) {
-        setIsSpeechSupported(true);
-        const recognition = new SpeechRecognition();
-        recognition.continuous = true;
-        recognition.interimResults = true;
-        recognition.lang = 'en-US';
+    // === We are in listening state and it's a descriptive (voice) question ===
+    setIsSpeechSupported(true);
 
-        recognition.onresult = (event) => {
-          let interimTranscript = '';
-          for (let i = event.resultIndex; i < event.results.length; ++i) {
-            if (event.results[i].isFinal) {
-              finalTranscriptRef.current += event.results[i][0].transcript + ' ';
-            } else {
-              interimTranscript += event.results[i][0].transcript + ' ';
-            }
-          }
-          const fullTranscript = (finalTranscriptRef.current + interimTranscript).trim();
-          setCurrentTranscript(fullTranscript);
-          currentTranscriptRef.current = fullTranscript;
-        };
+    // Always reset transcript buffers at the start of every new listening phase (new question)
+    setCurrentTranscript('');
+    currentTranscriptRef.current = '';
+    finalTranscriptRef.current = '';
 
-        recognition.onerror = (event) => {
-          console.error("Speech recognition error:", event.error);
-          // 'not-allowed', 'service-not-allowed', 'audio-capture' indicate unsupported/no permission
-          if (['not-allowed', 'service-not-allowed', 'audio-capture'].includes(event.error)) {
-            setIsSpeechSupported(false);
-          }
-        };
+    // Create fresh recognition instance
+    const recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = 'en-US';
+    recognition.maxAlternatives = 1;
 
-        recognition.onend = () => {
-          // Restart if still in listening state and not MCQ
-          if (speakingState === 'listening') {
-            try {
-              recognition.start();
-            } catch (e) {}
-          }
-        };
+    recognition.onresult = (event) => {
+      let interimTranscript = '';
+      for (let i = event.resultIndex; i < event.results.length; ++i) {
+        const transcript = event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+          finalTranscriptRef.current += transcript + ' ';
+        } else {
+          interimTranscript += transcript;
+        }
+      }
+      const fullTranscript = (finalTranscriptRef.current + interimTranscript).trim();
+      setCurrentTranscript(fullTranscript);
+      currentTranscriptRef.current = fullTranscript;
+    };
 
-        recognitionRef.current = recognition;
+    recognition.onerror = (event) => {
+      console.warn('[SpeechRecognition] Error:', event.error);
+      if (['not-allowed', 'service-not-allowed', 'audio-capture'].includes(event.error)) {
+        // Permanent failure — browser/OS blocking mic
+        setIsSpeechSupported(false);
+        isListeningRef.current = false;
+      }
+      // For 'no-speech', 'aborted', 'network' etc — onend will fire and we'll restart
+    };
+
+    // KEY FIX: onend reads from isListeningRef (always current) not captured closure variable
+    recognition.onend = () => {
+      if (isListeningRef.current) {
+        // Still in listening phase — restart immediately
         try {
-          // Only reset if this is the start of a completely new listening phase
-          if (!finalTranscriptRef.current && !currentTranscriptRef.current) {
-             setCurrentTranscript(''); 
-             currentTranscriptRef.current = ''; 
-             finalTranscriptRef.current = '';
-          }
           recognition.start();
         } catch (e) {
-          console.error("Failed to start speech recognition:", e);
-          setIsSpeechSupported(false);
+          // If start fails (e.g., already started), wait briefly and retry
+          setTimeout(() => {
+            if (isListeningRef.current) {
+              try { recognition.start(); } catch (_) {}
+            }
+          }, 200);
         }
-
-        return () => {
-          recognition.onend = null;
-          try {
-            recognition.stop();
-          } catch (e) {}
-        };
       }
+    };
+
+    recognitionRef.current = recognition;
+
+    // Start recognition
+    try {
+      recognition.start();
+      console.log('[SpeechRecognition] Started for question', currentQuestionIdx);
+    } catch (e) {
+      console.error('[SpeechRecognition] Failed to start:', e);
+      setIsSpeechSupported(false);
     }
+
+    // Cleanup: stop recognition when effect re-runs (question changes, state changes, etc.)
+    return () => {
+      isListeningRef.current = false;
+      recognition.onend = null;   // Prevent auto-restart after cleanup
+      recognition.onerror = null;
+      recognition.onresult = null;
+      try { recognition.stop(); } catch (e) {}
+      if (recognitionRef.current === recognition) {
+        recognitionRef.current = null;
+      }
+    };
   }, [speakingState, currentRoundIdx, currentQuestionIdx, roundsList]);
+
 
   // --- INTERVAL TIMERS ---
   useEffect(() => {
@@ -1447,8 +1491,27 @@ export default function CandidateFlow() {
     const question = round.questions[currentQuestionIdx];
     const currentLimit = getQuestionTimeLimitSeconds(currentRoundIdx, currentQuestionIdx);
     
+    // Determine if this is a live-interview MCQ question (has options in live round)
+    const isLiveRoundMcq = (question.options && question.options.length > 0);
+    
+    let capturedAnswer = '';
+    if (isLiveRoundMcq) {
+      // For MCQ questions, get the selected option text from mcqAnswers
+      const qKey = `q${question.id}`;
+      const selectedIdx = mcqAnswers[qKey];
+      if (selectedIdx !== undefined && selectedIdx !== null) {
+        const opts = question.options || [];
+        const optVal = opts[selectedIdx];
+        capturedAnswer = typeof optVal === 'object' ? (optVal.text || String(optVal)) : String(optVal || '');
+      } else {
+        capturedAnswer = ''; // No option selected
+      }
+    } else {
+      // For voice/descriptive questions, use the speech transcript
+      capturedAnswer = currentTranscriptRef.current.trim() || '';
+    }
+
     // Save response to local map
-    const capturedAnswer = currentTranscriptRef.current.trim() || '';
     setAnswersList(prev => ({
       ...prev,
       [`q-${question.id}`]: {
@@ -3318,13 +3381,19 @@ export default function CandidateFlow() {
                       {roundsList[currentRoundIdx]?.questions?.[currentQuestionIdx]?.options?.length > 0 && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '24px' }}>
                           {roundsList[currentRoundIdx].questions[currentQuestionIdx].options.map((opt, idx) => {
-                             const isSelected = currentTranscript === opt;
+                             const question = roundsList[currentRoundIdx].questions[currentQuestionIdx];
+                             const qKey = `q${question.id}`;
+                             const selectedIdx = mcqAnswers[qKey];
+                             const isSelected = selectedIdx === idx;
                              return (
                                <div 
                                  key={idx}
                                  onClick={() => {
                                    if (speakingState === 'listening') {
-                                     setCurrentTranscript(opt);
+                                     // Store selected option text in transcript for display/legacy
+                                     setCurrentTranscript(typeof opt === 'object' ? opt.text || String(opt) : String(opt));
+                                     // CRITICAL: Also store option INDEX in mcqAnswers so backend can grade it
+                                     setMcqAnswers(prev => ({ ...prev, [qKey]: idx }));
                                    }
                                  }}
                                  onMouseEnter={(e) => {
