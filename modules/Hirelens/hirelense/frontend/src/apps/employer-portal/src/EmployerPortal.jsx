@@ -2544,7 +2544,13 @@ Your Student ID/Exam ID is: ${newCand.student_id || newCand.id}`
                             <small>{c.status === 'In progress' ? 'In progress' : `Completed ${formatLocalTime(c.completed_at)}`} · {c.tab_switches ? `⚑ ${c.tab_switches} tab switches` : '34 min'}</small>
                           </span>
                           <span className={`scorechip ${scoreClass}`}>{c.score !== null ? `${c.score}/${totalScore}` : '—'}</span>
-                          <button className="linkbtn" onClick={() => { setActiveCandidate(c); setScreen('report'); }}>
+                          <button className="linkbtn" onClick={() => {
+                            setScreen('report');
+                            candidateService.getCandidateById(c.id).then(fullCandidate => {
+                              setActiveCandidate(fullCandidate);
+                              setCandidates(prev => prev.map(item => item.id === c.id ? fullCandidate : item));
+                            });
+                          }}>
                             Report
                           </button>
                         </div>
@@ -2755,7 +2761,13 @@ Your Student ID/Exam ID is: ${newCand.student_id || newCand.id}`
                           <td className="mono" style={{ fontSize: '12px', color: 'var(--muted)' }}>{formatLocalTime(c.completed_at)}</td>
                           <td style={{ textAlign: 'right' }}>
                             {c.score !== null ? (
-                              <button className="btn ghost sm" onClick={() => { setActiveCandidate(c); setScreen('report'); }}>
+                              <button className="btn ghost sm" onClick={() => {
+                            setScreen('report');
+                            candidateService.getCandidateById(c.id).then(fullCandidate => {
+                              setActiveCandidate(fullCandidate);
+                              setCandidates(prev => prev.map(item => item.id === c.id ? fullCandidate : item));
+                            });
+                          }}>
                                 View report
                               </button>
                             ) : (

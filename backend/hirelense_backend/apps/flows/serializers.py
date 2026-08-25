@@ -39,6 +39,14 @@ class FlowRoundSerializer(serializers.ModelSerializer):
                             hints = parsed.get('hints', '')
                     except (ValueError, TypeError):
                         pass
+                options = []
+                if q.marking_guide:
+                    try:
+                        parsed = json.loads(q.marking_guide)
+                        if isinstance(parsed, dict):
+                            options = parsed.get('options', [])
+                    except Exception:
+                        pass
                 questions_list.append({
                     'id': q.id,
                     'question': q.question_text,
@@ -48,6 +56,7 @@ class FlowRoundSerializer(serializers.ModelSerializer):
                     'difficulty': difficulty,
                     'marks': marks,
                     'mcqs': mcqs,
+                    'options': options,
                     'hints': hints,
                     'feeds_parameter': q.feeds_parameter
                 })
@@ -114,6 +123,7 @@ class InterviewFlowSerializer(serializers.ModelSerializer):
                             'difficulty': q_item.get('difficulty', 'Medium'),
                             'marks': int(q_item.get('marks', 10)),
                             'mcqs': q_item.get('mcqs', []),
+                            'options': q_item.get('options', []),
                             'hints': q_item.get('hints', '')
                         }
                         PoolQuestion.objects.create(
@@ -176,6 +186,7 @@ class InterviewFlowSerializer(serializers.ModelSerializer):
                                 'difficulty': q_item.get('difficulty', 'Medium'),
                                 'marks': int(q_item.get('marks', 10)),
                                 'mcqs': q_item.get('mcqs', []),
+                                'options': q_item.get('options', []),
                                 'hints': q_item.get('hints', '')
                             }
                             PoolQuestion.objects.create(

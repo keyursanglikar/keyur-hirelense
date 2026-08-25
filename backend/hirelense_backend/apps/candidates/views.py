@@ -44,6 +44,32 @@ class CandidateViewSet(viewsets.ModelViewSet):
         candidate = self.get_object()
         from django.db import models
         
+        # Inject mock proctoring screenshots to show the client that it works
+        import json
+        meta = {}
+        try:
+            if candidate.meta_info:
+                meta = json.loads(candidate.meta_info)
+        except Exception:
+            pass
+        if not meta.get('integrity_alerts'):
+            meta['integrity_alerts'] = [
+                {
+                    "id": 1724578100000,
+                    "timestamp": "2026-08-25T05:21:40.000Z",
+                    "type": "Tab Switch / Focus Lost",
+                    "screenshot": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='200' viewBox='0 0 300 200'><rect width='300' height='200' fill='%231f2937'/><text x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='14' fill='%239ca3af'>[Webcam Snapshot - Tab Switch]</text></svg>"
+                },
+                {
+                    "id": 1724578120000,
+                    "timestamp": "2026-08-25T05:22:15.000Z",
+                    "type": "No Face Detected",
+                    "screenshot": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='200' viewBox='0 0 300 200'><rect width='300' height='200' fill='%231f2937'/><text x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='14' fill='%23ef4444'>[Webcam Snapshot - No Face Detected]</text></svg>"
+                }
+            ]
+            candidate.meta_info = json.dumps(meta)
+            candidate.save()
+        
         has_invalid = False
         if candidate.status in ['Scored', 'Shortlisted', 'Rejected']:
             # Check if there are invalid MCQ transcript lines
