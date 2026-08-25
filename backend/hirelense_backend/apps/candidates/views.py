@@ -44,17 +44,32 @@ class CandidateViewSet(viewsets.ModelViewSet):
         candidate = self.get_object()
         from django.db import models
         
-        # No mock injection — only show real integrity_alerts from actual candidate submissions
-        
         has_invalid = False
         if candidate.status in ['Scored', 'Shortlisted', 'Rejected']:
-            # Check if there are invalid MCQ transcript lines
+            # Check if there are invalid or stale transcript lines that need re-evaluation
             invalid_lines = candidate.transcript.filter(
                 models.Q(answer_text__icontains='[Invalid') | 
                 models.Q(expected_answer='None') |
                 models.Q(expected_answer__isnull=True)
             ).exists()
-            if invalid_lines or not candidate.transcript.exists() or candidate.score is None or candidate.score == 0:
+            
+            # Detect stale pre-fix data: old transcripts use timestamp "0:45" or "0:00" 
+            # New code uses "Descriptive" or "MCQ" — if any line has old timestamp, force re-eval
+            stale_lines = candidate.transcript.filter(
+                models.Q(timestamp='0:45') |
+                models.Q(timestamp='0:00') |
+                models.Q(timestamp__regex=r'^\d+:\d+$')  # any "MM:SS" format = old data
+            ).exists()
+            
+            # Also detect fake injected answers from old code
+            fake_answers = candidate.transcript.filter(
+                models.Q(answer_text__icontains='I explain technical concepts using real-world analogies') |
+                models.Q(answer_text__icontains='candidate\'s verbal explanation for') |
+                models.Q(answer_text__icontains='This concept is highly valuable in Java') |
+                models.Q(answer_text__icontains='During a critical deadline, we had a production memory crash')
+            ).exists()
+            
+            if invalid_lines or stale_lines or fake_answers or not candidate.transcript.exists() or candidate.score is None or candidate.score == 0:
                 has_invalid = True
                 
         if has_invalid:
