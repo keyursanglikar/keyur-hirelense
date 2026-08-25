@@ -626,11 +626,15 @@ export default function CandidateFlow() {
         recognition.lang = 'en-US';
 
         recognition.onresult = (event) => {
-          let fullTranscript = '';
-          for (let i = 0; i < event.results.length; ++i) {
-            fullTranscript += event.results[i][0].transcript + ' ';
+          let interimTranscript = '';
+          for (let i = event.resultIndex; i < event.results.length; ++i) {
+            if (event.results[i].isFinal) {
+              finalTranscriptRef.current += event.results[i][0].transcript + ' ';
+            } else {
+              interimTranscript += event.results[i][0].transcript + ' ';
+            }
           }
-          setCurrentTranscript(fullTranscript.trim());
+          setCurrentTranscript((finalTranscriptRef.current + interimTranscript).trim());
         };
 
         recognition.onerror = (event) => {
@@ -648,7 +652,12 @@ export default function CandidateFlow() {
 
         recognitionRef.current = recognition;
         try {
-          setCurrentTranscript(''); currentTranscriptRef.current = ''; // Reset transcript for new question
+          // Only reset if this is the start of a completely new listening phase
+          if (!finalTranscriptRef.current && !currentTranscriptRef.current) {
+             setCurrentTranscript(''); 
+             currentTranscriptRef.current = ''; 
+             finalTranscriptRef.current = '';
+          }
           recognition.start();
         } catch (e) {
           console.error("Failed to start speech recognition:", e);
@@ -1433,6 +1442,8 @@ export default function CandidateFlow() {
       }
     });
     setCurrentTranscript('');
+    currentTranscriptRef.current = '';
+    finalTranscriptRef.current = '';
 
     setIsSavingQuestion(false);
 
@@ -3658,12 +3669,13 @@ export default function CandidateFlow() {
 
                 <div className="opts">
                   {activeMcqs[selectedMcqIdx]?.options.map((opt, optIdx) => {
-                    const isSelected = mcqAnswers[selectedMcqIdx] === optIdx;
+                    const qIdStr = String(activeMcqs[selectedMcqIdx].id);
+                    const isSelected = mcqAnswers[qIdStr] === optIdx;
                     return (
                       <button
                         key={optIdx}
                         className={`opt ${isSelected ? 'sel' : ''}`}
-                        onClick={() => setMcqAnswers({ ...mcqAnswers, [selectedMcqIdx]: optIdx })}
+                        onClick={() => setMcqAnswers({ ...mcqAnswers, [qIdStr]: optIdx })}
                       >
                         <span className="key">{String.fromCharCode(65 + optIdx)}</span>
                         <span>{opt.text || opt}</span>
