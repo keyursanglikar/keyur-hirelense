@@ -1611,7 +1611,7 @@ export default function EmployerPortal() {
   };
 
   const handleSaveScorecardWiz = (publish) => {
-    if (!scardWizName.trim()) {
+    if (!(scardWizName || '').trim()) {
       triggerToast("Scorecard Name is required.");
       return;
     }
@@ -1627,10 +1627,10 @@ export default function EmployerPortal() {
     }
 
     const payload = {
-      name: scardWizName.trim(),
-      jobTitle: scardWizTitle.trim() || "Generic Role",
-      department: scardWizDept.trim() || "General",
-      description: scardWizDesc.trim() || "Standard scorecard.",
+      name: (scardWizName || '').trim(),
+      jobTitle: (scardWizTitle || '').trim() || "Generic Role",
+      department: (scardWizDept || '').trim() || "General",
+      description: (scardWizDesc || '').trim() || "Standard scorecard.",
       is_live: publish,
       criteria: scardWizCriteria,
       auto_reject_threshold: scardWizAutoRejectThreshold,
