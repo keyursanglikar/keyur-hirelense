@@ -265,15 +265,7 @@ const INITIAL_CANDS = [
   { n: "Tushar Bhosale", st: "Rejected (auto)", sc: 37, fl: 1, d: "2026-07-14T11:10:00Z" }
 ];
 
-const TRANSCRIPT = [
-  { q: "Q1 · Tell me about yourself and what draws you to audit and taxation.", ts: "00:41", sc: "8.8", a: "Two years with a mid-size Pune firm across GST compliance and tax audits. “What I enjoy is that every notice is a puzzle with a legal answer — you can actually close it.” Clear arc: articleship → compliance → wants advisory exposure." },
-  { q: "Q2 · A deadline you nearly missed — what changed afterwards?", ts: "05:12", sc: "7.4", a: "Sept GSTR-9 crunch, client sent books late. Escalated on day 2, split reconciliation with a colleague, filed with hours to spare. Now front-loads document requests by two weeks. Honest about the early mistake." },
-  { q: "Q3 · Staying accurate under busy-season pressure.", ts: "09:38", sc: "7.6", a: "Maker-checker habit even when solo — self-review the next morning. Maintains a personal error log; says repeat errors dropped after she started it." },
-  { q: "Q4 · Tax audit u/s 44AB vs statutory audit under the Companies Act.", ts: "14:06", sc: "8.6", a: "Correctly separated purpose, appointing authority, applicability thresholds and reporting forms (3CA/3CB-3CD vs audit report to members). Added turnover-limit nuance for F&O clients, unprompted." },
-  { q: "Q5 · Capitalise or expense a ₹3L machine repair?", ts: "18:22", sc: "7.9", a: "Framed the test as enhancement of future benefit vs restoration; asked what she'd check — nature of work, useful-life impact, capacity change. Cited AS 10 treatment correctly." },
-  { q: "Q6 · Monthly GST compliance calendar for a mid-size trading client.", ts: "22:48", sc: "8.2", a: "Ran the calendar in order — GSTR-1 by the 11th, 2B reconciliation, 3B by the 20th, vendor follow-ups for missing credits, quarterly touchpoints. Process-driven, not recited." },
-  { q: "Case · ASMT-10 notice, ₹4.2L ITC mismatch.", ts: "28:19", sc: "8.1", a: "Causes to check: timing differences, vendor non-filing, credit notes, RCM entries. Would call for purchase register, 2B downloads, vendor GSTR-1 status. Reply structure: reconcile item-wise, annex evidence, pay-with-interest only where genuinely ineligible." }
-];
+
 
 const MODELS = [
   { id: "sonnet", name: "Claude Sonnet", note: "Best judgement · recommended", rate: 1.2, report: 6, mcq: 0.3 },
@@ -2880,7 +2872,15 @@ Your Student ID/Exam ID is: ${newCand.student_id || newCand.id}`
                   <div className="secline">Transcript · evidence-linked · every question below was drawn from this flow's approved pools</div>
                   <div id="trList">
                     {(() => {
-                      const lines = (candidateForReport && candidateForReport.transcript && candidateForReport.transcript.length > 0) ? candidateForReport.transcript : TRANSCRIPT;
+                      const lines = candidateForReport && candidateForReport.transcript ? candidateForReport.transcript : [];
+                      if (lines.length === 0) {
+                        return (
+                          <div style={{ padding: '20px', textAlign: 'center', color: 'var(--faint)', background: 'var(--surface2)', borderRadius: '8px', border: '1px dashed rgba(255,255,255,0.1)' }}>
+                            <p>No interview transcript available for this candidate.</p>
+                            <p style={{ fontSize: '11px', marginTop: '4px' }}>(Evaluation may be pending, or the session was incomplete)</p>
+                          </div>
+                        );
+                      }
                       // Group questions by round label (stored in feedback field)
                       const roundGroups = {};
                       const roundOrder = [];
@@ -2951,34 +2951,34 @@ Your Student ID/Exam ID is: ${newCand.student_id || newCand.id}`
                   <div className="card pad">
                     <div className="eyebrow">AI summary</div>
                     <p className="sumbox" style={{ marginTop: '8px' }}>
-                      {candidateForReport && candidateForReport.ai_summary ? candidateForReport.ai_summary : "Priya presents as a structured, composed communicator with genuinely hands-on GST exposure. Her technical answers cite sections and forms correctly and she reasons from process rather than memory. The case-study response followed a credible reconcile → document → draft-reply sequence. Depth on company-audit procedure is her thinnest area — worth probing in the partner round."}
+                      {candidateForReport && candidateForReport.ai_summary ? candidateForReport.ai_summary : "No AI summary available."}
                     </p>
                   </div>
 
                   <div className="card pad" style={{ marginTop: '14px' }}>
                     <div className="eyebrow">Scorecard breakdown</div>
                     <div style={{ marginTop: '12px' }}>
-                      {((candidateForReport && candidateForReport.scores && candidateForReport.scores.length > 0) ? candidateForReport.scores : [
-                        { parameter_name: "Domain knowledge", score_value: 8.4 },
-                        { parameter_name: "Communication", score_value: 8.8 },
-                        { parameter_name: "Problem Solving", score_value: 8.1 },
-                        { parameter_name: "Ownership & attitude", score_value: 7.4 },
-                        { parameter_name: "Culture Fit", score_value: 7.0 }
-                      ]).map((score, idx) => {
-                        const percentage = Math.round(score.score_value * 10);
-                        const scoreClass = score.score_value >= 7.1 ? "pbar" : score.score_value >= 5.1 ? "pbar mid" : "pbar lo";
-                        return (
-                          <div className={scoreClass} key={idx}>
-                            <div className="pl">
-                              <span>{score.parameter_name}</span>
-                              <b>{score.score_value}</b>
+                      {(() => {
+                        const scores = (candidateForReport && candidateForReport.scores && candidateForReport.scores.length > 0) ? candidateForReport.scores : [];
+                        if (scores.length === 0) {
+                          return <div style={{ fontSize: '12px', color: 'var(--faint)' }}>No scorecard data available.</div>;
+                        }
+                        return scores.map((score, idx) => {
+                          const percentage = Math.round(score.score_value * 10);
+                          const scoreClass = score.score_value >= 7.1 ? "pbar" : score.score_value >= 5.1 ? "pbar mid" : "pbar lo";
+                          return (
+                            <div className={scoreClass} key={idx}>
+                              <div className="pl">
+                                <span>{score.parameter_name}</span>
+                                <b>{score.score_value}</b>
+                              </div>
+                              <div className="track">
+                                <i className="fill" style={{ width: `${percentage}%`, display: 'block' }}></i>
+                              </div>
                             </div>
-                            <div className="track">
-                              <i className="fill" style={{ width: `${percentage}%`, display: 'block' }}></i>
-                            </div>
-                          </div>
-                        );
-                      })}
+                          );
+                        });
+                      })()}
                     </div>
                   </div>
 
