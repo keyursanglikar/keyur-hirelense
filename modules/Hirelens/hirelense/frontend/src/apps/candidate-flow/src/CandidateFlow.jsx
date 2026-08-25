@@ -278,26 +278,24 @@ export default function CandidateFlow() {
       setExpiresAt(data.expires_at || '');
 
         // Session Restore Check
+        let isSessionRestored = false;
         const sessionKey = `hl_session_${data.candidate_id}`;
         const saved = localStorage.getItem(sessionKey);
         if (saved) {
           try {
             const p = JSON.parse(saved);
-            if (p.screen >= 6 && p.screen !== 14) {
-              if (window.confirm("An incomplete interview session was found. Would you like to resume where you left off?")) {
-                setScreen(p.screen);
-                setCurrentRoundIdx(p.currentRoundIdx || 0);
-                setCurrentQuestionIdx(p.currentQuestionIdx || 0);
-                setAnswersList(p.answersList || []);
-                setMcqAnswers(p.mcqAnswers || {});
-                setMcqTimer(p.mcqTimer || 480);
-                setCaseAnswerTimer(p.caseAnswerTimer || 0);
-                setTabSwitches(p.tabSwitches || 0);
-                setPasteEvents(p.pasteEvents || 0);
-                setReplayUsed(p.replayUsed || 0);
-                } else {
-                localStorage.removeItem(sessionKey);
-              }
+            if (p.screen >= 4 && p.screen !== 14) {
+              setScreen(p.screen);
+              setCurrentRoundIdx(p.currentRoundIdx || 0);
+              setCurrentQuestionIdx(p.currentQuestionIdx || 0);
+              if (p.answersList) setAnswersList(p.answersList);
+              if (p.mcqAnswers) setMcqAnswers(p.mcqAnswers);
+              if (p.mcqTimer) setMcqTimer(p.mcqTimer);
+              if (p.caseAnswerTimer) setCaseAnswerTimer(p.caseAnswerTimer);
+              if (p.tabSwitches) setTabSwitches(p.tabSwitches);
+              if (p.pasteEvents) setPasteEvents(p.pasteEvents);
+              if (p.replayUsed) setReplayUsed(p.replayUsed);
+              isSessionRestored = true;
             }
           } catch(e) {}
         }
@@ -338,26 +336,15 @@ export default function CandidateFlow() {
       setLinkedin(data.candidate_linkedin || '');
       
       // Restore session if it was already In Progress, otherwise go to welcome screen (Screen 2)
-      if (data.session && data.session.status === 'In Progress') {
-        setCurrentRoundIdx(data.session.current_round || 0);
-        setCurrentQuestionIdx(data.session.current_question || 0);
-        setScreen(7);
-        triggerToast({ bold: "Session Restored:", normal: `Resuming your interview at Round ${data.session.current_round + 1}.` });
-        
-        // Log integrity alert for re-login
-        try {
-          const newAlert = {
-            id: Date.now(),
-            timestamp: new Date().toISOString(),
-            type: "Session Logout/Login Detected",
-            screenshot: null
-          };
-          const stored = localStorage.getItem('hl_integrity_alerts') ? JSON.parse(localStorage.getItem('hl_integrity_alerts')) : [];
-          stored.push(newAlert);
-          localStorage.setItem('hl_integrity_alerts', JSON.stringify(stored));
-        } catch(e) {}
-      } else {
-        setScreen(2);
+      if (!isSessionRestored) {
+        if (data.session && data.session.status === 'In Progress') {
+          setCurrentRoundIdx(data.session.current_round || 0);
+          setCurrentQuestionIdx(data.session.current_question || 0);
+          setScreen(7);
+          triggerToast({ bold: "Session Restored:", normal: `Resuming your interview at Round ${data.session.current_round + 1}.` });
+        } else {
+          setScreen(2);
+        }
       }
     } catch (error) {
       console.error("Token validation failed:", error);
@@ -2860,18 +2847,42 @@ export default function CandidateFlow() {
 
           {screen === 5 && (
             <div className="c-card">
-              <span className="eyebrow" style={{ display: 'block', marginBottom: '8px' }}>DEVICE CALIBRATION</span>
-              <h3 style={{ fontFamily: 'var(--font-d)', fontSize: '24px', marginBottom: '8px' }}>Webcam &amp; Audio Check</h3>
-              <p style={{ color: 'var(--muted)', fontSize: '13.5px', marginBottom: '20px' }}>Confirm your camera and microphone are configured correctly. We will also capture your profile snapshot for verification.</p>
+              <span className="eyebrow" style={{ display: 'block', marginBottom: '8px' }}>DEVICE CALIBRATION &amp; PRE-FLIGHT CHECKLIST</span>
+              <h3 style={{ fontFamily: 'var(--font-d)', fontSize: '24px', marginBottom: '8px' }}>Webcam, Audio &amp; Identity Verification</h3>
+              <p style={{ color: 'var(--muted)', fontSize: '13.5px', marginBottom: '20px' }}>Follow the 4 steps below in order to calibrate your hardware before starting your AI interview.</p>
 
-              <div style={{ background: 'var(--surface2)', padding: '16px', borderRadius: '12px', marginBottom: '24px' }}>
-                <h4 style={{ fontSize: '13px', fontWeight: 600, color: 'var(--petrol)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Pre-flight Checklist</h4>
-                <ol style={{ fontSize: '13px', color: 'var(--text)', paddingLeft: '24px', margin: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <li><strong>Camera:</strong> Allow browser permissions. Ensure you are clearly visible in the preview box below.</li>
-                  <li><strong>Microphone:</strong> Speak normally. Ensure the green mic bar moves when you talk.</li>
-                  <li><strong>Sound:</strong> Click the "Test Audio Speaker" button below to verify you can hear the system voice.</li>
-                  <li><strong>Profile Snapshot:</strong> Click "Capture verification snapshot" while looking directly at the camera.</li>
-                </ol>
+              {/* Horizontal Step Guidance Bar */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '14px 18px', marginBottom: '24px', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', opacity: hasMicPermission ? 1 : 0.6 }}>
+                  <span style={{ width: '22px', height: '22px', borderRadius: '50%', background: hasMicPermission ? 'var(--ok)' : 'rgba(255,255,255,0.15)', color: '#fff', fontSize: '11px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {hasMicPermission ? '✓' : '1'}
+                  </span>
+                  <span style={{ fontSize: '12.5px', fontWeight: 600, color: hasMicPermission ? 'var(--ok)' : '#EDF4F0' }}>1. Mic Test</span>
+                </div>
+                <span style={{ color: 'rgba(255,255,255,0.2)' }}>➔</span>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', opacity: speakerState === 'verified' ? 1 : 0.6 }}>
+                  <span style={{ width: '22px', height: '22px', borderRadius: '50%', background: speakerState === 'verified' ? 'var(--ok)' : 'rgba(255,255,255,0.15)', color: '#fff', fontSize: '11px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {speakerState === 'verified' ? '✓' : '2'}
+                  </span>
+                  <span style={{ fontSize: '12.5px', fontWeight: 600, color: speakerState === 'verified' ? 'var(--ok)' : '#EDF4F0' }}>2. Speaker Test</span>
+                </div>
+                <span style={{ color: 'rgba(255,255,255,0.2)' }}>➔</span>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', opacity: latency !== null ? 1 : 0.6 }}>
+                  <span style={{ width: '22px', height: '22px', borderRadius: '50%', background: latency !== null ? 'var(--ok)' : 'rgba(255,255,255,0.15)', color: '#fff', fontSize: '11px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {latency !== null ? '✓' : '3'}
+                  </span>
+                  <span style={{ fontSize: '12.5px', fontWeight: 600, color: latency !== null ? 'var(--ok)' : '#EDF4F0' }}>3. Network Test</span>
+                </div>
+                <span style={{ color: 'rgba(255,255,255,0.2)' }}>➔</span>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', opacity: capturedPhoto ? 1 : 0.6 }}>
+                  <span style={{ width: '22px', height: '22px', borderRadius: '50%', background: capturedPhoto ? 'var(--ok)' : 'rgba(255,255,255,0.15)', color: '#fff', fontSize: '11px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {capturedPhoto ? '✓' : '4'}
+                  </span>
+                  <span style={{ fontSize: '12.5px', fontWeight: 600, color: capturedPhoto ? 'var(--ok)' : '#EDF4F0' }}>4. Profile Snapshot</span>
+                </div>
               </div>
 
               {(hasCameraPermission === false || hasMicPermission === false) && (
@@ -2951,19 +2962,23 @@ export default function CandidateFlow() {
                     )}
                   </div>
                   
-                  <div style={{ display: 'flex', gap: '10px', marginTop: '14px' }}>
-                    <button className="btn ghost sm" onClick={capturePhoto} disabled={!(hasCameraPermission && hasMicPermission && speakerState === 'verified')} style={{ opacity: (hasCameraPermission && hasMicPermission && speakerState === 'verified') ? 1 : 0.4 }}>
-                      📸 Capture Profile Snapshot
+                  <div style={{ display: 'flex', gap: '10px', marginTop: '14px', alignItems: 'center' }}>
+                    <button className="btn primary sm" onClick={capturePhoto} disabled={!(hasCameraPermission && hasMicPermission && speakerState === 'verified')} style={{ opacity: (hasCameraPermission && hasMicPermission && speakerState === 'verified') ? 1 : 0.4, background: capturedPhoto ? 'rgba(255,255,255,0.08)' : 'var(--amber)', color: capturedPhoto ? '#EDF4F0' : '#231a06' }}>
+                      📸 {capturedPhoto ? 'Retake Verification Snapshot' : 'Step 4: Capture Profile Snapshot'}
                     </button>
                     {capturedPhoto && (
-                      <span className="badge b-ok" style={{ display: 'inline-flex', alignItems: 'center' }}>✓ Photo Captured Successfully</span>
+                      <span className="badge b-ok" style={{ display: 'inline-flex', alignItems: 'center' }}>✓ Snapshot Verified</span>
                     )}
                   </div>
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {/* Step 1: Mic */}
                   <div style={{ padding: '16px', border: hasMicPermission ? '1.5px solid var(--ok)' : '1.5px solid var(--amber)', borderRadius: '12px', background: hasMicPermission ? 'rgba(76,175,80,0.05)' : 'transparent' }}>
-                    <h4 style={{ fontSize: '13.5px', fontWeight: 600, marginBottom: '8px' }}>Microphone Check</h4>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <h4 style={{ fontSize: '13.5px', fontWeight: 600, margin: 0 }}>Step 1: Microphone Check</h4>
+                      <span className="badge b-ok" style={{ fontSize: '10px' }}>{hasMicPermission ? '✓ Active' : 'Checking...'}</span>
+                    </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                       <div className="vol-bars">
                         {[10, 20, 30, 40, 50, 60, 70, 80, 90, 100].map(v => (
@@ -2975,34 +2990,35 @@ export default function CandidateFlow() {
                         ))}
                       </div>
                       <span className="mono" style={{ fontSize: '11px', color: 'var(--muted)' }}>
-                        {micLevel > 0 ? "Mic active" : "Checking..."}
+                        {micLevel > 0 ? "Mic active (sound detected)" : "Speak to test level"}
                       </span>
                     </div>
                   </div>
 
+                  {/* Step 2: Speaker */}
                   <div style={{ padding: '16px', border: speakerState === 'verified' ? '1.5px solid var(--ok)' : '1.5px solid var(--amber)', borderRadius: '12px', background: speakerState === 'verified' ? 'rgba(76,175,80,0.05)' : 'transparent', opacity: (hasCameraPermission && hasMicPermission) ? 1 : 0.4, pointerEvents: (hasCameraPermission && hasMicPermission) ? 'auto' : 'none' }}>
-                    <h4 style={{ fontSize: '13.5px', fontWeight: 600, marginBottom: '8px' }}>Speaker Check</h4>
+                    <h4 style={{ fontSize: '13.5px', fontWeight: 600, marginBottom: '8px' }}>Step 2: Speaker Check</h4>
                     {speakerState === 'untested' && (
-                      <button className="btn ghost sm" onClick={() => { playTestSound(); setSpeakerState('tested'); }}>
+                      <button className="btn primary sm" onClick={() => { playTestSound(); setSpeakerState('tested'); }} style={{ background: 'var(--amber)', color: '#231a06' }}>
                         🔊 Play Test Beep
                       </button>
                     )}
                     {speakerState === 'tested' && (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        <p style={{ fontSize: '12px', color: 'var(--muted)', margin: 0 }}>Did you hear the beep?</p>
+                        <p style={{ fontSize: '12px', color: 'var(--muted)', margin: 0 }}>Did you hear the test beep from your speaker/headphones?</p>
                         <div style={{ display: 'flex', gap: '8px' }}>
                           <button className="btn ghost sm" onClick={playTestSound} style={{ padding: '6px 12px', fontSize: '11.5px' }}>
-                            🔊 Replay
+                            🔊 Replay Beep
                           </button>
                           <button className="btn primary sm" onClick={() => setSpeakerState('verified')} style={{ padding: '6px 12px', fontSize: '11.5px', backgroundColor: 'var(--ok)', color: '#fff', borderColor: 'var(--ok)' }}>
-                            Yes, I heard it
+                            Yes, I heard it ✓
                           </button>
                         </div>
                       </div>
                     )}
                     {speakerState === 'verified' && (
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <span className="badge b-ok">✓ Speaker verified</span>
+                        <span className="badge b-ok">✓ Speaker Verified</span>
                         <button className="linkbtn" onClick={() => { playTestSound(); setSpeakerState('tested'); }} style={{ fontSize: '11px' }}>
                           Retest
                         </button>
@@ -3010,8 +3026,9 @@ export default function CandidateFlow() {
                     )}
                   </div>
 
+                  {/* Step 3: Network */}
                   <div style={{ padding: '16px', border: latency !== null ? '1.5px solid var(--ok)' : '1.5px solid var(--amber)', borderRadius: '12px', background: latency !== null ? 'rgba(76,175,80,0.05)' : 'transparent' }}>
-                    <h4 style={{ fontSize: '13.5px', fontWeight: 600, marginBottom: '8px' }}>Network Connection</h4>
+                    <h4 style={{ fontSize: '13.5px', fontWeight: 600, marginBottom: '8px' }}>Step 3: Network Latency Check</h4>
                     <span className={`badge ${
                       latency === null ? 'b-mute' :
                       latency < 100 ? 'b-ok' :
@@ -3027,7 +3044,7 @@ export default function CandidateFlow() {
 
               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '32px' }}>
                 <button className="btn ghost" onClick={() => setScreen(4)}>← Back</button>
-                <button className="btn primary" onClick={handleSaveAndContinue} disabled={!(hasCameraPermission && hasMicPermission && speakerState === 'verified' && capturedPhoto)}>
+                <button className="btn primary" onClick={handleSaveAndContinue} disabled={!(hasCameraPermission && hasMicPermission && speakerState === 'verified' && capturedPhoto)} style={{ background: (hasCameraPermission && hasMicPermission && speakerState === 'verified' && capturedPhoto) ? 'var(--ok)' : 'rgba(255,255,255,0.1)', color: (hasCameraPermission && hasMicPermission && speakerState === 'verified' && capturedPhoto) ? '#fff' : 'rgba(255,255,255,0.3)' }}>
                   Save &amp; Continue →
                 </button>
               </div>
