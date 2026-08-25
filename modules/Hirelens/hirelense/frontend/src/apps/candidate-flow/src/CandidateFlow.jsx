@@ -647,7 +647,9 @@ export default function CandidateFlow() {
               interimTranscript += event.results[i][0].transcript + ' ';
             }
           }
-          setCurrentTranscript((finalTranscriptRef.current + interimTranscript).trim());
+          const fullTranscript = (finalTranscriptRef.current + interimTranscript).trim();
+          setCurrentTranscript(fullTranscript);
+          currentTranscriptRef.current = fullTranscript;
         };
 
         recognition.onerror = (event) => {
@@ -3326,6 +3328,18 @@ export default function CandidateFlow() {
                         </div>
                       )}
 
+                      {/* Live Speech Recognition Feedback (only for descriptive audio questions) */}
+                      {!roundsList[currentRoundIdx]?.questions?.[currentQuestionIdx]?.options?.length && speakingState === 'listening' && (
+                        <div style={{ marginBottom: '20px', padding: '14px 18px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', textAlign: 'left' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                            <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--ok)', animation: 'pulse 1.2s infinite' }}></span>
+                            <span style={{ fontSize: '11px', color: '#7E978E', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Live Voice Transcription</span>
+                          </div>
+                          <p style={{ margin: 0, fontSize: '13.5px', color: currentTranscript ? '#EDF4F0' : '#7E978E', fontStyle: currentTranscript ? 'normal' : 'italic', lineHeight: 1.5 }}>
+                            {currentTranscript || "Listening for your voice... Speak clearly into your microphone."}
+                          </p>
+                        </div>
+                      )}
                       
                       <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         

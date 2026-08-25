@@ -233,8 +233,8 @@ class CandidateEvaluationService:
                 logger.info(f"Attempting Gemini Flash evaluation for candidate {candidate.id}...")
                 genai.configure(api_key=api_key)
                 
-                # We use gemini-1.5-flash as the active model name
-                model = genai.GenerativeModel('gemini-1.5-flash')
+                # We use gemini-3.6-flash as the active model name
+                model = genai.GenerativeModel('gemini-3.6-flash')
 
 
                 
@@ -414,13 +414,12 @@ Do not include any thinking, explanations, or code blocks outside the JSON. Retu
                     )
                     
                 # Save overall score and summary
-                import json
                 candidate.score = int(round(total_earned_marks))
                 meta = {}
                 try:
                     if candidate.meta_info:
                         meta = json.loads(candidate.meta_info)
-                except:
+                except Exception:
                     pass
                 meta['total_score'] = total_max_marks if total_max_marks > 0 else 100
                 candidate.meta_info = json.dumps(meta)
@@ -539,13 +538,12 @@ Do not include any thinking, explanations, or code blocks outside the JSON. Retu
                 total_earned_marks += (mr.get('score_value', 0.0) / 10.0) * max_m
                 
             # Save overall score and summary
-            import json
             candidate.score = int(round(total_earned_marks))
             meta = {}
             try:
                 if candidate.meta_info:
                     meta = json.loads(candidate.meta_info)
-            except:
+            except Exception:
                 pass
             meta['total_score'] = total_max_marks if total_max_marks > 0 else 100
             candidate.meta_info = json.dumps(meta)
