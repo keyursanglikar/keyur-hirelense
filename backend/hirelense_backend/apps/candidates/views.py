@@ -44,31 +44,7 @@ class CandidateViewSet(viewsets.ModelViewSet):
         candidate = self.get_object()
         from django.db import models
         
-        # Inject mock proctoring screenshots to show the client that it works
-        import json
-        meta = {}
-        try:
-            if candidate.meta_info:
-                meta = json.loads(candidate.meta_info)
-        except Exception:
-            pass
-        if not meta.get('integrity_alerts'):
-            meta['integrity_alerts'] = [
-                {
-                    "id": 1724578100000,
-                    "timestamp": "2026-08-25T05:21:40.000Z",
-                    "type": "Tab Switch / Focus Lost",
-                    "screenshot": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='200' viewBox='0 0 300 200'><rect width='300' height='200' fill='%231f2937'/><text x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='14' fill='%239ca3af'>[Webcam Snapshot - Tab Switch]</text></svg>"
-                },
-                {
-                    "id": 1724578120000,
-                    "timestamp": "2026-08-25T05:22:15.000Z",
-                    "type": "No Face Detected",
-                    "screenshot": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='200' viewBox='0 0 300 200'><rect width='300' height='200' fill='%231f2937'/><text x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='14' fill='%23ef4444'>[Webcam Snapshot - No Face Detected]</text></svg>"
-                }
-            ]
-            candidate.meta_info = json.dumps(meta)
-            candidate.save()
+        # No mock injection — only show real integrity_alerts from actual candidate submissions
         
         has_invalid = False
         if candidate.status in ['Scored', 'Shortlisted', 'Rejected']:
@@ -472,9 +448,9 @@ class CandidateViewSet(viewsets.ModelViewSet):
         except Candidate.DoesNotExist:
             return Response({'error': 'Candidate not found'}, status=status.HTTP_404_NOT_FOUND)
             
-        # If the candidate has already been evaluated successfully, skip to prevent duplicates
-        if candidate.status == 'Scored' and candidate.transcript.exists():
-            logger.info(f"Candidate {candidate.id} has already been evaluated. Skipping duplicate submission request.")
+        # If the candidate has already been evaluated successfully (has real score data), skip duplicate
+        if candidate.status == 'Scored' and candidate.transcript.exists() and candidate.score and candidate.score > 0:
+            logger.info(f"Candidate {candidate.id} has already been evaluated with score {candidate.score}. Skipping duplicate submission request.")
             return Response({'status': 'Interview already submitted and evaluated successfully.'}, status=status.HTTP_200_OK)
             
         answers = request.data.get('answers', {})

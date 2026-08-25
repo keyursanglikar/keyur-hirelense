@@ -74,11 +74,22 @@ class CandidateEvaluationService:
                             "pool_q_id": q.id
                         })
 
+            # Track all question IDs processed as MCQ to skip them in the descriptive loop
+            processed_as_mcq_ids = set(fm['pool_q_id'] for fm in flat_mcqs)
+
+            # Compute round label for storing in transcript
+            round_order = getattr(round_item, 'order', 0)
+            round_name = getattr(round_item, 'name', None) or round_item.type.title()
+            round_label = f"Round {round_order + 1}: {round_name}"
+
             # Now evaluate the programmatically graded MCQs for this round
             for i, flat_mcq in enumerate(flat_mcqs):
+                # Try multiple key formats: sequential index (from frontend), pool question id
                 selected_val = mcq_answers.get(str(i))
                 if selected_val is None:
                     selected_val = mcq_answers.get(i)
+                if selected_val is None:
+                    selected_val = mcq_answers.get(str(flat_mcq.get('pool_q_id', '')))
                 
                 # Check options
                 options_list = flat_mcq.get("options", [])
@@ -117,7 +128,7 @@ class CandidateEvaluationService:
                     if selected_idx >= 0 and selected_idx < len(clean_options):
                         ans_text = clean_options[selected_idx]
                     else:
-                        ans_text = f"[Invalid: idx={selected_idx}, len={len(clean_options)}, type={type(options_list).__name__}, val={selected_val}]"
+                        ans_text = f"[Invalid option index: {selected_idx}]"
                     
                     is_correct = False
                     if str(selected_idx) == str(correct_ans):
@@ -140,7 +151,8 @@ class CandidateEvaluationService:
                     "expected_answer": flat_mcq.get("correct_answer_text", ""),
                     "score_value": score_val,
                     "parameter": flat_mcq["parameter"],
-                    "marks": flat_mcq.get("marks", 10)
+                    "marks": flat_mcq.get("marks", 10),
+                    "round_label": round_label
                 })
                 
                 # Accumulate score for parameter
@@ -149,26 +161,28 @@ class CandidateEvaluationService:
                     parameter_scores_map[param_name] = []
                 parameter_scores_map[param_name].append(score_val)
 
-            # Now collect descriptive questions for this round
+            # Now collect descriptive questions for this round (skip those already handled as MCQ)
             for q in pool.questions.all():
+                if q.id in processed_as_mcq_ids:
+                    continue  # Already processed as MCQ, skip
                 try:
                     parsed = json.loads(q.marking_guide) if q.marking_guide else {}
                 except Exception:
                     parsed = {}
-                
+
                 is_mcq_q = (
-                    round_item.type == 'mcq' or 
-                    parsed.get('type') == 'MCQ' or 
-                    parsed.get('type') == 'mcq' or 
-                    len(parsed.get('mcqs', [])) > 0 or 
+                    round_item.type == 'mcq' or
+                    parsed.get('type') == 'MCQ' or
+                    parsed.get('type') == 'mcq' or
+                    len(parsed.get('mcqs', [])) > 0 or
                     len(parsed.get('options', [])) > 0
                 )
-                
+
                 if not is_mcq_q:
                     ans_key = f"q-{q.id}"
                     user_ans = answers.get(ans_key, {})
                     ans_text = user_ans.get('answer') if isinstance(user_ans, dict) else None
-                    
+
                     expected_text = ""
                     try:
                         expected_text = parsed.get("answer", "")
@@ -178,35 +192,12 @@ class CandidateEvaluationService:
                         max_marks = 10
 
                     clean_ans = str(ans_text).strip() if ans_text else ""
-                    is_fallback = not clean_ans or "candidate's verbal explanation for" in clean_ans.lower()
-                    
-                    # Generate realistic mock answers for demo/fallback purposes to ensure reports work
-                    if is_fallback:
-                        q_lower = q.question_text.lower()
-                        if "non-technical stakeholders" in q_lower:
-                            clean_ans = "I explain technical concepts using real-world analogies (e.g. comparing databases to filing cabinets) and focus on business value and impact on timelines."
-                        elif "tight deadlines" in q_lower or "roadblock" in q_lower:
-                            clean_ans = "During a critical deadline, we had a production memory crash. I managed stress by breaking the problem down, using diagnostic tools like thread dumps, and resolved it by optimizing loop iterations."
-                        elif "equals" in q_lower or "operator in java" in q_lower:
-                            clean_ans = "The equals() method performs value/content comparison between objects, while the '==' operator compares their reference locations in memory."
-                        elif "string immutability" in q_lower:
-                            clean_ans = "String immutability in Java means that once a String object is created, its value cannot be changed. This ensures thread-safety, security for keys, and optimization through the string constant pool."
-                        else:
-                            clean_ans = "This concept is highly valuable in Java development. I ensure we follow clean architecture, correct memory management, and write unit tests to handle edge cases."
-                        is_fallback = False # Treat it as successfully answered now!
+                    # Use real candidate answer only — never inject fake content
+                    if not clean_ans or clean_ans.lower().startswith("candidate's verbal explanation for"):
+                        clean_ans = "[No verbal response recorded]"
 
                     if not expected_text:
-                        q_lower = q.question_text.lower()
-                        if "non-technical stakeholders" in q_lower:
-                            expected_text = "The candidate should describe their communication approach, using analogies, avoiding jargon, and aligning milestones with business priorities."
-                        elif "tight deadlines" in q_lower or "roadblock" in q_lower:
-                            expected_text = "The candidate should share a specific situation (STAR method), outline how they handled pressure, diagnostic steps, and the final resolution."
-                        elif "equals" in q_lower or "operator in java" in q_lower:
-                            expected_text = "equals() compares the contents of objects (semantic equivalence), while == compares reference addresses (identity equivalence)."
-                        elif "string immutability" in q_lower:
-                            expected_text = "Strings are immutable in Java to ensure thread-safety, security for sensitive data (like database connections), and caching/constant pool optimization."
-                        else:
-                            expected_text = "Detailed conceptual explanation addressing the core principles, syntax, and production best practices."
+                        expected_text = "[No expected answer configured]"
 
                     descriptive_questions.append({
                         "id": q.id,
@@ -214,10 +205,11 @@ class CandidateEvaluationService:
                         "expected_answer": expected_text,
                         "candidate_answer": clean_ans,
                         "feeds_parameter": q.feeds_parameter or "Communication",
-                        "marks": max_marks
+                        "marks": max_marks,
+                        "round_label": round_label
                     })
 
-        
+
 
         # 2. Get Scorecard parameters to score
         scorecard_params = []
@@ -343,10 +335,11 @@ Do not include any thinking, explanations, or code blocks outside the JSON. Retu
                     CandidateTranscriptLine.objects.create(
                         candidate=candidate,
                         question_text=dq["question_text"],
-                        timestamp="0:45",
+                        timestamp="Descriptive",
                         answer_text=dq["candidate_answer"],
                         expected_answer=dq.get("expected_answer", ""),
-                        score_value=score_val
+                        score_value=score_val,
+                        feedback=dq.get("round_label", "Interview Round")
                     )
                     
                     param_name = dq["feeds_parameter"]
@@ -414,10 +407,11 @@ Do not include any thinking, explanations, or code blocks outside the JSON. Retu
                     CandidateTranscriptLine.objects.create(
                         candidate=candidate,
                         question_text=mr["question_text"],
-                        timestamp="0:00",
+                        timestamp="MCQ",
                         answer_text=mr["answer_text"],
                         expected_answer=mr.get("expected_answer", ""),
-                        score_value=mr["score_value"]
+                        score_value=mr["score_value"],
+                        feedback=mr.get("round_label", "MCQ Round")
                     )
                     
                 # Save overall score and summary
@@ -462,7 +456,7 @@ Do not include any thinking, explanations, or code blocks outside the JSON. Retu
                 expected_text = dq["expected_answer"]
                 clean_ans = dq["candidate_answer"]
                 
-                if expected_text:
+                if expected_text and expected_text != "[No expected answer configured]":
                     words_ans = set(re.findall(r'\w+', clean_ans.lower()))
                     words_exp = set(re.findall(r'\w+', expected_text.lower()))
                     if words_exp:
@@ -471,15 +465,16 @@ Do not include any thinking, explanations, or code blocks outside the JSON. Retu
                     else:
                         score_val = 7.0
                 else:
-                    score_val = 7.0
+                    score_val = 5.0 if clean_ans == "[No verbal response recorded]" else 7.0
                     
                 CandidateTranscriptLine.objects.create(
                     candidate=candidate,
                     question_text=dq["question_text"],
-                    timestamp="0:45",
+                    timestamp="Descriptive",
                     answer_text=clean_ans,
                     expected_answer=dq.get("expected_answer", ""),
-                    score_value=score_val
+                    score_value=score_val,
+                    feedback=dq.get("round_label", "Interview Round")
                 )
                 
                 param_name = dq["feeds_parameter"]
@@ -492,10 +487,11 @@ Do not include any thinking, explanations, or code blocks outside the JSON. Retu
                 CandidateTranscriptLine.objects.create(
                     candidate=candidate,
                     question_text=mr["question_text"],
-                    timestamp="0:00",
+                    timestamp="MCQ",
                     answer_text=mr["answer_text"],
                     expected_answer=mr.get("expected_answer", ""),
-                    score_value=mr["score_value"]
+                    score_value=mr["score_value"],
+                    feedback=mr.get("round_label", "MCQ Round")
                 )
 
             # Evaluate scorecard parameter averages
@@ -509,7 +505,7 @@ Do not include any thinking, explanations, or code blocks outside the JSON. Retu
                     score_val = round(sum(q_scores) / len(q_scores), 1)
                 else:
                     all_scores = [s for scores in parameter_scores_map.values() for s in scores]
-                    score_val = round(sum(all_scores) / len(all_scores), 1) if all_scores else 0.0
+                    score_val = round(sum(all_scores) / len(all_scores), 1) if all_scores else 7.0
                     
                 CandidateScoreDetail.objects.create(
                     candidate=candidate,
@@ -528,8 +524,8 @@ Do not include any thinking, explanations, or code blocks outside the JSON. Retu
                 
                 expected_text = dq["expected_answer"]
                 clean_ans = dq["candidate_answer"]
-                q_score = 7.0
-                if expected_text:
+                q_score = 5.0
+                if expected_text and expected_text != "[No expected answer configured]":
                     words_ans = set(re.findall(r'\w+', clean_ans.lower()))
                     words_exp = set(re.findall(r'\w+', expected_text.lower()))
                     if words_exp:
@@ -562,8 +558,17 @@ Do not include any thinking, explanations, or code blocks outside the JSON. Retu
                 candidate.status = 'Shortlisted'
             else:
                 candidate.status = 'Scored'
-                
-            candidate.ai_summary = f"Candidate completed automated screening. Shows solid technical domain knowledge with a score of {candidate.score}/{meta['total_score']}. (Heuristic Grading Fallback)"
+            
+            # Build meaningful dynamic summary
+            total_qs = len(descriptive_questions) + len(mcq_results)
+            mcq_correct = sum(1 for mr in mcq_results if mr.get('score_value', 0) >= 10.0)
+            num_rounds = len(set(mr.get('round_label', '') for mr in mcq_results) | set(dq.get('round_label', '') for dq in descriptive_questions))
+            candidate.ai_summary = (
+                f"Candidate completed automated screening with {total_qs} question(s) across {num_rounds} round(s). "
+                f"MCQ score: {mcq_correct}/{len(mcq_results)} correct. "
+                f"Overall: {candidate.score}/{meta['total_score']} ({pct:.0f}%). "
+                f"(Heuristic evaluation — Gemini API was unavailable for this assessment)"
+            )
             candidate.save()
 
         return True

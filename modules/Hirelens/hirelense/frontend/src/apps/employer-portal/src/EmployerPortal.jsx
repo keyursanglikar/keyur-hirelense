@@ -2879,49 +2879,71 @@ Your Student ID/Exam ID is: ${newCand.student_id || newCand.id}`
 
                   <div className="secline">Transcript · evidence-linked · every question below was drawn from this flow's approved pools</div>
                   <div id="trList">
-                    {((candidateForReport && candidateForReport.transcript && candidateForReport.transcript.length > 0) ? candidateForReport.transcript : TRANSCRIPT).map((t, idx) => {
-                      const qText = t.question_text || t.q || "";
-                      const tsText = t.timestamp || t.ts || "00:00";
-                        const aText = t.answer_text || t.a || "";
-                        let expectedText = t.expected_answer || "";
-                          if (expectedText && expectedText.startsWith("{")) {
-                            try {
-                              const parsed = JSON.parse(expectedText);
-                              if (parsed && parsed.answer) {
-                                expectedText = parsed.answer;
-                              }
-                            } catch (e) {}
-                          }
-                        const scoreVal = t.score_value !== undefined ? t.score_value : (t.sc || 0);
-                        const feedback = t.feedback || "";
-                        return (
-                          <div className="tr-block" key={idx} id={`tr${idx}`}>
-                            <div className="tr-q">
-                              <b>{qText}</b>
-                              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                                <span className="badge" style={{ backgroundColor: 'rgba(46, 125, 91, 0.1)', color: 'var(--ok)', fontWeight: 600, border: '1px solid rgba(46, 125, 91, 0.2)', padding: '2px 6px', borderRadius: '4px', fontSize: '11px' }}>Score: {scoreVal}/10</span>
-                                <span className="ts">{tsText}</span>
-                              </div>
-                            </div>
-                            <div style={{ display: 'flex', gap: '16px', marginTop: '12px', flexDirection: 'column' }}>
-                              <div>
-                                <strong style={{ fontSize: '11px', color: 'var(--faint)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Candidate Answer</strong>
-                                <p className="tr-a" style={{ marginTop: '4px' }}>{aText}</p>
-                              </div>
-                              {expectedText && (
-                                <div>
-                                  <strong style={{ fontSize: '11px', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Expected Answer</strong>
-                                  <p className="tr-a" style={{ marginTop: '4px', backgroundColor: 'var(--surface2)', padding: '10px', borderRadius: '6px' }}>{expectedText}</p>
-                                </div>
-                              )}
-                            </div>
-                            {feedback && <div style={{marginTop: '12px', padding: '10px', background: 'var(--surface2)', borderRadius: '4px', fontSize: '12px', borderLeft: '3px solid var(--primary)'}}>
-                              <strong>AI Feedback: </strong>
-                              {feedback}
-                            </div>}
+                    {(() => {
+                      const lines = (candidateForReport && candidateForReport.transcript && candidateForReport.transcript.length > 0) ? candidateForReport.transcript : TRANSCRIPT;
+                      // Group questions by round label (stored in feedback field)
+                      const roundGroups = {};
+                      const roundOrder = [];
+                      lines.forEach((t, idx) => {
+                        // feedback holds round label like "Round 1: Technical Skills"
+                        // skip if feedback looks like AI feedback (starts with uppercase sentence not "Round")
+                        const fb = t.feedback || '';
+                        const isRoundLabel = fb.startsWith('Round') || fb.toLowerCase().includes('round') || fb.toLowerCase().includes('hr') || fb.toLowerCase().includes('technical') || fb.toLowerCase().includes('mcq');
+                        const roundKey = (fb && isRoundLabel) ? fb : 'Interview Round';
+                        if (!roundGroups[roundKey]) {
+                          roundGroups[roundKey] = [];
+                          roundOrder.push(roundKey);
+                        }
+                        roundGroups[roundKey].push({ ...t, _origIdx: idx });
+                      });
+                      return roundOrder.map((roundKey) => (
+                        <div key={roundKey} style={{ marginBottom: '28px' }}>
+                          <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.08em', padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.08)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--primary)', display: 'inline-block', flexShrink: 0 }}></span>
+                            {roundKey}
                           </div>
-                        );
-                    })}
+                          {roundGroups[roundKey].map((t, ridx) => {
+                            const qText = t.question_text || t.q || '';
+                            const tsText = t.timestamp || t.ts || '';
+                            const aText = t.answer_text || t.a || '';
+                            let expectedText = t.expected_answer || '';
+                            if (expectedText && expectedText.startsWith('{')) {
+                              try {
+                                const parsed = JSON.parse(expectedText);
+                                if (parsed && parsed.answer) expectedText = parsed.answer;
+                              } catch (e) {}
+                            }
+                            const scoreVal = t.score_value !== undefined ? t.score_value : (t.sc || 0);
+                            const isMCQ = tsText === 'MCQ';
+                            const scoreGood = scoreVal >= 7;
+                            const noAnswer = aText === '[No verbal response recorded]' || aText === '[No Answer / Skipped]';
+                            return (
+                              <div className="tr-block" key={`${roundKey}-${ridx}`} id={`tr${t._origIdx}`}>
+                                <div className="tr-q">
+                                  <b>{qText}</b>
+                                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '4px', flexWrap: 'wrap' }}>
+                                    {isMCQ && <span style={{ fontSize: '10px', fontWeight: 700, padding: '2px 6px', borderRadius: '4px', backgroundColor: 'rgba(99,102,241,0.12)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.25)' }}>MCQ</span>}
+                                    <span className="badge" style={{ backgroundColor: scoreGood ? 'rgba(46,125,91,0.1)' : 'rgba(220,80,69,0.1)', color: scoreGood ? 'var(--ok)' : 'var(--rec)', fontWeight: 600, border: `1px solid ${scoreGood ? 'rgba(46,125,91,0.2)' : 'rgba(220,80,69,0.2)'}`, padding: '2px 6px', borderRadius: '4px', fontSize: '11px' }}>Score: {scoreVal}/10</span>
+                                  </div>
+                                </div>
+                                <div style={{ display: 'flex', gap: '14px', marginTop: '12px', flexDirection: 'column' }}>
+                                  <div>
+                                    <strong style={{ fontSize: '11px', color: noAnswer ? 'var(--rec)' : 'var(--faint)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Candidate Answer</strong>
+                                    <p className="tr-a" style={{ marginTop: '4px', fontStyle: noAnswer ? 'italic' : 'normal', opacity: noAnswer ? 0.6 : 1 }}>{aText || '[No response]'}</p>
+                                  </div>
+                                  {expectedText && expectedText !== '[No expected answer configured]' && (
+                                    <div>
+                                      <strong style={{ fontSize: '11px', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Expected Answer</strong>
+                                      <p className="tr-a" style={{ marginTop: '4px', backgroundColor: 'var(--surface2)', padding: '10px', borderRadius: '6px' }}>{expectedText}</p>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ));
+                    })()}
                   </div>
                 </div>
 
