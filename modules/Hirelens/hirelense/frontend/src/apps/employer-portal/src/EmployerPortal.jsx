@@ -2777,10 +2777,20 @@ Your Student ID/Exam ID is: ${newCand.student_id || newCand.id}`
             {/* ========== VIEW: CANDIDATE REPORT ========== */}
             <section className={`view ${screen === 'report' ? 'on' : ''}`} id="v-report">
               <div className="rep-head">
-                {(() => {
+{(() => {
+                  let totalScore = 100;
+                  try {
+                    if (candidateForReport && candidateForReport.meta_info) {
+                      const meta = typeof candidateForReport.meta_info === 'string' ? JSON.parse(candidateForReport.meta_info) : candidateForReport.meta_info;
+                      if (meta && meta.total_score) {
+                        totalScore = meta.total_score;
+                      }
+                    }
+                  } catch(e){}
                   const scoreValForRing = candidateForReport ? (candidateForReport.score !== null ? candidateForReport.score : 82) : 82;
-                  const scoreColorForRing = scoreValForRing >= 71 ? 'var(--ok)' : scoreValForRing >= 51 ? 'var(--amber)' : 'var(--rec)';
-                  const scoreAngleForRing = Math.round(scoreValForRing * 3.6);
+                  const pct = totalScore > 0 ? (scoreValForRing / totalScore) * 100 : 0;
+                  const scoreColorForRing = pct >= 70 ? 'var(--ok)' : pct >= 50 ? 'var(--amber)' : 'var(--rec)';
+                  const scoreAngleForRing = Math.round(pct * 3.6);
                   const ringStyle = {
                     background: `conic-gradient(${scoreColorForRing} 0deg ${scoreAngleForRing}deg, var(--line-soft) ${scoreAngleForRing}deg 360deg)`
                   };
@@ -2788,7 +2798,7 @@ Your Student ID/Exam ID is: ${newCand.student_id || newCand.id}`
                     <div className="ring" style={ringStyle}>
                       <i>
                         {candidateForReport ? (candidateForReport.score !== null ? candidateForReport.score : '—') : '82'}
-                        <small>/ 100</small>
+                        <small>/ {totalScore}</small>
                       </i>
                     </div>
                   );
@@ -2799,6 +2809,15 @@ Your Student ID/Exam ID is: ${newCand.student_id || newCand.id}`
                     {activeOpening ? activeOpening.title : 'Audit & Tax Executive'} · completed{' '}
                     {candidateForReport && candidateForReport.completed_at ? formatLocalTime(candidateForReport.completed_at) : '16 Jul 2026'}
                     , {candidateForReport && candidateForReport.tab_switches ? 'with flags' : 'clean session'}
+                    {(() => {
+                      const tLines = (candidateForReport && candidateForReport.transcript && candidateForReport.transcript.length > 0) ? candidateForReport.transcript : [];
+                      if (tLines.length > 0) {
+                        const obtained = tLines.reduce((sum, t) => sum + (t.score_value !== undefined ? t.score_value : (t.sc || 0)), 0);
+                        const total = tLines.length * 10;
+                        return ` · Marks: ${obtained.toFixed(0)}/${total}`;
+                      }
+                      return '';
+                    })()}
                   </div>
                   <div className="tags">
                     {candidateForReport && (
@@ -2867,7 +2886,10 @@ Your Student ID/Exam ID is: ${newCand.student_id || newCand.id}`
                           <div className="tr-block" key={idx} id={`tr${idx}`}>
                             <div className="tr-q">
                               <b>{qText}</b>
-                              <span className="ts">{tsText}</span>
+                              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                <span className="badge" style={{ backgroundColor: 'rgba(46, 125, 91, 0.1)', color: 'var(--ok)', fontWeight: 600, border: '1px solid rgba(46, 125, 91, 0.2)', padding: '2px 6px', borderRadius: '4px', fontSize: '11px' }}>Score: {scoreVal}/10</span>
+                                <span className="ts">{tsText}</span>
+                              </div>
                             </div>
                             <div style={{ display: 'flex', gap: '16px', marginTop: '12px', flexDirection: 'column' }}>
                               <div>

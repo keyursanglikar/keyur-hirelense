@@ -40,6 +40,50 @@ class CandidateViewSet(viewsets.ModelViewSet):
             pass # fallback to normal
         return super().get_queryset()
 
+    def retrieve(self, request, *args, **kwargs):
+        candidate = self.get_object()
+        from django.db import models
+        
+        has_invalid = False
+        if candidate.status in ['Scored', 'Shortlisted', 'Rejected']:
+            # Check if there are invalid MCQ transcript lines
+            invalid_lines = candidate.transcript.filter(
+                models.Q(answer_text__icontains='[Invalid') | 
+                models.Q(expected_answer='None') |
+                models.Q(expected_answer__isnull=True)
+            ).exists()
+            if invalid_lines or not candidate.transcript.exists() or candidate.score is None or candidate.score == 0:
+                has_invalid = True
+                
+        if has_invalid:
+            session = candidate.sessions.last()
+            if session and session.resume_info:
+                # Import json and read
+                import json
+                try:
+                    resume_data = session.resume_info
+                    if isinstance(resume_data, str):
+                        resume_data = json.loads(resume_data)
+                    
+                    answers = resume_data.get('answersList', {})
+                    mcq_answers = resume_data.get('mcqAnswers', {})
+                    
+                    if answers or mcq_answers:
+                        from hirelense_backend.apps.candidates.services import CandidateEvaluationService
+                        CandidateEvaluationService.evaluate_interview(
+                            candidate=candidate,
+                            answers=answers,
+                            mcq_answers=mcq_answers,
+                            flow=candidate.opening.flow if candidate.opening else None,
+                            scorecard=candidate.opening.scorecard if candidate.opening else None
+                        )
+                        candidate.refresh_from_db()
+                except Exception as e:
+                    import logging
+                    logging.getLogger(__name__).warning(f"Failed to auto-evaluate candidate {candidate.id}: {str(e)}")
+                    
+        return super().retrieve(request, *args, **kwargs)
+
 
 
     def list(self, request, *args, **kwargs):
