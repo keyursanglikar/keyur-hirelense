@@ -2860,12 +2860,18 @@ Your Student ID/Exam ID is: ${newCand.student_id || newCand.id}`
                       <span className="ptime">00:00 / 34:12</span>
                     </div>
                     <div className="chapters">
-                      {((candidateForReport && candidateForReport.transcript && candidateForReport.transcript.length > 0) ? candidateForReport.transcript : TRANSCRIPT).map((_, idx) => (
-                        <button key={idx} className={`chap ${activeChapter === idx ? 'hot' : ''}`} title={`Q${idx + 1}`} onClick={() => handleJumpToChapter(idx)}></button>
-                      ))}
+                      {(() => {
+                        const lines = (candidateForReport && candidateForReport.transcript) ? candidateForReport.transcript : [];
+                        return lines.map((_, idx) => (
+                          <button key={idx} className={`chap ${activeChapter === idx ? 'hot' : ''}`} title={`Q${idx + 1}`} onClick={() => handleJumpToChapter(idx)}></button>
+                        ));
+                      })()}
                     </div>
                     <div className="chap-lab" id="chapLab">
-                      Chapters: Q1–Q{((candidateForReport && candidateForReport.transcript && candidateForReport.transcript.length > 0) ? candidateForReport.transcript.length : TRANSCRIPT.length)} interview · click a segment to jump
+                      {(() => {
+                        const lines = (candidateForReport && candidateForReport.transcript) ? candidateForReport.transcript : [];
+                        return lines.length > 0 ? `Chapters: Q1–Q${lines.length} interview · click a segment to jump` : `Chapters: No chapters available`;
+                      })()}
                     </div>
                   </div>
 
