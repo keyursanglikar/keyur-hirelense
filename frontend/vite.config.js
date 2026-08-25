@@ -11,6 +11,8 @@ export default defineConfig({
     }
   },
   server: {
+    port: 5173,
+    host: true,
     fs: {
       // Allow serving files from one level up to support root modules directory
       allow: ['..']
