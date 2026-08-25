@@ -3801,6 +3801,7 @@ export default function CandidateFlow() {
                         </button>
                       );
                     })}
+                  </div>
                   <div className="legend">
                     <span>
                       <i style={{ backgroundColor: '#1B4437', border: '1px solid #2E7D5B', width: '11px', height: '11px', borderRadius: '4px', display: 'inline-block' }}></i>
