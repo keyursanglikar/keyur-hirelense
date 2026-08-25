@@ -210,9 +210,9 @@ export default function CandidateFlow() {
     const list = [];
     currentRound.questions.forEach(q => {
       if (q.mcqs && q.mcqs.length > 0) {
-        q.mcqs.forEach(m => {
+        q.mcqs.forEach((m, mIdx) => {
           list.push({
-            id: m.id,
+            id: `q${q.id}_m${mIdx}`,
             text: m.question,
             options: m.options ? m.options.map(o => o.text || o) : [],
             answer: m.correctAnswer
@@ -220,7 +220,7 @@ export default function CandidateFlow() {
         });
       } else {
         list.push({
-          id: q.id,
+          id: `q${q.id}`,
           text: q.text || q.question || "",
           options: q.options || [],
           answer: q.answer

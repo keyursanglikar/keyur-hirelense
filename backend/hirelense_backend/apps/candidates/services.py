@@ -52,7 +52,7 @@ class CandidateEvaluationService:
                 if is_mcq_q:
                     mcqs = parsed.get('mcqs', [])
                     if isinstance(mcqs, list) and len(mcqs) > 0:
-                        for m in mcqs:
+                        for mIdx, m in enumerate(mcqs):
                             opts = m.get("options", [])
                             if not opts:
                                 opts = parsed.get("options", [])
@@ -62,7 +62,8 @@ class CandidateEvaluationService:
                                 "correct_answer": m.get("correctAnswer") if m.get("correctAnswer") is not None else m.get("answer"),
                                 "parameter": q.feeds_parameter or "Domain knowledge",
                                 "marks": int(m.get('marks', 10)),
-                                "pool_q_id": q.id
+                                "pool_q_id": q.id,
+                                "mcq_key": f"q{q.id}_m{mIdx}"
                             })
                     else:
                         flat_mcqs.append({
@@ -71,7 +72,8 @@ class CandidateEvaluationService:
                             "correct_answer": parsed.get("answer"),
                             "parameter": q.feeds_parameter or "Domain knowledge",
                             "marks": int(parsed.get('marks', 10)),
-                            "pool_q_id": q.id
+                            "pool_q_id": q.id,
+                            "mcq_key": f"q{q.id}"
                         })
 
             # Track all question IDs processed as MCQ to skip them in the descriptive loop
@@ -84,12 +86,9 @@ class CandidateEvaluationService:
 
             # Now evaluate the programmatically graded MCQs for this round
             for i, flat_mcq in enumerate(flat_mcqs):
-                # Try multiple key formats: sequential index (from frontend), pool question id
-                selected_val = mcq_answers.get(str(i))
-                if selected_val is None:
-                    selected_val = mcq_answers.get(i)
-                if selected_val is None:
-                    selected_val = mcq_answers.get(str(flat_mcq.get('pool_q_id', '')))
+                # Use unique mcq_key from frontend
+                mcq_key = flat_mcq.get('mcq_key')
+                selected_val = mcq_answers.get(mcq_key)
                 
                 # Check options
                 options_list = flat_mcq.get("options", [])
