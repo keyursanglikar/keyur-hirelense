@@ -1,10 +1,38 @@
 # backend/saas_platform/urls.py
 
+import time
+import logging
 from django.contrib import admin
 from django.urls import path, include
+from django.http import JsonResponse
 from rest_framework_simplejwt.views import TokenRefreshView, TokenVerifyView
 
+logger = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
+# Health-check endpoint — registered FIRST so it is never blocked by
+# authentication middleware.  Must be:
+#   • No DB query   • No Gemini / third-party calls   • No auth required
+#   • Returns HTTP 200 within milliseconds
+# ---------------------------------------------------------------------------
+def health_check(request):
+    """
+    Lightweight liveness probe used by Render uptime monitoring.
+    Intentionally performs zero I/O so it responds instantly.
+    """
+    t0 = time.monotonic()
+    response_data = {"status": "ok", "service": "backend"}
+    response = JsonResponse(response_data, status=200)
+    elapsed_ms = round((time.monotonic() - t0) * 1000, 2)
+    logger.info("GET /health - 200 - %sms", elapsed_ms)
+    return response
+
+
 urlpatterns = [
+    # ── Health probe (must be first, no auth) ──────────────────────────────
+    path('health', health_check, name='health_check'),
+
+    # ── Admin & auth ────────────────────────────────────────────────────────
     path('admin/', admin.site.urls),
     path('api/auth/', include('accounts.urls')),
     path('api/auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
