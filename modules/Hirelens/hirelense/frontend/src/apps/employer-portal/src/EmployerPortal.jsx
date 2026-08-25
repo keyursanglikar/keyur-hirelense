@@ -4477,11 +4477,15 @@ Your Student ID/Exam ID is: ${newCand.student_id || newCand.id}`
                 <button className="btn ghost" onClick={() => setDeleteJobConfirmOp(null)}>Cancel</button>
                 <button className="btn" style={{ background: 'var(--rec)', color: '#fff', border: 'none' }} onClick={() => {
                   openingService.deleteOpening(deleteJobConfirmOp.id).then(() => {
-                    const newList = openings.filter(o => o.id !== deleteJobConfirmOp.id);
-                    setOpenings(newList);
-                    triggerToast(`Job "${deleteJobConfirmOp.title}" deleted.`);
-                    setDeleteJobConfirmOp(null);
-                  });
+                      const newList = openings.filter(o => o.id !== deleteJobConfirmOp.id);
+                      setOpenings(newList);
+                      triggerToast(`Job "${deleteJobConfirmOp.title}" deleted.`);
+                      setDeleteJobConfirmOp(null);
+                    }).catch(err => {
+                      console.error("Failed to delete", err);
+                      triggerToast("Cannot delete job opening. It may have linked candidates or interviews.");
+                      setDeleteJobConfirmOp(null);
+                    });
                 }}>
                   Delete
                 </button>
