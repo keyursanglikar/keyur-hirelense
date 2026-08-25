@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Box, Container, Paper, Typography, Button, CircularProgress } from '@mui/material'
-import { ExitToApp, Shield, CheckCircleOutline } from '@mui/icons-material'
+import { ExitToApp, Shield, CheckCircleOutlined } from '@mui/icons-material'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate, Navigate } from 'react-router-dom'
 import { logoutUser, updateUser } from '../redux/slices/authSlice'
