@@ -1,0 +1,20 @@
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '32px' }}>
+                <button className="btn ghost" onClick={() => setScreen(4)}>← Back</button>
+                <button className="btn primary" onClick={handleSaveAndContinue} disabled={!(hasCameraPermission && hasMicPermission && speakerState === 'verified' && capturedPhoto)} style={{ background: (hasCameraPermission && hasMicPermission && speakerState === 'verified' && capturedPhoto) ? 'var(--ok)' : 'rgba(255,255,255,0.1)', color: (hasCameraPermission && hasMicPermission && speakerState === 'verified' && capturedPhoto) ? '#fff' : 'rgba(255,255,255,0.3)' }}>
+                  Save &amp; Continue →
+                </button>
+              </div>
+            </div>
+          )}
+
+          
+            {/* ================= SCREEN 6: ABOUT YOU (FORM DETAILS) ================= */}
+          {/* ================= SCREEN 6: ABOUT YOU PROFILE QUESTIONNAIRE ================= */}
+          {screen === 6 && (
+            <div className="c-card">
+              <span className="eyebrow" style={{ display: 'block', marginBottom: '8px' }}>CANDIDATE INFORMATION</span>
+              <h3 style={{ fontFamily: 'var(--font-d)', fontSize: '24px', marginBottom: '8px' }}>Verify Your Profile Details</h3>
+              <p style={{ color: 'var(--muted)', fontSize: '13.5px', marginBottom: '24px' }}>Please double check the pre-filled parameters before continuing.</p>
+

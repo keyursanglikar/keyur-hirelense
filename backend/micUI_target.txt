@@ -1,0 +1,22 @@
+                  {/* Step 1: Mic */}
+                  <div style={{ padding: '16px', border: hasMicPermission ? '1.5px solid var(--ok)' : '1.5px solid var(--amber)', borderRadius: '12px', background: hasMicPermission ? 'rgba(76,175,80,0.05)' : 'transparent' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <h4 style={{ fontSize: '13.5px', fontWeight: 600, margin: 0 }}>Step 1: Microphone Check</h4>
+                      <span className="badge b-ok" style={{ fontSize: '10px' }}>{hasMicPermission ? '✓ Active' : 'Checking...'}</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <div className="vol-bars">
+                        {[10, 20, 30, 40, 50, 60, 70, 80, 90, 100].map(v => (
+                          <div
+                            key={v}
+                            className={`vol-bar ${micLevel >= v ? 'active' : ''}`}
+                            style={{ height: `${v / 5 + 4}px` }}
+                          />
+                        ))}
+                      </div>
+                      <span className="mono" style={{ fontSize: '11px', color: 'var(--muted)' }}>
+                        {micLevel > 0 ? "Mic active (sound detected)" : "Speak to test level"}
+                      </span>
+                    </div>
+                  </div>
+

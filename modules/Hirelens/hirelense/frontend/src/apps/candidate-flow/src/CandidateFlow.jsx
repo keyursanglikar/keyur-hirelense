@@ -148,6 +148,13 @@ export default function CandidateFlow() {
   const [integrityScreenshots, setIntegrityScreenshots] = useState([]);
   const [isSavingQuestion, setIsSavingQuestion] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
+  const [micTestState, setMicTestState] = useState('untested');
+  const [micTestError, setMicTestError] = useState('');
+  const [micTestUrl, setMicTestUrl] = useState(null);
+  const [micTestTimer, setMicTestTimer] = useState(0);
+  const micTestRecorderRef = useRef(null);
+  const micTestChunksRef = useRef([]);
+  const micTestIntervalRef = useRef(null);
   const audioRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const [indianVoice, setIndianVoice] = useState(null);
@@ -587,6 +594,48 @@ export default function CandidateFlow() {
       }, 100);
     } catch (e) {
       console.error("Audio analyser failed", e);
+    }
+  };
+
+  const startMicTest = async () => {
+    setMicTestError('');
+    setMicTestUrl(null);
+    micTestChunksRef.current = [];
+    
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) micTestChunksRef.current.push(e.data);
+      };
+      recorder.onstop = () => {
+        clearInterval(micTestIntervalRef.current);
+        stream.getTracks().forEach(track => track.stop()); // Explicitly release track
+        const blob = new Blob(micTestChunksRef.current, { type: 'audio/webm' });
+        if (blob.size === 0) {
+          setMicTestError('No audio detected. Please check your microphone and try again.');
+          setMicTestState('error');
+        } else {
+          setMicTestUrl(URL.createObjectURL(blob));
+          setMicTestState('recorded');
+        }
+      };
+      micTestRecorderRef.current = recorder;
+      recorder.start();
+      setMicTestState('recording');
+      setMicTestTimer(0);
+      micTestIntervalRef.current = setInterval(() => {
+        setMicTestTimer(prev => prev + 1);
+      }, 1000);
+    } catch (e) {
+      setMicTestError('⚠ Microphone permission denied or unavailable');
+      setMicTestState('error');
+    }
+  };
+
+  const stopMicTest = () => {
+    if (micTestRecorderRef.current && micTestRecorderRef.current.state === 'recording') {
+      micTestRecorderRef.current.stop();
     }
   };
 
@@ -3004,10 +3053,10 @@ export default function CandidateFlow() {
               {/* Horizontal Step Guidance Bar */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '14px 18px', marginBottom: '24px', flexWrap: 'wrap' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ width: '22px', height: '22px', borderRadius: '50%', background: hasMicPermission ? 'var(--ok)' : 'rgba(255,255,255,0.15)', color: '#fff', fontSize: '11px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {hasMicPermission ? '✓' : '1'}
+                  <span style={{ width: '22px', height: '22px', borderRadius: '50%', background: micTestState === 'verified' ? 'var(--ok)' : 'rgba(255,255,255,0.15)', color: '#fff', fontSize: '11px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {micTestState === 'verified' ? '✓' : '1'}
                   </span>
-                  <span style={{ fontSize: '12.5px', fontWeight: 600, color: hasMicPermission ? 'var(--ok)' : '#EDF4F0' }}>1. Mic Test</span>
+                  <span style={{ fontSize: '12.5px', fontWeight: 600, color: micTestState === 'verified' ? 'var(--ok)' : '#EDF4F0' }}>1. Mic Test</span>
                 </div>
                 <span style={{ color: 'rgba(255,255,255,0.2)' }}>➔</span>
 
@@ -3124,12 +3173,13 @@ export default function CandidateFlow() {
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   {/* Step 1: Mic */}
-                  <div style={{ padding: '16px', border: hasMicPermission ? '1.5px solid var(--ok)' : '1.5px solid var(--amber)', borderRadius: '12px', background: hasMicPermission ? 'rgba(76,175,80,0.05)' : 'transparent' }}>
+                  <div style={{ padding: '16px', border: micTestState === 'verified' ? '1.5px solid var(--ok)' : '1.5px solid var(--amber)', borderRadius: '12px', background: micTestState === 'verified' ? 'rgba(76,175,80,0.05)' : 'transparent' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                       <h4 style={{ fontSize: '13.5px', fontWeight: 600, margin: 0 }}>Step 1: Microphone Check</h4>
-                      <span className="badge b-ok" style={{ fontSize: '10px' }}>{hasMicPermission ? '✓ Active' : 'Checking...'}</span>
+                      {micTestState === 'verified' ? <span className="badge b-ok" style={{ fontSize: '10px' }}>✓ Verified</span> : (hasMicPermission ? <span className="badge b-ok" style={{ fontSize: '10px' }}>✓ Access Granted</span> : <span className="badge b-amber" style={{ fontSize: '10px' }}>Checking...</span>)}
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
                       <div className="vol-bars">
                         {[10, 20, 30, 40, 50, 60, 70, 80, 90, 100].map(v => (
                           <div
@@ -3140,9 +3190,59 @@ export default function CandidateFlow() {
                         ))}
                       </div>
                       <span className="mono" style={{ fontSize: '11px', color: 'var(--muted)' }}>
-                        {micLevel > 0 ? "Mic active (sound detected)" : "Speak to test level"}
+                        {micLevel > 0 ? "Mic active (sound detected)" : "Input level"}
                       </span>
                     </div>
+
+                    {micTestState === 'untested' && (
+                      <button className="btn primary sm" onClick={startMicTest} style={{ background: 'var(--amber)', color: '#231a06' }}>
+                        Test Microphone
+                      </button>
+                    )}
+
+                    {micTestState === 'recording' && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                        <span style={{ color: 'var(--rec)', fontSize: '12px', fontWeight: 'bold' }}>🎤 Recording... ({micTestTimer}s)</span>
+                        <span style={{ fontSize: '12px', color: '#EDF4F0' }}>Please say: "This is a microphone test."</span>
+                        <button className="btn primary sm" onClick={stopMicTest} style={{ background: 'var(--rec)', color: '#fff' }}>
+                          Stop Recording
+                        </button>
+                      </div>
+                    )}
+
+                    {micTestState === 'recorded' && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                          <audio src={micTestUrl} controls style={{ height: '30px', flex: 1 }} />
+                        </div>
+                        <p style={{ fontSize: '12px', color: 'var(--muted)', margin: 0 }}>Did you hear your recorded voice clearly?</p>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button className="btn ghost sm" onClick={startMicTest} style={{ padding: '6px 12px', fontSize: '11.5px' }}>
+                            Record Again
+                          </button>
+                          <button className="btn primary sm" onClick={() => { setMicTestState('verified'); }} style={{ padding: '6px 12px', fontSize: '11.5px', backgroundColor: 'var(--ok)', color: '#fff', borderColor: 'var(--ok)' }}>
+                            Yes, it sounds good ✓
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {micTestState === 'verified' && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <button className="linkbtn" onClick={startMicTest} style={{ fontSize: '11px' }}>
+                          Retest Microphone
+                        </button>
+                      </div>
+                    )}
+
+                    {micTestError && (
+                      <div style={{ marginTop: '8px', color: 'var(--rec)', fontSize: '12px', fontWeight: '600' }}>
+                        {micTestError}
+                        <button className="linkbtn" onClick={startMicTest} style={{ fontSize: '11px', marginLeft: '12px', color: 'var(--amber)' }}>
+                          Try Again
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                   {/* Step 2: Speaker */}
@@ -3194,7 +3294,7 @@ export default function CandidateFlow() {
 
               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '32px' }}>
                 <button className="btn ghost" onClick={() => setScreen(4)}>← Back</button>
-                <button className="btn primary" onClick={handleSaveAndContinue} disabled={!(hasCameraPermission && hasMicPermission && speakerState === 'verified' && capturedPhoto)} style={{ background: (hasCameraPermission && hasMicPermission && speakerState === 'verified' && capturedPhoto) ? 'var(--ok)' : 'rgba(255,255,255,0.1)', color: (hasCameraPermission && hasMicPermission && speakerState === 'verified' && capturedPhoto) ? '#fff' : 'rgba(255,255,255,0.3)' }}>
+                <button className="btn primary" onClick={handleSaveAndContinue} disabled={!(hasCameraPermission && hasMicPermission && micTestState === 'verified' && speakerState === 'verified' && capturedPhoto)} style={{ background: (hasCameraPermission && hasMicPermission && micTestState === 'verified' && speakerState === 'verified' && capturedPhoto) ? 'var(--ok)' : 'rgba(255,255,255,0.1)', color: (hasCameraPermission && hasMicPermission && micTestState === 'verified' && speakerState === 'verified' && capturedPhoto) ? '#fff' : 'rgba(255,255,255,0.3)' }}>
                   Save &amp; Continue →
                 </button>
               </div>
