@@ -1,0 +1,65 @@
+              {[
+                { num: 1, label: '1. Candidate Sign In' },
+                { num: 2, label: '2. Invitation Landing' },
+                { num: 3, label: '3. Identity Verification' },
+                { num: 4, label: '4. Privacy Consent' },
+                { num: 5, label: '5. Device Calibration' },
+                { num: 6, label: '6. About You Profile' },
+                { num: 7, label: '7. Round 1 Briefing' },
+                { num: 8, label: '8. Live AI Interview' },
+                { num: 9, label: '9. Round Interstitial' },
+                { num: 10, label: '10. Case Study Brief' },
+                { num: 11, label: '11. MCQ Test Palette' },
+                { num: 12, label: '12. Submission Complete' }
+              ].map(item => (
+                <button
+                  key={item.num}
+                  type="button"
+                  onClick={() => {
+                    setScreen(item.num);
+                    setShowProtoSwitcher(false);
+                    triggerToast(`Switched to Screen ${item.num}`);
+                  }}
+                  style={{
+                    background: screen === item.num ? 'rgba(255,255,255,0.06)' : 'transparent',
+                    border: 'none',
+                    borderRadius: '6px',
+                    padding: '6px 8px',
+                    color: screen === item.num ? 'var(--amber)' : '#EDF4F0',
+                    textAlign: 'left',
+                    fontSize: '11px',
+                    cursor: 'pointer',
+                    fontWeight: screen === item.num ? 'bold' : 'normal',
+                    transition: 'all 0.15s'
+                  }}
+                  onMouseEnter={(e) => { if (screen !== item.num) e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; }}
+                  onMouseLeave={(e) => { if (screen !== item.num) e.currentTarget.style.background = 'transparent'; }}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {showIntegrityPanel && (
+            <div style={{
+              position: 'absolute',
+              bottom: '76px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              width: '320px',
+              maxHeight: '400px',
+              background: 'var(--deep)',
+              border: '1.5px solid rgba(255,255,255,0.1)',
+              borderRadius: '12px',
+              padding: '12px',
+              boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+              zIndex: 9999,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px',
+              overflowY: 'auto'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '6px' }}>
+                <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--rec)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  🛡️ Proctoring Logs
