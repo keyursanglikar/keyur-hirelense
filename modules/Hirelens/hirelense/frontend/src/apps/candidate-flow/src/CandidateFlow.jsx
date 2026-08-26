@@ -3169,7 +3169,7 @@ export default function CandidateFlow() {
                   <div style={{ flex: 1 }}>
                     <h5 style={{ margin: '0 0 4px 0', fontSize: '14px', fontWeight: 'bold' }}>Permission Required</h5>
                     <p style={{ margin: '0 0 12px 0', fontSize: '13px' }}>You must allow camera and microphone access to proceed with the AI interview.</p>
-                    <button onClick={reconnectCameraAndMic} style={{ background: '#DC2626', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
+                    <button onClick={startCamera} style={{ background: '#DC2626', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
                       🔄 Reconnect Camera &amp; Microphone
                     </button>
                   </div>
