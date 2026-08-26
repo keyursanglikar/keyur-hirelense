@@ -1,6 +1,0 @@
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '32px' }}>
-                <button className="btn ghost" onClick={() => setScreen(4)}>← Back</button>
-                <button className="btn primary" onClick={handleSaveAndContinue} disabled={!(hasCameraPermission && hasMicPermission && micTestState === 'verified' && speakerState === 'verified' && cameraConfirmed)} style={{ background: (hasCameraPermission && hasMicPermission && micTestState === 'verified' && speakerState === 'verified' && cameraConfirmed) ? \'var(--ok)\' : \'rgba(255,255,255,0.1)\', color: (hasCameraPermission && hasMicPermission && micTestState === 'verified' && speakerState === 'verified' && cameraConfirmed) ? \'#fff\' : \'rgba(255,255,255,0.3)\' }}>
-                  Save &amp; Continue →
-                </button>
-              </div>
