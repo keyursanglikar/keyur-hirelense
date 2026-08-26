@@ -1436,6 +1436,40 @@ export default function CandidateFlow() {
     }, 400);
   };
 
+  // Helper to intelligently merge overlapping transcript chunks without duplicating words
+  const mergeTranscripts = (existing, upcoming) => {
+    if (!existing) return upcoming;
+    if (!upcoming) return existing;
+
+    const normalize = (s) => s.toLowerCase().replace(/[^\w\s]/g, '').trim().split(/\s+/).filter(Boolean);
+    const existingWords = normalize(existing);
+    const upcomingWords = normalize(upcoming);
+
+    let bestOverlap = 0;
+    const maxOverlap = Math.min(existingWords.length, upcomingWords.length, 20);
+
+    for (let i = 1; i <= maxOverlap; i++) {
+      const endOfExisting = existingWords.slice(-i).join(' ');
+      const startOfUpcoming = upcomingWords.slice(0, i).join(' ');
+      if (endOfExisting === startOfUpcoming) {
+        bestOverlap = i;
+      }
+    }
+
+    if (bestOverlap > 0) {
+      const upcomingOriginalWords = upcoming.trim().split(/\s+/);
+      const remainingUpcoming = upcomingOriginalWords.slice(bestOverlap).join(' ');
+      return remainingUpcoming ? existing.trim() + ' ' + remainingUpcoming : existing.trim();
+    }
+
+    // Fallback: if upcoming is completely contained within existing (e.g. short pause hallucination)
+    if (existing.toLowerCase().includes(upcoming.toLowerCase().trim())) {
+      return existing;
+    }
+
+    return existing.trim() + ' ' + upcoming.trim();
+  };
+
   // Live Transcription Recording
   useEffect(() => {
     const inAudioPhase = (screen === 8 && speakingState === 'listening') || (screen === 10 && caseStudyStage === 'answering');
@@ -1462,7 +1496,7 @@ export default function CandidateFlow() {
               if (e.data.size > 0) audioChunksRef.current.push(e.data);
             };
             audioRecorderRef.current = recorder;
-            recorder.start(1000); // chunk every 1s for finer granularity
+            recorder.start(500); // 500ms chunks for rapid live STT
 
             const capturedGen = transcriptGenRef.current;
             liveTranscribeIntervalRef.current = setInterval(() => {
@@ -1475,12 +1509,17 @@ export default function CandidateFlow() {
                const lastSent = lastSentChunkIdxRef.current;
                if (totalChunks > lastSent && !window._isTranscribingLive) {
                   window._isTranscribingLive = true;
-                  // Send only NEW chunks since last successful transcription
-                  const newChunks = audioChunksRef.current.slice(lastSent);
+                  
+                  // Sliding window: send new chunks + up to 2 seconds (4 chunks) of overlap from previous send
+                  const OVERLAP_CHUNKS = 4;
+                  const startIdx = Math.max(0, lastSent - OVERLAP_CHUNKS);
+                  const newChunks = audioChunksRef.current.slice(startIdx, totalChunks);
+                  
                   const chunkBlob = new Blob(newChunks, { type: (audioRecorderRef.current && audioRecorderRef.current.mimeType) || 'audio/webm' });
                   const formData = new FormData();
                   formData.append('audio', chunkBlob, 'audio.webm');
                   const genAtSend = transcriptGenRef.current;
+                  
                   mockClient.post('/api/candidates/transcribe/', formData, {
                       headers: { 'Content-Type': 'multipart/form-data' }
                   }).then(res => {
@@ -1490,14 +1529,14 @@ export default function CandidateFlow() {
                       if (res.data && res.data.transcript) {
                           const newText = res.data.transcript.trim();
                           if (newText) {
-                            // Append new text to running transcript
                             setCurrentTranscript(prev => {
-                              const updated = prev ? (prev + ' ' + newText) : newText;
+                              // Intelligently merge the overlapping audio text
+                              const updated = mergeTranscripts(prev, newText);
                               currentTranscriptRef.current = updated;
                               return updated;
                             });
                           }
-                          // Mark these chunks as processed
+                          // Mark current chunks as processed
                           lastSentChunkIdxRef.current = totalChunks;
                       }
                   }).catch(err => {
@@ -1505,7 +1544,7 @@ export default function CandidateFlow() {
                       console.error(err);
                   });
                }
-            }, 2500); // transcribe every 2.5 seconds
+            }, 1200); // Poll every 1.2s for near-instant feedback
           } catch(e) {
             console.error("Failed to start audio recorder", e);
           }
@@ -1542,7 +1581,7 @@ export default function CandidateFlow() {
           if (e.data.size > 0) audioChunksRef.current.push(e.data);
         };
         audioRecorderRef.current = recorder;
-        recorder.start(1000);
+        recorder.start(500);
       } catch (e) {
         console.error(e);
       }
