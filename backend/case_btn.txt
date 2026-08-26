@@ -1,0 +1,10 @@
+                      <div>
+                        <p style={{ fontSize: '12px', color: '#7E978E', marginBottom: '10px' }}>Your response is being recorded. Clicks finish when you have stated your investigation workflow.</p>
+
+
+                        <button className="btn primary sm" style={{ backgroundColor: 'var(--rec)', color: '#fff' }} onClick={handleFinishCaseAnswer} disabled={isTranscribing}>
+                          {isTranscribing ? 'Transcribing...' : 'Finish Answer'}
+                        </button>
+                      </div>
+                    )}
+                  </div>

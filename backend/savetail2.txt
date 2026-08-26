@@ -1,0 +1,60 @@
+    const currentLimit = getQuestionTimeLimitSeconds(currentRoundIdx, currentQuestionIdx);
+    
+    // Determine if this is a live-interview MCQ question (has options in live round)
+    const isLiveRoundMcq = (question.options && question.options.length > 0);
+    
+    let capturedAnswer = '';
+    if (isLiveRoundMcq) {
+      // For MCQ questions, get the selected option text from mcqAnswers
+      const qKey = `q${question.id}`;
+      const selectedIdx = mcqAnswers[qKey];
+      if (selectedIdx !== undefined && selectedIdx !== null) {
+        const opts = question.options || [];
+        const optVal = opts[selectedIdx];
+        capturedAnswer = typeof optVal === 'object' ? (optVal.text || String(optVal)) : String(optVal || '');
+      } else {
+        capturedAnswer = ''; // No option selected
+      }
+    } else {
+      // For voice/descriptive questions, use the speech transcript
+      capturedAnswer = finalTranscript.trim() || '';
+    }
+
+    // Save response to local map
+    setAnswersList(prev => ({
+      ...prev,
+      [`q-${question.id}`]: {
+        round: round.name,
+        question: question.text,
+        timeTaken: currentLimit - answerTimer,
+        videoCaptured: true,
+        answer: capturedAnswer
+      }
+    }));
+    setCurrentTranscript('');
+    currentTranscriptRef.current = '';
+    finalTranscriptRef.current = '';
+
+    setIsSavingQuestion(false);
+
+    {
+      if (currentQuestionIdx < round.questions.length - 1) {
+        // Go to next question in same round
+        const nextLimit = getQuestionTimeLimitSeconds(currentRoundIdx, currentQuestionIdx + 1);
+        setCurrentQuestionIdx(prev => prev + 1);
+        setSpeakingState('asking');
+        setQuestionTimer(15);
+        setAnswerTimer(nextLimit);
+        setIsAnswering(false);
+        setIsAudioPlaying(true);
+        handleUpdateSession(currentRoundIdx, currentQuestionIdx + 1);
+      } else {
+        // Current round complete
+        setScreen(9);
+      }
+    }
+  };
+
+  const handleBeginRound = async () => {
+    if (currentRoundIdx === 0) {
+      try {

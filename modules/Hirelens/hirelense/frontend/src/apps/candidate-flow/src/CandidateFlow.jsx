@@ -157,6 +157,7 @@ export default function CandidateFlow() {
   const micTestIntervalRef = useRef(null);
   const audioRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
+  const liveTranscribeIntervalRef = useRef(null);
   const [indianVoice, setIndianVoice] = useState(null);
   const [speakerState, setSpeakerState] = useState('untested'); // 'untested', 'playing', 'tested', 'verified'
   const [latency, setLatency] = useState(null);
@@ -1534,6 +1535,79 @@ export default function CandidateFlow() {
       setOtpVerified(true);
       setScreen(4);
     }, 400);
+  };
+
+  // Live Transcription Recording
+  useEffect(() => {
+    const inAudioPhase = (screen === 8 && speakingState === 'listening') || (screen === 10 && caseStudyStage === 'answering');
+    const isMcq = roundsList[currentRoundIdx]?.questions?.[currentQuestionIdx]?.options?.length > 0;
+
+    if (inAudioPhase && !isMcq && cameraStream) {
+      if (!audioRecorderRef.current || audioRecorderRef.current.state === 'inactive') {
+        audioChunksRef.current = [];
+        const audioTracks = cameraStream.getAudioTracks();
+        if (audioTracks.length > 0) {
+          try {
+            const recorder = new MediaRecorder(new MediaStream(audioTracks), { mimeType: 'audio/webm' });
+            recorder.ondataavailable = (e) => {
+              if (e.data.size > 0) audioChunksRef.current.push(e.data);
+            };
+            audioRecorderRef.current = recorder;
+            recorder.start(2000); // chunk every 2s
+
+            liveTranscribeIntervalRef.current = setInterval(() => {
+               if (audioChunksRef.current.length > 0) {
+                  const currentBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+                  const formData = new FormData();
+                  formData.append('audio', currentBlob);
+                  mockClient.post('/api/candidates/transcribe/', formData, {
+                      headers: { 'Content-Type': 'multipart/form-data' }
+                  }).then(res => {
+                      if (res.data && res.data.transcript !== undefined) {
+                          setCurrentTranscript(res.data.transcript);
+                          currentTranscriptRef.current = res.data.transcript;
+                      }
+                  }).catch(console.error);
+               }
+            }, 4000); // transribe every 4 seconds
+          } catch(e) {
+            console.error("Failed to start audio recorder", e);
+          }
+        }
+      }
+    } else {
+      if (audioRecorderRef.current && audioRecorderRef.current.state === 'recording') {
+        audioRecorderRef.current.stop();
+        audioRecorderRef.current = null;
+      }
+      clearInterval(liveTranscribeIntervalRef.current);
+    }
+
+    return () => clearInterval(liveTranscribeIntervalRef.current);
+  }, [screen, speakingState, caseStudyStage, cameraStream, currentRoundIdx, currentQuestionIdx]);
+
+
+  const handleClearResponse = () => {
+    if (!window.confirm("Are you sure you want to clear your current response and start over?")) return;
+    
+    setCurrentTranscript('');
+    currentTranscriptRef.current = '';
+    
+    if (audioRecorderRef.current && audioRecorderRef.current.state === 'recording') {
+      audioRecorderRef.current.stop();
+      audioChunksRef.current = [];
+      try {
+        const audioTracks = cameraStream.getAudioTracks();
+        const recorder = new MediaRecorder(new MediaStream(audioTracks), { mimeType: 'audio/webm' });
+        recorder.ondataavailable = (e) => {
+          if (e.data.size > 0) audioChunksRef.current.push(e.data);
+        };
+        audioRecorderRef.current = recorder;
+        recorder.start(2000);
+      } catch (e) {
+        console.error(e);
+      }
+    }
   };
 
   // Save Interview Question
@@ -3750,23 +3824,43 @@ export default function CandidateFlow() {
                               {isAudioPlaying ? 'Listening to Question...' : (questionTimer > 10 ? `Thinking Time (0:${String(questionTimer).padStart(2, '0')}) - Skip enabled in ${questionTimer - 10}s` : `Skip Thinking Time (0:${String(questionTimer).padStart(2, '0')})`)}
                             </button>
                           ) : (
-                          <button 
-                            className="btn primary" 
-                            disabled={roundsList[currentRoundIdx]?.questions?.[currentQuestionIdx]?.options?.length > 0 && !currentTranscript}
-                            onClick={handleSaveAndNextQuestion} 
-                            style={{ 
-                              width: '100%', 
-                              height: '48px', 
-                              backgroundColor: (roundsList[currentRoundIdx]?.questions?.[currentQuestionIdx]?.options?.length > 0 && !currentTranscript) ? 'rgba(255,255,255,0.1)' : 'var(--amber)', 
-                              color: (roundsList[currentRoundIdx]?.questions?.[currentQuestionIdx]?.options?.length > 0 && !currentTranscript) ? 'rgba(255,255,255,0.3)' : 'var(--deep)', 
-                              fontWeight: '700', 
-                              fontSize: '14.5px', 
-                              borderRadius: '10px',
-                              cursor: (roundsList[currentRoundIdx]?.questions?.[currentQuestionIdx]?.options?.length > 0 && !currentTranscript) ? 'not-allowed' : 'pointer'
-                            }}
-                          >
-                            Save &amp; Next →
-                          </button>
+                          <div style={{ display: 'flex', gap: '12px' }}>
+                            {(!roundsList[currentRoundIdx]?.questions?.[currentQuestionIdx]?.options?.length) && (
+                              <button 
+                                className="btn ghost" 
+                                disabled={isSavingQuestion || isTranscribing}
+                                onClick={handleClearResponse} 
+                                style={{ 
+                                  flex: 1, 
+                                  height: '48px', 
+                                  fontWeight: '600', 
+                                  fontSize: '14px', 
+                                  borderRadius: '10px',
+                                  cursor: (isSavingQuestion || isTranscribing) ? 'not-allowed' : 'pointer',
+                                  opacity: (isSavingQuestion || isTranscribing) ? 0.5 : 1
+                                }}
+                              >
+                                Clear Response
+                              </button>
+                            )}
+                            <button 
+                              className="btn primary" 
+                              disabled={(roundsList[currentRoundIdx]?.questions?.[currentQuestionIdx]?.options?.length > 0 && !currentTranscript) || isSavingQuestion || isTranscribing}
+                              onClick={handleSaveAndNextQuestion} 
+                              style={{ 
+                                flex: 2, 
+                                height: '48px', 
+                                backgroundColor: ((roundsList[currentRoundIdx]?.questions?.[currentQuestionIdx]?.options?.length > 0 && !currentTranscript) || isSavingQuestion || isTranscribing) ? 'rgba(255,255,255,0.1)' : 'var(--amber)', 
+                                color: ((roundsList[currentRoundIdx]?.questions?.[currentQuestionIdx]?.options?.length > 0 && !currentTranscript) || isSavingQuestion || isTranscribing) ? 'rgba(255,255,255,0.3)' : 'var(--deep)', 
+                                fontWeight: '700', 
+                                fontSize: '14.5px', 
+                                borderRadius: '10px',
+                                cursor: ((roundsList[currentRoundIdx]?.questions?.[currentQuestionIdx]?.options?.length > 0 && !currentTranscript) || isSavingQuestion || isTranscribing) ? 'not-allowed' : 'pointer'
+                              }}
+                            >
+                              {(isSavingQuestion || isTranscribing) ? "Finalizing your answer..." : "Save & Next →"}
+                            </button>
+                          </div>
                         )}
                       </div>
                     </>
@@ -3958,9 +4052,24 @@ export default function CandidateFlow() {
                         <p style={{ fontSize: '12px', color: '#7E978E', marginBottom: '10px' }}>Your response is being recorded. Clicks finish when you have stated your investigation workflow.</p>
 
 
-                        <button className="btn primary sm" style={{ backgroundColor: 'var(--rec)', color: '#fff' }} onClick={handleFinishCaseAnswer} disabled={isTranscribing}>
-                          {isTranscribing ? 'Transcribing...' : 'Finish Answer'}
-                        </button>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button 
+                            className="btn ghost sm" 
+                            style={{ color: '#fff' }} 
+                            onClick={handleClearResponse} 
+                            disabled={isTranscribing}
+                          >
+                            Clear Response
+                          </button>
+                          <button 
+                            className="btn primary sm" 
+                            style={{ backgroundColor: 'var(--rec)', color: '#fff' }} 
+                            onClick={handleFinishCaseAnswer} 
+                            disabled={isTranscribing}
+                          >
+                            {isTranscribing ? 'Finalizing your answer...' : 'Finish Answer'}
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>
