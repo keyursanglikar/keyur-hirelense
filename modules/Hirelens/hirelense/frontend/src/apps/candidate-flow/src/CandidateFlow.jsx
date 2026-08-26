@@ -3181,6 +3181,7 @@ export default function CandidateFlow() {
                 
                 {/* Left Column: Camera */}
                 <div style={{ position: 'relative', width: '100%', borderRadius: '20px', overflow: 'hidden', border: '3px solid #10B981', background: '#000', aspectRatio: '4/3', boxShadow: '0 10px 25px rgba(16, 185, 129, 0.15)' }}>
+                  <canvas ref={canvasRef} style={{ display: 'none' }} />
                   {hasCameraPermission ? (
                     <video 
                       ref={videoRef} 
@@ -3248,7 +3249,7 @@ export default function CandidateFlow() {
                   </div>
 
                   {/* Card 2: Audio Test */}
-                  <div style={{ background: '#FFFFFF', border: '1px solid #E5E7EB', borderLeft: micTestState === 'verified' ? '6px solid #10B981' : (micTestState === 'recording' || micTestState === 'recorded' || micTestState === 'untested' ? '6px solid #064E3B' : '6px solid #E5E7EB'), borderRadius: '16px', padding: '20px', display: 'flex', gap: '16px', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' }}>
+                  <div style={{ background: '#FFFFFF', border: '1px solid #E5E7EB', borderLeft: micTestState === 'verified' ? '6px solid #10B981' : '6px solid #064E3B', borderRadius: '16px', padding: '20px', display: 'flex', gap: '16px', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' }}>
                     <div style={{ background: '#E8F5E9', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', flexShrink: 0, color: '#10B981' }}>
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg>
                     </div>
@@ -3275,7 +3276,7 @@ export default function CandidateFlow() {
                       </div>
 
                       {micTestState === 'untested' && (
-                        <button onClick={startMicTest} disabled={!hasCameraPermission} style={{ padding: '6px 12px', background: hasCameraPermission ? '#10B981' : '#E5E7EB', color: hasCameraPermission ? '#fff' : '#9CA3AF', borderRadius: '8px', border: 'none', cursor: hasCameraPermission ? 'pointer' : 'not-allowed', fontSize: '12px', fontWeight: '600' }}>
+                        <button onClick={startMicTest} style={{ padding: '6px 12px', background: '#10B981', color: '#fff', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '12px', fontWeight: '600' }}>
                           Start Mic Test
                         </button>
                       )}
@@ -3299,7 +3300,7 @@ export default function CandidateFlow() {
                   </div>
 
                   {/* Card 3: Speaker Test */}
-                  <div style={{ background: '#FFFFFF', border: '1px solid #E5E7EB', borderLeft: speakerState === 'verified' ? '6px solid #10B981' : (speakerState === 'tested' || (speakerState === 'untested' && micTestState === 'verified') ? '6px solid #064E3B' : '6px solid #E5E7EB'), borderRadius: '16px', padding: '20px', display: 'flex', gap: '16px', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' }}>
+                  <div style={{ background: '#FFFFFF', border: '1px solid #E5E7EB', borderLeft: speakerState === 'verified' ? '6px solid #10B981' : '6px solid #064E3B', borderRadius: '16px', padding: '20px', display: 'flex', gap: '16px', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' }}>
                     <div style={{ background: '#E8F5E9', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', flexShrink: 0, color: '#10B981' }}>
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
                     </div>
@@ -3326,7 +3327,7 @@ export default function CandidateFlow() {
                       </div>
 
                       {speakerState === 'untested' && (
-                        <button onClick={() => { playTestSound(); setSpeakerState('tested'); }} disabled={micTestState !== 'verified'} style={{ padding: '6px 12px', background: micTestState === 'verified' ? '#10B981' : '#E5E7EB', color: micTestState === 'verified' ? '#fff' : '#9CA3AF', borderRadius: '8px', border: 'none', cursor: micTestState === 'verified' ? 'pointer' : 'not-allowed', fontSize: '12px', fontWeight: '600' }}>
+                        <button onClick={() => { playTestSound(); setSpeakerState('tested'); }} style={{ padding: '6px 12px', background: '#10B981', color: '#fff', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '12px', fontWeight: '600' }}>
                           Play Sound
                         </button>
                       )}
@@ -3341,7 +3342,7 @@ export default function CandidateFlow() {
                   </div>
 
                   {/* Card 4: Network Test */}
-                  <div style={{ background: latency !== null ? '#D1FAE5' : '#FFFFFF', border: '1px solid #E5E7EB', borderLeft: latency !== null ? '6px solid #10B981' : (speakerState === 'verified' ? '6px solid #064E3B' : '6px solid #E5E7EB'), borderRadius: '16px', padding: '20px', display: 'flex', gap: '16px', boxShadow: '0 4px 6px rgba(0,0,0,0.02)', transition: 'all 0.3s' }}>
+                  <div style={{ background: latency !== null ? '#D1FAE5' : '#FFFFFF', border: '1px solid #E5E7EB', borderLeft: latency !== null ? '6px solid #10B981' : '6px solid #064E3B', borderRadius: '16px', padding: '20px', display: 'flex', gap: '16px', boxShadow: '0 4px 6px rgba(0,0,0,0.02)', transition: 'all 0.3s' }}>
                     <div style={{ background: latency !== null ? 'transparent' : '#E8F5E9', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', flexShrink: 0, color: latency !== null ? '#064E3B' : '#10B981' }}>
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm-4.6-4.6c.77-.77 1.77-1.17 2.76-1.19.01-.01.02-.01.03-.01h1.62c.01 0 .02 0 .03.01.99.02 1.99.42 2.76 1.19l1.41-1.41C14.7 13.68 13.35 13.21 12 13.2c-.01 0-.02 0-.03 0h-.01c-.01 0-.02 0-.03 0C10.65 13.21 9.3 13.68 7.99 14.99L9.4 16.4zm-4.6-4.6C7.54 9.06 10.71 7.79 14.15 8.16l2.36-2.36C12.87 3.53 8.12 4.41 4.54 7.54l1.41 1.41zM20.24 6.76C18.66 5.56 16.88 4.79 15 4.5l-1.4 1.4c1.39.29 2.73.91 3.93 1.83l2.71-2.97z"/></svg>
                     </div>
