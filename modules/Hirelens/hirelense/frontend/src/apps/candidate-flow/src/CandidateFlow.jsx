@@ -159,6 +159,8 @@ export default function CandidateFlow() {
   const audioRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const liveTranscribeIntervalRef = useRef(null);
+  const transcriptGenRef = useRef(0); // generation counter: discard stale transcription responses
+  const lastSentChunkIdxRef = useRef(0); // track which chunks have already been transcribed
   const [indianVoice, setIndianVoice] = useState(null);
   const [speakerState, setSpeakerState] = useState('untested'); // 'untested', 'playing', 'tested', 'verified'
   const [latency, setLatency] = useState(null);
@@ -404,8 +406,8 @@ export default function CandidateFlow() {
 
   // --- WEBCAM & AUDIO EFFECTS ---
   useEffect(() => {
-    // Request webcam/mic access when arriving on device check (5), AI Interview (8), Case Study (10)
-    if ((screen === 5 && !cameraConfirmed) || screen === 8 || screen === 10) {
+    // Request webcam/mic access when arriving on device check (5), AI Interview (8), Case Study (10), MCQ (11)
+    if ((screen === 5 && !cameraConfirmed) || screen === 8 || screen === 10 || screen === 11) {
       startCamera();
     } else {
       stopCamera();
@@ -970,7 +972,7 @@ export default function CandidateFlow() {
 
   // Start/stop video recording based on screen
   useEffect(() => {
-    if (screen === 8 && cameraStream) {
+    if ((screen === 8 || screen === 10 || screen === 11) && cameraStream) {
       if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') return;
       recordedChunksRef.current = [];
       try {
@@ -987,7 +989,7 @@ export default function CandidateFlow() {
       } catch (err) {
         console.error("Failed to start MediaRecorder:", err);
       }
-    } else if ((screen === 10 || screen === 11) && mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+    } else if (screen !== 8 && screen !== 10 && screen !== 11 && mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
       mediaRecorderRef.current.stop();
       console.log("MediaRecorder stopped");
       // Upload the video file when stopped
@@ -1442,6 +1444,7 @@ export default function CandidateFlow() {
     if (inAudioPhase && !isMcq && cameraStream) {
       if (!audioRecorderRef.current || audioRecorderRef.current.state === 'inactive') {
         audioChunksRef.current = [];
+        lastSentChunkIdxRef.current = 0;
         let audioTracks = cameraStream.getAudioTracks();
         if (audioTracks.length === 0) {
             console.warn('cameraStream has no audio tracks, fetching fallback...');
@@ -1459,28 +1462,50 @@ export default function CandidateFlow() {
               if (e.data.size > 0) audioChunksRef.current.push(e.data);
             };
             audioRecorderRef.current = recorder;
-            recorder.start(2000); // chunk every 2s
+            recorder.start(1000); // chunk every 1s for finer granularity
 
+            const capturedGen = transcriptGenRef.current;
             liveTranscribeIntervalRef.current = setInterval(() => {
-               if (audioChunksRef.current.length > 0 && !window._isTranscribingLive) {
+               // Discard if question has changed since this interval was created
+               if (transcriptGenRef.current !== capturedGen) {
+                 clearInterval(liveTranscribeIntervalRef.current);
+                 return;
+               }
+               const totalChunks = audioChunksRef.current.length;
+               const lastSent = lastSentChunkIdxRef.current;
+               if (totalChunks > lastSent && !window._isTranscribingLive) {
                   window._isTranscribingLive = true;
-                  const currentBlob = new Blob(audioChunksRef.current, { type: (audioRecorderRef.current && audioRecorderRef.current.mimeType) || 'audio/webm' });
+                  // Send only NEW chunks since last successful transcription
+                  const newChunks = audioChunksRef.current.slice(lastSent);
+                  const chunkBlob = new Blob(newChunks, { type: (audioRecorderRef.current && audioRecorderRef.current.mimeType) || 'audio/webm' });
                   const formData = new FormData();
-                  formData.append('audio', currentBlob, 'audio.webm');
+                  formData.append('audio', chunkBlob, 'audio.webm');
+                  const genAtSend = transcriptGenRef.current;
                   mockClient.post('/api/candidates/transcribe/', formData, {
                       headers: { 'Content-Type': 'multipart/form-data' }
                   }).then(res => {
                       window._isTranscribingLive = false;
-                      if (res.data && res.data.transcript !== undefined) {
-                          setCurrentTranscript(res.data.transcript);
-                          currentTranscriptRef.current = res.data.transcript;
+                      // Discard response if question changed while request was in-flight
+                      if (transcriptGenRef.current !== genAtSend) return;
+                      if (res.data && res.data.transcript) {
+                          const newText = res.data.transcript.trim();
+                          if (newText) {
+                            // Append new text to running transcript
+                            setCurrentTranscript(prev => {
+                              const updated = prev ? (prev + ' ' + newText) : newText;
+                              currentTranscriptRef.current = updated;
+                              return updated;
+                            });
+                          }
+                          // Mark these chunks as processed
+                          lastSentChunkIdxRef.current = totalChunks;
                       }
                   }).catch(err => {
                       window._isTranscribingLive = false;
                       console.error(err);
                   });
                }
-            }, 4000); // transribe every 4 seconds
+            }, 2500); // transcribe every 2.5 seconds
           } catch(e) {
             console.error("Failed to start audio recorder", e);
           }
@@ -1507,16 +1532,17 @@ export default function CandidateFlow() {
     if (audioRecorderRef.current && audioRecorderRef.current.state === 'recording') {
       audioRecorderRef.current.stop();
       audioChunksRef.current = [];
+      lastSentChunkIdxRef.current = 0;
       try {
         const audioTracks = cameraStream.getAudioTracks();
         const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : (MediaRecorder.isTypeSupported('audio/mp4') ? 'audio/mp4' : '');
-            const options = mimeType ? { mimeType } : {};
-            const recorder = new MediaRecorder(new MediaStream(audioTracks), options);
+        const options = mimeType ? { mimeType } : {};
+        const recorder = new MediaRecorder(new MediaStream(audioTracks), options);
         recorder.ondataavailable = (e) => {
           if (e.data.size > 0) audioChunksRef.current.push(e.data);
         };
         audioRecorderRef.current = recorder;
-        recorder.start(2000);
+        recorder.start(1000);
       } catch (e) {
         console.error(e);
       }
@@ -1526,6 +1552,10 @@ export default function CandidateFlow() {
   // Save Interview Question
   const handleSaveAndNextQuestion = async () => {
     if (isSavingQuestion || isTranscribing) return; // Prevent double-clicks
+    
+    // Immediately stop live transcription interval to prevent stale callbacks
+    clearInterval(liveTranscribeIntervalRef.current);
+    window._isTranscribingLive = false;
     
     let finalTranscript = currentTranscriptRef.current;
     
@@ -1548,8 +1578,6 @@ export default function CandidateFlow() {
                 });
                 if (res.data && res.data.transcript !== undefined) {
                     finalTranscript = res.data.transcript;
-                    setCurrentTranscript(finalTranscript);
-                    currentTranscriptRef.current = finalTranscript;
                 }
             } catch (err) {
                 console.error("Transcription failed", err);
@@ -1594,9 +1622,15 @@ export default function CandidateFlow() {
         answer: capturedAnswer
       }
     }));
+
+    // Increment generation BEFORE clearing state — any in-flight responses will be discarded
+    transcriptGenRef.current += 1;
     setCurrentTranscript('');
     currentTranscriptRef.current = '';
     finalTranscriptRef.current = '';
+    audioChunksRef.current = [];
+    lastSentChunkIdxRef.current = 0;
+    audioRecorderRef.current = null;
 
     setIsSavingQuestion(false);
 
@@ -1681,6 +1715,10 @@ export default function CandidateFlow() {
   const handleFinishCaseAnswer = async () => {
     if (isSavingQuestion || isTranscribing) return; // Prevent double clicks
     
+    // Immediately stop live transcription interval to prevent stale callbacks
+    clearInterval(liveTranscribeIntervalRef.current);
+    window._isTranscribingLive = false;
+    
     let finalTranscript = currentTranscriptRef.current;
     
     // Stop recorder and transcribe if recording
@@ -1702,8 +1740,6 @@ export default function CandidateFlow() {
                 });
                 if (res.data && res.data.transcript !== undefined) {
                     finalTranscript = res.data.transcript;
-                    setCurrentTranscript(finalTranscript);
-                    currentTranscriptRef.current = finalTranscript;
                 }
             } catch (err) {
                 console.error("Transcription failed", err);
@@ -1728,7 +1764,13 @@ export default function CandidateFlow() {
         answer: finalTranscript.trim() || ''
       }
     }));
+    
+    // Increment generation BEFORE clearing state
+    transcriptGenRef.current += 1;
     setCurrentTranscript(''); currentTranscriptRef.current = '';
+    audioChunksRef.current = [];
+    lastSentChunkIdxRef.current = 0;
+    audioRecorderRef.current = null;
 
     if (round && currentQuestionIdx < round.questions.length - 1) {
       const nextIdx = currentQuestionIdx + 1;
@@ -2774,7 +2816,7 @@ export default function CandidateFlow() {
               {openingData?.tenant_name || 'Kulkarni Mehta & Associates LLP'} <span style={{ opacity: 0.4, margin: '0 8px' }}>·</span> <span style={{ fontWeight: 400, opacity: 0.8 }}>Job Interview Flow: {openingData?.title || 'Audit & Tax Executive'}</span>
           </span>
           <span className="meta-pill mono">
-            {screen === 11 ? `Objective · camera off · tab switches are flagged` : screen === 8 ? `Live Recording Round` : `Candidate Setup`}
+            {screen === 11 ? `Objective · camera on · tab switches are flagged` : screen === 8 ? `Live Recording Round` : `Candidate Setup`}
           </span>
         </header>
 
@@ -4029,8 +4071,8 @@ export default function CandidateFlow() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                   <h3 style={{ fontFamily: 'var(--font-d)', fontSize: '22px', color: '#fff', margin: 0 }}>Objective MCQ Screening</h3>
                   <span className="badge b-mute" style={{ display: 'inline-flex', gap: '8px', alignItems: 'center' }}>
-                    <span style={{ width: '8px', height: '8px', backgroundColor: 'var(--muted)', borderRadius: '50%' }}></span>
-                    Camera Offline
+                    <span style={{ width: '8px', height: '8px', backgroundColor: 'var(--ok)', borderRadius: '50%', animation: 'pulse 1.5s infinite' }}></span>
+                    Camera Active
                   </span>
                 </div>
 
