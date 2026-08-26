@@ -1,0 +1,250 @@
+              <span className="eyebrow" style={{ display: 'block', marginBottom: '8px' }}>DATA PRIVACY &amp; SECURITY CONSENT</span>
+              <h3 style={{ fontFamily: 'var(--font-d)', fontSize: '24px', marginBottom: '8px' }}>Candidate Consent &amp; Privacy Agreement</h3>
+              <p style={{ color: 'var(--muted)', fontSize: '13.5px', marginBottom: '24px' }}>Please read through the details of our screening parameters. Your agreement is required to initiate the webcam setup.</p>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', margin: '24px 0' }}>
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                  <span style={{ fontSize: '16px', padding: '4px' }}>📹</span>
+                  <div>
+                    <h4 style={{ fontSize: '14px', fontWeight: 600 }}>Webcam &amp; Mic Recording</h4>
+                    <p style={{ fontSize: '12.5px', color: 'var(--muted)' }}>During live questions, your camera and microphone feed will be recorded. Make sure your face is clearly visible at all times.</p>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                  <span style={{ fontSize: '16px', padding: '4px' }}>🧠</span>
+                  <div>
+                    <h4 style={{ fontSize: '14px', fontWeight: 600 }}>AI Transcription &amp; Assessment</h4>
+                    <p style={{ fontSize: '12.5px', color: 'var(--muted)' }}>Our platform will transcribe your spoken answers. Hirelens AI will evaluate your responses solely against the job criteria set by the employer.</p>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                  <span style={{ fontSize: '16px', padding: '4px' }}>🛡️</span>
+                  <div>
+                    <h4 style={{ fontSize: '14px', fontWeight: 600 }}>Session Integrity Verification</h4>
+                    <p style={{ fontSize: '12.5px', color: 'var(--muted)' }}>To guarantee an honest screening, tab switching events and copy-paste attempts are tracked during the MCQ and case study stages.</p>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                  <span style={{ fontSize: '16px', padding: '4px' }}>🕒</span>
+                  <div>
+                    <h4 style={{ fontSize: '14px', fontWeight: 600 }}>Data Retention &amp; Deletion</h4>
+                    <p style={{ fontSize: '12.5px', color: 'var(--muted)' }}>Your recorded video files and assessment parameters will be retained securely in {candidateData?.company_name || 'our partner firm'}'s portal for 30 days, after which they will be permanently purged.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ padding: '16px', background: 'var(--mist)', borderRadius: '10px', marginBottom: '24px' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontWeight: 600, fontSize: '13px' }}>
+                  <input
+                    type="checkbox"
+                    checked={consentChecked}
+                    onChange={(e) => setConsentChecked(e.target.checked)}
+                    style={{ width: '16px', height: '16px', accentColor: 'var(--petrol)' }}
+                  />
+                  I consent to the recording of video, audio, and session data for this automated screening.
+                </label>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <button className="btn ghost" onClick={() => setScreen(3)}>← Back</button>
+                <button
+                  className="btn primary"
+                  onClick={() => {
+                    if (!consentChecked) {
+                      triggerToast({ bold: "Consent Required:", normal: "Please check the box to consent to the terms before continuing." }, true);
+                    } else {
+                      setScreen(5);
+                    }
+                  }}
+                >
+                  Confirm &amp; Continue →
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ================= SCREEN 5: DEVICE CHECK ================= */}
+
+          {screen === 5 && (
+            <div className="c-card">
+              <span className="eyebrow" style={{ display: 'block', marginBottom: '8px' }}>DEVICE CALIBRATION &amp; PRE-FLIGHT CHECKLIST</span>
+              <h3 style={{ fontFamily: 'var(--font-d)', fontSize: '24px', marginBottom: '8px' }}>Webcam, Audio &amp; Identity Verification</h3>
+              <p style={{ color: 'var(--muted)', fontSize: '13.5px', marginBottom: '20px' }}>Follow the 4 steps below in order to calibrate your hardware before starting your AI interview.</p>
+
+              {/* Horizontal Step Guidance Bar */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '14px 18px', marginBottom: '24px', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ width: '22px', height: '22px', borderRadius: '50%', background: micTestState === 'verified' ? 'var(--ok)' : 'rgba(255,255,255,0.15)', color: '#fff', fontSize: '11px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {micTestState === 'verified' ? '✓' : '1'}
+                  </span>
+                  <span style={{ fontSize: '12.5px', fontWeight: 600, color: micTestState === 'verified' ? 'var(--ok)' : '#EDF4F0' }}>1. Mic Test</span>
+                </div>
+                <span style={{ color: 'rgba(255,255,255,0.2)' }}>➔</span>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ width: '22px', height: '22px', borderRadius: '50%', background: speakerState === 'verified' ? 'var(--ok)' : 'rgba(255,255,255,0.15)', color: '#fff', fontSize: '11px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {speakerState === 'verified' ? '✓' : '2'}
+                  </span>
+                  <span style={{ fontSize: '12.5px', fontWeight: 600, color: speakerState === 'verified' ? 'var(--ok)' : '#EDF4F0' }}>2. Speaker Test</span>
+                </div>
+                <span style={{ color: 'rgba(255,255,255,0.2)' }}>➔</span>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ width: '22px', height: '22px', borderRadius: '50%', background: latency !== null ? 'var(--ok)' : 'rgba(255,255,255,0.15)', color: '#fff', fontSize: '11px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {latency !== null ? '✓' : '3'}
+                  </span>
+                  <span style={{ fontSize: '12.5px', fontWeight: 600, color: latency !== null ? 'var(--ok)' : '#EDF4F0' }}>3. Network Test</span>
+                </div>
+                <span style={{ color: 'rgba(255,255,255,0.2)' }}>➔</span>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ width: '22px', height: '22px', borderRadius: '50%', background: capturedPhoto ? 'var(--ok)' : 'rgba(255,255,255,0.15)', color: '#fff', fontSize: '11px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {capturedPhoto ? '✓' : '4'}
+                  </span>
+                  <span style={{ fontSize: '12.5px', fontWeight: 600, color: capturedPhoto ? 'var(--ok)' : '#EDF4F0' }}>4. Profile Snapshot</span>
+                </div>
+              </div>
+
+              {(hasCameraPermission === false || hasMicPermission === false) && (
+                <div style={{
+                  background: 'var(--rec-soft)',
+                  border: '1.5px solid rgba(235, 94, 85, 0.2)',
+                  borderRadius: '12px',
+                  padding: '16px 20px',
+                  marginBottom: '24px',
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '12px',
+                  color: 'var(--rec)'
+                }}>
+                  <span style={{ fontSize: '18px', marginTop: '-2px' }}>⚠️</span>
+                  <div style={{ fontSize: '13px', lineHeight: 1.5, flex: 1 }}>
+                    <strong style={{ display: 'block', marginBottom: '3px', fontWeight: '700' }}>
+                      {hasCameraPermission === false && hasMicPermission === false ? "Camera and Microphone Access Blocked" :
+                       hasCameraPermission === false ? "Camera Access Blocked" : "Microphone Access Blocked"}
+                    </strong>
+                    Please click the camera/microphone icon in your browser's address bar to allow permissions for this page, then click the button below to reconnect. Both devices are strictly required to start the assessment.
+
+                    <button
+                      className="btn sm"
+                      onClick={() => {
+                        setHasCameraPermission(null);
+                        setHasMicPermission(null);
+                        stopCamera();
+                        setTimeout(() => {
+                          startCamera();
+                        }, 50);
+                      }}
+                      style={{
+                        marginTop: '12px',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        backgroundColor: 'var(--rec)',
+                        color: '#fff',
+                        borderColor: 'var(--rec)',
+                        fontWeight: '700',
+                        fontSize: '12px',
+                        padding: '6px 14px',
+                        cursor: 'pointer',
+                        borderRadius: '8px',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      🔄 Reconnect Camera &amp; Microphone
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <div className="staged-grid">
+                <div>
+                  <div className="camera-container" style={{ borderColor: hasCameraPermission && hasMicPermission ? 'var(--ok)' : 'var(--line)' }}>
+                    {hasCameraPermission && hasMicPermission ? (
+                      <video 
+                        ref={videoRef} 
+                        autoPlay 
+                        playsInline 
+                        muted 
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      ></video>
+                    ) : (
+                      <div className="camera-placeholder">
+                        <span style={{ fontSize: '32px' }}>📸</span>
+                        <span>
+                          {hasCameraPermission === false && hasMicPermission === false ? "Camera & Microphone Access Denied" :
+                           hasCameraPermission === false ? "Camera Access Denied" : "Microphone Access Denied"}
+                        </span>
+                      </div>
+                    )}
+                    {capturedPhoto && (
+                      <img src={capturedPhoto} className="snapshot-preview" alt="Snapshot Preview" />
+                    )}
+                  </div>
+                  
+                  <div style={{ display: 'flex', gap: '10px', marginTop: '14px', alignItems: 'center' }}>
+                    <button className="btn primary sm" onClick={capturePhoto} disabled={!(hasCameraPermission && hasMicPermission && speakerState === 'verified')} style={{ opacity: (hasCameraPermission && hasMicPermission && speakerState === 'verified') ? 1 : 0.4, background: capturedPhoto ? 'rgba(255,255,255,0.08)' : 'var(--amber)', color: capturedPhoto ? '#EDF4F0' : '#231a06' }}>
+                      📸 {capturedPhoto ? 'Retake Verification Snapshot' : 'Step 4: Capture Profile Snapshot'}
+                    </button>
+                    {capturedPhoto && (
+                      <span className="badge b-ok" style={{ display: 'inline-flex', alignItems: 'center' }}>✓ Snapshot Verified</span>
+                    )}
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {/* Step 1: Mic */}
+                  <div style={{ padding: '16px', border: micTestState === 'verified' ? '1.5px solid var(--ok)' : '1.5px solid var(--amber)', borderRadius: '12px', background: micTestState === 'verified' ? 'rgba(76,175,80,0.05)' : 'transparent' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <h4 style={{ fontSize: '13.5px', fontWeight: 600, margin: 0 }}>Step 1: Microphone Check</h4>
+                      {micTestState === 'verified' ? <span className="badge b-ok" style={{ fontSize: '10px' }}>✓ Verified</span> : (hasMicPermission ? <span className="badge b-ok" style={{ fontSize: '10px' }}>✓ Access Granted</span> : <span className="badge b-amber" style={{ fontSize: '10px' }}>Checking...</span>)}
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                      <div className="vol-bars">
+                        {[10, 20, 30, 40, 50, 60, 70, 80, 90, 100].map(v => (
+                          <div
+                            key={v}
+                            className={`vol-bar ${micLevel >= v ? 'active' : ''}`}
+                            style={{ height: `${v / 5 + 4}px` }}
+                          />
+                        ))}
+                      </div>
+                      <span className="mono" style={{ fontSize: '11px', color: 'var(--muted)' }}>
+                        {micLevel > 0 ? "Mic active (sound detected)" : "Input level"}
+                      </span>
+                    </div>
+
+                    {micTestState === 'untested' && (
+                      <button className="btn primary sm" onClick={startMicTest} style={{ background: 'var(--amber)', color: '#231a06' }}>
+                        Test Microphone
+                      </button>
+                    )}
+
+                    {micTestState === 'recording' && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                        <span style={{ color: 'var(--rec)', fontSize: '12px', fontWeight: 'bold' }}>🎤 Recording... ({micTestTimer}s)</span>
+                        <span style={{ fontSize: '12px', color: '#EDF4F0' }}>Please say: "This is a microphone test."</span>
+                        <button className="btn primary sm" onClick={stopMicTest} style={{ background: 'var(--rec)', color: '#fff' }}>
+                          Stop Recording
+                        </button>
+                      </div>
+                    )}
+
+                    {micTestState === 'recorded' && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                          <audio src={micTestUrl} controls style={{ height: '30px', flex: 1 }} />
+                        </div>
+                        <p style={{ fontSize: '12px', color: 'var(--muted)', margin: 0 }}>Did you hear your recorded voice clearly?</p>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button className="btn ghost sm" onClick={startMicTest} style={{ padding: '6px 12px', fontSize: '11.5px' }}>
+                            Record Again
+                          </button>
+                          <button className="btn primary sm" onClick={() => { setMicTestState('verified'); }} style={{ padding: '6px 12px', fontSize: '11.5px', backgroundColor: 'var(--ok)', color: '#fff', borderColor: 'var(--ok)' }}>
+                            Yes, it sounds good ✓
+                          </button>
+                        </div>

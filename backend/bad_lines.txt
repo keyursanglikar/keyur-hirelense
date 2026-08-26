@@ -1,0 +1,10 @@
+            <div
+              key={v}
+              className={\ol-bar \\}
+              style={{ height: \\px\ }}
+            />
+          ))}
+        </div>
+        <span className="mono" style={{ fontSize: '11px', color: 'var(--muted)' }}>
+          {micLevel > 0 ? "Mic active (sound detected)" : "Input level"}
+        </span>
