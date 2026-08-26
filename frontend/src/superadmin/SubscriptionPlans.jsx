@@ -23,10 +23,6 @@ const SubscriptionPlans = () => {
     is_trial: false
   });
 
-  useEffect(() => {
-    fetchPlans();
-  }, []);
-
   const fetchPlans = async () => {
     try {
       const token = sessionStorage.getItem('access_token');
@@ -38,6 +34,10 @@ const SubscriptionPlans = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchPlans();
+  }, []);
 
   const handleCreateClick = () => {
     setModalMode('add');

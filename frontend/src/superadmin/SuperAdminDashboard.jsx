@@ -58,10 +58,6 @@ const SuperAdminMetrics = () => {
     planDetails: []
   });
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
-
   const fetchDashboardData = async () => {
     try {
       const token = sessionStorage.getItem('access_token');
@@ -73,6 +69,10 @@ const SuperAdminMetrics = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
 
   const { metrics, chartData: revenuePerformanceData, recentSubscriptions, planDetails } = dashboardData;
 

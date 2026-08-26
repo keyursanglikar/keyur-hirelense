@@ -20,16 +20,28 @@ class CandidateViewSet(viewsets.ModelViewSet):
         import os
         from .transcriber import transcribe_audio
         
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".webm") as temp_audio:
+        orig_name = getattr(audio_file, 'name', '') or ''
+        ext = os.path.splitext(orig_name)[1].lower() if orig_name else '.webm'
+        if not ext or ext not in ['.webm', '.wav', '.mp4', '.ogg', '.m4a', '.mp3']:
+            ext = '.webm'
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix=ext) as temp_audio:
             for chunk in audio_file.chunks():
                 temp_audio.write(chunk)
             temp_file_path = temp_audio.name
             
         try:
             transcript = transcribe_audio(temp_file_path)
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error(f"Error during audio transcription: {str(e)}", exc_info=True)
+            transcript = ""
         finally:
             if os.path.exists(temp_file_path):
-                os.remove(temp_file_path)
+                try:
+                    os.remove(temp_file_path)
+                except Exception:
+                    pass
                 
         return Response({'transcript': transcript})
     serializer_class = CandidateSerializer

@@ -3980,8 +3980,19 @@ export default function CandidateFlow() {
                       </div>
                     ) : (
                       <div>
-                        <p style={{ fontSize: '12px', color: '#7E978E', marginBottom: '10px' }}>Your response is being recorded. Clicks finish when you have stated your investigation workflow.</p>
+                        <p style={{ fontSize: '12px', color: '#7E978E', marginBottom: '10px' }}>Your response is being recorded. Click finish when you have stated your investigation workflow.</p>
 
+                        <div style={{ marginBottom: '16px', padding: '12px 14px', borderRadius: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', textAlign: 'left' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                            <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--ok)', animation: 'pulse 1.2s infinite' }}></span>
+                            <span style={{ fontSize: '10px', color: '#7E978E', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                              Live Voice Transcription
+                            </span>
+                          </div>
+                          <p style={{ margin: 0, fontSize: '13px', color: currentTranscript ? '#EDF4F0' : '#7E978E', fontStyle: currentTranscript ? 'normal' : 'italic', lineHeight: 1.4 }}>
+                            {currentTranscript || "Listening for your voice... Speak clearly into your microphone."}
+                          </p>
+                        </div>
 
                         <div style={{ display: 'flex', gap: '8px' }}>
                           <button 
