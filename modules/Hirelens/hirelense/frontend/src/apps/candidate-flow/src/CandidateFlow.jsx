@@ -1442,10 +1442,19 @@ export default function CandidateFlow() {
     if (inAudioPhase && !isMcq && cameraStream) {
       if (!audioRecorderRef.current || audioRecorderRef.current.state === 'inactive') {
         audioChunksRef.current = [];
-        const audioTracks = cameraStream.getAudioTracks();
+        let audioTracks = cameraStream.getAudioTracks();
+        if (audioTracks.length === 0) {
+            console.warn('cameraStream has no audio tracks, fetching fallback...');
+            navigator.mediaDevices.getUserMedia({ audio: true }).then(fallbackStream => {
+                fallbackStream.getAudioTracks().forEach(t => cameraStream.addTrack(t));
+                // Wait for state to catch up, then it will re-trigger
+            }).catch(console.error);
+        }
         if (audioTracks.length > 0) {
           try {
-            const recorder = new MediaRecorder(new MediaStream(audioTracks), { mimeType: 'audio/webm' });
+            const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : (MediaRecorder.isTypeSupported('audio/mp4') ? 'audio/mp4' : '');
+            const options = mimeType ? { mimeType } : {};
+            const recorder = new MediaRecorder(new MediaStream(audioTracks), options);
             recorder.ondataavailable = (e) => {
               if (e.data.size > 0) audioChunksRef.current.push(e.data);
             };
@@ -1453,18 +1462,23 @@ export default function CandidateFlow() {
             recorder.start(2000); // chunk every 2s
 
             liveTranscribeIntervalRef.current = setInterval(() => {
-               if (audioChunksRef.current.length > 0) {
-                  const currentBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+               if (audioChunksRef.current.length > 0 && !window._isTranscribingLive) {
+                  window._isTranscribingLive = true;
+                  const currentBlob = new Blob(audioChunksRef.current, { type: (audioRecorderRef.current && audioRecorderRef.current.mimeType) || 'audio/webm' });
                   const formData = new FormData();
-                  formData.append('audio', currentBlob);
+                  formData.append('audio', currentBlob, 'audio.webm');
                   mockClient.post('/api/candidates/transcribe/', formData, {
                       headers: { 'Content-Type': 'multipart/form-data' }
                   }).then(res => {
+                      window._isTranscribingLive = false;
                       if (res.data && res.data.transcript !== undefined) {
                           setCurrentTranscript(res.data.transcript);
                           currentTranscriptRef.current = res.data.transcript;
                       }
-                  }).catch(console.error);
+                  }).catch(err => {
+                      window._isTranscribingLive = false;
+                      console.error(err);
+                  });
                }
             }, 4000); // transribe every 4 seconds
           } catch(e) {
@@ -1495,7 +1509,9 @@ export default function CandidateFlow() {
       audioChunksRef.current = [];
       try {
         const audioTracks = cameraStream.getAudioTracks();
-        const recorder = new MediaRecorder(new MediaStream(audioTracks), { mimeType: 'audio/webm' });
+        const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : (MediaRecorder.isTypeSupported('audio/mp4') ? 'audio/mp4' : '');
+            const options = mimeType ? { mimeType } : {};
+            const recorder = new MediaRecorder(new MediaStream(audioTracks), options);
         recorder.ondataavailable = (e) => {
           if (e.data.size > 0) audioChunksRef.current.push(e.data);
         };
@@ -1522,10 +1538,10 @@ export default function CandidateFlow() {
         });
         await stopPromise;
         
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        const audioBlob = new Blob(audioChunksRef.current, { type: (audioRecorderRef.current && audioRecorderRef.current.mimeType) || 'audio/webm' });
         if (audioBlob.size > 0) {
             const formData = new FormData();
-            formData.append('audio', audioBlob);
+            formData.append('audio', audioBlob, 'audio.webm');
             try {
                 const res = await mockClient.post('/api/candidates/transcribe/', formData, {
                     headers: { 'Content-Type': 'multipart/form-data' }
@@ -1676,10 +1692,10 @@ export default function CandidateFlow() {
         });
         await stopPromise;
         
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        const audioBlob = new Blob(audioChunksRef.current, { type: (audioRecorderRef.current && audioRecorderRef.current.mimeType) || 'audio/webm' });
         if (audioBlob.size > 0) {
             const formData = new FormData();
-            formData.append('audio', audioBlob);
+            formData.append('audio', audioBlob, 'audio.webm');
             try {
                 const res = await mockClient.post('/api/candidates/transcribe/', formData, {
                     headers: { 'Content-Type': 'multipart/form-data' }
