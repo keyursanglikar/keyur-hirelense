@@ -26,7 +26,12 @@ export const mockClient = {
       };
 
       if (data && ['POST', 'PUT', 'PATCH'].includes(method.toUpperCase())) {
-        config.body = JSON.stringify(data);
+        if (data instanceof FormData) {
+          config.body = data;
+          delete config.headers['Content-Type'];
+        } else {
+          config.body = JSON.stringify(data);
+        }
       }
 
       try {
