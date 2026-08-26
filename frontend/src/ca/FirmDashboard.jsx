@@ -34,6 +34,7 @@ import {
 import { useSelector } from 'react-redux'
 import { Helmet } from 'react-helmet-async'
 import api from '../api'
+import { getModuleUrl } from '../utils/moduleResolver'
 import FirmSettings from "./FirmSettings";
 import './FirmDashboard.css'
 
@@ -325,15 +326,21 @@ const FirmDashboard = () => {
     try {
       const token = sessionStorage.getItem('access_token')
       const res = await api.get(`/firms/ca/modules/${slug}/access/`)
-      // If the backend provides an explicit external URL for a completely different domain, go there.
-      // Otherwise, use our internal module access guard.
-      const url = res.data.frontend_url;
+      
+      // Resolve environment-specific module URL
+      const url = getModuleUrl(slug);
       const isLocalhostUrl = url && (url.includes('localhost') || url.includes('127.0.0.1'));
       
       if (url && url.startsWith('http') && !url.includes(window.location.hostname) && !isLocalhostUrl) {
         window.location.href = url;
+      } else if (url && url.startsWith('http')) {
+        // If it's an absolute URL but points to localhost or same domain, we can either
+        // navigate normally if it matches the current origin, or force a full load.
+        // Forcing a full load is safer if we want to run modules on different ports locally
+        window.location.href = url;
       } else {
-        navigate(`/ca/modules/${slug}`)
+        // Fallback for internal relative paths
+        navigate(url)
       }
     } catch (err) {
       console.error("Module access verification failed:", err)
