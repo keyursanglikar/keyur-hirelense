@@ -3119,273 +3119,277 @@ export default function CandidateFlow() {
 
           {/* ================= SCREEN 5: DEVICE CHECK ================= */}
 
-          {screen === 5 && (
-            <div className="c-card">
-              <span className="eyebrow" style={{ display: 'block', marginBottom: '8px' }}>DEVICE CALIBRATION &amp; PRE-FLIGHT CHECKLIST</span>
-              <h3 style={{ fontFamily: 'var(--font-d)', fontSize: '24px', marginBottom: '8px' }}>Webcam, Audio &amp; Identity Verification</h3>
-              <p style={{ color: 'var(--muted)', fontSize: '13.5px', marginBottom: '20px' }}>Follow the 4 steps below in order to calibrate your hardware before starting your AI interview.</p>
-
-              {/* Horizontal Step Guidance Bar */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '14px 18px', marginBottom: '24px', flexWrap: 'wrap' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ width: '22px', height: '22px', borderRadius: '50%', background: micTestState === 'verified' ? 'var(--ok)' : 'rgba(255,255,255,0.15)', color: '#fff', fontSize: '11px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {micTestState === 'verified' ? '✓' : '1'}
-                  </span>
-                  <span style={{ fontSize: '12.5px', fontWeight: 600, color: micTestState === 'verified' ? 'var(--ok)' : '#EDF4F0' }}>1. Mic Test</span>
+                    {screen === 5 && (
+            <div style={{ background: '#F8FAFC', borderRadius: '24px', padding: '40px', width: '100%', maxWidth: '1100px', boxShadow: '0 20px 40px rgba(0,0,0,0.05)', margin: '0 auto', fontFamily: '"Inter", sans-serif', color: '#1F2937', position: 'relative' }}>
+              
+              {/* Header */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                <div>
+                  <h5 style={{ color: '#F59E0B', fontSize: '13px', fontWeight: '800', letterSpacing: '0.05em', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
+                    Device Calibration &amp; Pre-Flight Checklist
+                  </h5>
+                  <h2 style={{ color: '#064E3B', fontSize: '28px', fontWeight: '800', margin: '0' }}>
+                    Webcam, Audio &amp; Identity Verification
+                  </h2>
                 </div>
-                <span style={{ color: 'rgba(255,255,255,0.2)' }}>➔</span>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ width: '22px', height: '22px', borderRadius: '50%', background: speakerState === 'verified' ? 'var(--ok)' : 'rgba(255,255,255,0.15)', color: '#fff', fontSize: '11px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {speakerState === 'verified' ? '✓' : '2'}
-                  </span>
-                  <span style={{ fontSize: '12.5px', fontWeight: 600, color: speakerState === 'verified' ? 'var(--ok)' : '#EDF4F0' }}>2. Speaker Test</span>
-                </div>
-                <span style={{ color: 'rgba(255,255,255,0.2)' }}>➔</span>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ width: '22px', height: '22px', borderRadius: '50%', background: latency !== null ? 'var(--ok)' : 'rgba(255,255,255,0.15)', color: '#fff', fontSize: '11px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {latency !== null ? '✓' : '3'}
-                  </span>
-                  <span style={{ fontSize: '12.5px', fontWeight: 600, color: latency !== null ? 'var(--ok)' : '#EDF4F0' }}>3. Network Test</span>
-                </div>
-                <span style={{ color: 'rgba(255,255,255,0.2)' }}>➔</span>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ width: '22px', height: '22px', borderRadius: '50%', background: capturedPhoto ? 'var(--ok)' : 'rgba(255,255,255,0.15)', color: '#fff', fontSize: '11px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {capturedPhoto ? '✓' : '4'}
-                  </span>
-                  <span style={{ fontSize: '12.5px', fontWeight: 600, color: capturedPhoto ? 'var(--ok)' : '#EDF4F0' }}>4. Profile Snapshot</span>
+                <div style={{ background: '#D1FAE5', color: '#065F46', padding: '8px 16px', borderRadius: '20px', fontSize: '13px', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ width: '8px', height: '8px', background: '#059669', borderRadius: '50%' }}></span>
+                  Calibration Ready
                 </div>
               </div>
+              <p style={{ color: '#6B7280', fontSize: '15px', marginTop: '12px', marginBottom: '32px' }}>
+                Follow the steps below in order to calibrate your hardware before starting your AI interview.
+              </p>
 
+              {/* Progress Steps */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '40px', position: 'relative' }}>
+                <div style={{ position: 'absolute', height: '2px', background: 'linear-gradient(to right, rgba(5,150,105,0.2) 0%, rgba(209,250,229,0) 100%)', top: '50%', left: '0', right: '0', zIndex: 0 }}></div>
+                
+                {[
+                  { label: 'Mic Test', step: 1, active: micTestState === 'untested' || micTestState === 'recording', done: micTestState === 'verified' },
+                  { label: 'Speaker Test', step: 2, active: micTestState === 'verified' && speakerState !== 'verified', done: speakerState === 'verified' },
+                  { label: 'Network Test', step: 3, active: micTestState === 'verified' && speakerState === 'verified' && latency === null, done: latency !== null },
+                  { label: 'Profile Snapshot', step: 4, active: micTestState === 'verified' && speakerState === 'verified' && latency !== null && !cameraConfirmed, done: cameraConfirmed }
+                ].map((s, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', zIndex: 1, background: '#F8FAFC', padding: '0 16px' }}>
+                    <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: (s.active || s.done) ? '#D1FAE5' : '#F3F4F6', color: (s.active || s.done) ? '#059669' : '#9CA3AF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: '700' }}>
+                      {s.step}
+                    </div>
+                    <span style={{ fontSize: '15px', fontWeight: s.active ? '700' : '600', color: s.active ? '#064E3B' : (s.done ? '#059669' : '#9CA3AF'), borderBottom: s.active ? '3px solid #059669' : '3px solid transparent', paddingBottom: '4px' }}>
+                      {s.label}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Permission Denied Warning */}
               {(hasCameraPermission === false || hasMicPermission === false) && (
-                <div style={{
-                  background: 'var(--rec-soft)',
-                  border: '1.5px solid rgba(235, 94, 85, 0.2)',
-                  borderRadius: '12px',
-                  padding: '16px 20px',
-                  marginBottom: '24px',
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: '12px',
-                  color: 'var(--rec)'
-                }}>
-                  <span style={{ fontSize: '18px', marginTop: '-2px' }}>⚠️</span>
-                  <div style={{ fontSize: '13px', lineHeight: 1.5, flex: 1 }}>
-                    <strong style={{ display: 'block', marginBottom: '3px', fontWeight: '700' }}>
-                      {hasCameraPermission === false && hasMicPermission === false ? "Camera and Microphone Access Blocked" :
-                       hasCameraPermission === false ? "Camera Access Blocked" : "Microphone Access Blocked"}
-                    </strong>
-                    Please click the camera/microphone icon in your browser's address bar to allow permissions for this page, then click the button below to reconnect. Both devices are strictly required to start the assessment.
-
-                    <button
-                      className="btn sm"
-                      onClick={() => {
-                        setHasCameraPermission(null);
-                        setHasMicPermission(null);
-                        stopCamera();
-                        setTimeout(() => {
-                          startCamera();
-                        }, 50);
-                      }}
-                      style={{
-                        marginTop: '12px',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        backgroundColor: 'var(--rec)',
-                        color: '#fff',
-                        borderColor: 'var(--rec)',
-                        fontWeight: '700',
-                        fontSize: '12px',
-                        padding: '6px 14px',
-                        cursor: 'pointer',
-                        borderRadius: '8px',
-                        transition: 'all 0.2s'
-                      }}
-                    >
+                <div style={{ background: '#FEF2F2', border: '1px solid #F87171', borderRadius: '12px', padding: '16px 20px', marginBottom: '24px', display: 'flex', alignItems: 'flex-start', gap: '12px', color: '#991B1B' }}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                  <div style={{ flex: 1 }}>
+                    <h5 style={{ margin: '0 0 4px 0', fontSize: '14px', fontWeight: 'bold' }}>Permission Required</h5>
+                    <p style={{ margin: '0 0 12px 0', fontSize: '13px' }}>You must allow camera and microphone access to proceed with the AI interview.</p>
+                    <button onClick={reconnectCameraAndMic} style={{ background: '#DC2626', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}>
                       🔄 Reconnect Camera &amp; Microphone
                     </button>
                   </div>
                 </div>
               )}
 
-              ﻿<div className="staged-grid">
-  <div>
-    <div className="camera-container" style={{ borderColor: hasCameraPermission ? 'var(--ok)' : 'var(--line)' }}>
-      {hasCameraPermission ? (
-        <video 
-          ref={videoRef} 
-          autoPlay 
-          playsInline 
-          muted 
-          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-        ></video>
-      ) : (
-        <div className="camera-placeholder">
-          <span style={{ fontSize: '32px' }}>📷</span>
-          <span>{hasCameraPermission === false ? "Camera Access Denied" : "Camera Access Required"}</span>
-        </div>
-      )}
-      {capturedPhoto && (
-        <img src={capturedPhoto} className="snapshot-preview" alt="Snapshot Preview" />
-      )}
-    </div>
-    
-    <div style={{ display: 'flex', gap: '10px', marginTop: '14px', alignItems: 'center' }}>
-      {!cameraConfirmed ? (
-          <>
-              <button className="btn primary sm" onClick={capturePhoto} disabled={!hasCameraPermission} style={{ opacity: hasCameraPermission ? 1 : 0.4, background: capturedPhoto ? 'rgba(255,255,255,0.08)' : 'var(--amber)', color: capturedPhoto ? '#EDF4F0' : '#231a06' }}>
-                📷 {capturedPhoto ? 'Retake Picture' : 'Capture Picture'}
-              </button>
-              {capturedPhoto && (
-                  <button className="btn primary sm" onClick={() => setCameraConfirmed(true)} style={{ background: 'var(--ok)', color: '#fff' }}>
-                      Confirm
-                  </button>
-              )}
-          </>
-      ) : (
-          <span className="badge b-ok" style={{ display: 'inline-flex', alignItems: 'center' }}>✓ Camera Test Completed</span>
-      )}
-    </div>
-  </div>
+              {/* 2-Column Grid */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '32px' }}>
+                
+                {/* Left Column: Camera */}
+                <div style={{ position: 'relative', width: '100%', borderRadius: '20px', overflow: 'hidden', border: '3px solid #10B981', background: '#000', aspectRatio: '4/3', boxShadow: '0 10px 25px rgba(16, 185, 129, 0.15)' }}>
+                  {hasCameraPermission ? (
+                    <video 
+                      ref={videoRef} 
+                      autoPlay 
+                      playsInline 
+                      muted 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    ></video>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#fff' }}>
+                      <span style={{ fontSize: '32px', marginBottom: '12px' }}>📷</span>
+                      <span>{hasCameraPermission === false ? "Camera Access Denied" : "Camera Access Required"}</span>
+                    </div>
+                  )}
+                  {capturedPhoto && (
+                    <img src={capturedPhoto} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 10 }} alt="Snapshot Preview" />
+                  )}
+                  
+                  {/* Badges */}
+                  <div style={{ position: 'absolute', top: '16px', left: '16px', background: '#D1FAE5', color: '#065F46', padding: '6px 14px', borderRadius: '20px', fontSize: '12px', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '6px', zIndex: 20 }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg> Webcam
+                  </div>
+                  <div style={{ position: 'absolute', top: '16px', right: '16px', background: '#D1FAE5', color: '#065F46', padding: '6px 14px', borderRadius: '20px', fontSize: '12px', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '6px', zIndex: 20 }}>
+                    <span style={{ width: '8px', height: '8px', background: '#059669', borderRadius: '50%' }}></span> Live
+                  </div>
+                  <div style={{ position: 'absolute', bottom: '16px', left: '16px', background: '#D1FAE5', color: '#065F46', padding: '6px 14px', borderRadius: '20px', fontSize: '12px', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '6px', zIndex: 20 }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c1.65 0 3-1.35 3-3s-1.35-3-3-3-3 1.35-3 3 1.35 3 3 3zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg> Camera Active
+                  </div>
+                </div>
 
-  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-    {/* Step 1: Camera Test */}
-    <div style={{ padding: '16px', border: cameraConfirmed ? '1.5px solid var(--ok)' : '1.5px solid var(--amber)', borderRadius: '12px', background: cameraConfirmed ? 'rgba(76,175,80,0.05)' : 'transparent' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-        <h4 style={{ fontSize: '13.5px', fontWeight: 600, margin: 0, color: '#fff' }}>Step 1: Camera Test</h4>
-        {cameraConfirmed ? <span className="badge b-ok" style={{ fontSize: '10px' }}>✓ Verified</span> : (hasCameraPermission ? <span className="badge b-ok" style={{ fontSize: '10px' }}>✓ Access Granted</span> : <span className="badge b-amber" style={{ fontSize: '10px' }}>Checking...</span>)}
-      </div>
-      {!cameraConfirmed && (
-          <p style={{ fontSize: '12px', color: 'var(--muted)', margin: 0 }}>Please use the live camera feed to capture and confirm your picture.</p>
-      )}
-    </div>
+                {/* Right Column: Cards */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  
+                  {/* Card 1: Camera Feed / Profile Snapshot */}
+                  <div style={{ background: '#FFFFFF', border: '1px solid #E5E7EB', borderLeft: cameraConfirmed ? '6px solid #10B981' : '6px solid #064E3B', borderRadius: '16px', padding: '20px', display: 'flex', gap: '16px', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' }}>
+                    <div style={{ background: '#E8F5E9', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', flexShrink: 0, color: '#10B981' }}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px' }}>
+                        <h4 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: '#064E3B' }}>Camera Feed</h4>
+                        {hasCameraPermission ? (
+                          <div style={{ background: '#E8F5E9', color: '#065F46', padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            ✓ Access Granted
+                          </div>
+                        ) : (
+                          <div style={{ background: '#FEF3C7', color: '#B45309', padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: '700' }}>Pending</div>
+                        )}
+                      </div>
+                      <p style={{ margin: '0 0 12px 0', fontSize: '13px', color: '#6B7280', lineHeight: 1.4 }}>Please use the live camera feed to capture and confirm your picture.</p>
+                      
+                      {!cameraConfirmed && hasCameraPermission && (
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button onClick={capturePhoto} style={{ padding: '6px 12px', background: capturedPhoto ? '#F3F4F6' : '#10B981', color: capturedPhoto ? '#374151' : '#fff', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '12px', fontWeight: '600' }}>
+                            {capturedPhoto ? 'Retake Picture' : 'Capture Picture'}
+                          </button>
+                          {capturedPhoto && (
+                            <button onClick={() => setCameraConfirmed(true)} style={{ padding: '6px 12px', background: '#064E3B', color: '#fff', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '12px', fontWeight: '600' }}>
+                              Confirm Picture
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
 
-    {/* Step 2: Mic */}
-    <div style={{ padding: '16px', border: micTestState === 'verified' ? '1.5px solid var(--ok)' : '1.5px solid var(--amber)', borderRadius: '12px', background: micTestState === 'verified' ? 'rgba(76,175,80,0.05)' : 'transparent', opacity: 1, pointerEvents: cameraConfirmed ? 'auto' : 'none' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-        <h4 style={{ fontSize: '13.5px', fontWeight: 600, margin: 0, color: '#fff' }}>Step 2: Microphone Test</h4>
-        {micTestState === 'verified' ? <span className="badge b-ok" style={{ fontSize: '10px' }}>✓ Verified</span> : (hasMicPermission && cameraConfirmed ? <span className="badge b-ok" style={{ fontSize: '10px' }}>✓ Access Granted</span> : <span className="badge b-amber" style={{ fontSize: '10px' }}>{cameraConfirmed ? 'Checking...' : 'Pending'}</span>)}
-      </div>
+                  {/* Card 2: Audio Test */}
+                  <div style={{ background: '#FFFFFF', border: '1px solid #E5E7EB', borderLeft: micTestState === 'verified' ? '6px solid #10B981' : (micTestState === 'recording' || micTestState === 'recorded' || micTestState === 'untested' ? '6px solid #064E3B' : '6px solid #E5E7EB'), borderRadius: '16px', padding: '20px', display: 'flex', gap: '16px', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' }}>
+                    <div style={{ background: '#E8F5E9', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', flexShrink: 0, color: '#10B981' }}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg>
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px' }}>
+                        <h4 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: '#064E3B' }}>Audio Test</h4>
+                        {micTestState === 'verified' ? (
+                          <div style={{ background: '#E8F5E9', color: '#065F46', padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '4px' }}>✓ Working</div>
+                        ) : micTestState === 'recording' ? (
+                          <div style={{ background: '#FEF3C7', color: '#B45309', padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: '700' }}>Recording...</div>
+                        ) : (
+                          <div style={{ background: '#F3F4F6', color: '#6B7280', padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: '700' }}>Untested</div>
+                        )}
+                      </div>
+                      <p style={{ margin: 0, fontSize: '13px', color: '#6B7280', lineHeight: 1.4 }}>
+                        {micTestState === 'recording' ? 'Recording in progress...' : (micTestState === 'recorded' ? 'Listen and confirm' : 'Mic active (sound detected)')}
+                      </p>
+                      
+                      {/* Dots */}
+                      <div style={{ display: 'flex', gap: '4px', marginTop: '12px', marginBottom: '12px', flexWrap: 'wrap' }}>
+                        {[10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100,105,110,115,120,125,130,135,140,145,150].map(v => (
+                          <div key={v} style={{ width: '6px', height: '8px', borderRadius: '4px', background: micLevel >= (v/1.5) ? '#059669' : '#D1FAE5', transition: 'background 0.1s' }} />
+                        ))}
+                      </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-        <div className="vol-bars">
-          {[10, 20, 30, 40, 50, 60, 70, 80, 90, 100].map(v => (
-            <div
-              key={v}
-              className={`vol-bar ${micLevel >= v ? 'active' : ''}`}
-              style={{ height: `${v / 5 + 4}px` }}
-            />
-          ))}
-        </div>
-        <span className="mono" style={{ fontSize: '11px', color: 'var(--muted)' }}>
-          {micLevel > 0 ? "Mic active (sound detected)" : "Input level"}
-        </span>
-      </div>
+                      {micTestState === 'untested' && (
+                        <button onClick={startMicTest} disabled={!hasCameraPermission} style={{ padding: '6px 12px', background: hasCameraPermission ? '#10B981' : '#E5E7EB', color: hasCameraPermission ? '#fff' : '#9CA3AF', borderRadius: '8px', border: 'none', cursor: hasCameraPermission ? 'pointer' : 'not-allowed', fontSize: '12px', fontWeight: '600' }}>
+                          Start Mic Test
+                        </button>
+                      )}
+                      
+                      {micTestState === 'recording' && (
+                        <button onClick={stopMicTest} style={{ padding: '6px 12px', background: '#EF4444', color: '#fff', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '12px', fontWeight: '600' }}>
+                          Stop Recording
+                        </button>
+                      )}
 
-      {micTestState === 'untested' && (
-        <button className="btn primary sm" onClick={startMicTest} disabled={!cameraConfirmed} style={{ background: cameraConfirmed ? 'var(--amber)' : 'rgba(255,255,255,0.1)', color: cameraConfirmed ? '#231a06' : '#fff' }}>
-          Test Microphone
-        </button>
-      )}
+                      {micTestState === 'recorded' && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          <audio src={micTestUrl} controls style={{ height: '24px', width: '100%' }} />
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            <button onClick={startMicTest} style={{ padding: '4px 10px', background: '#F3F4F6', color: '#374151', borderRadius: '6px', border: 'none', cursor: 'pointer', fontSize: '11px', fontWeight: '600' }}>Retest</button>
+                            <button onClick={() => setMicTestState('verified')} style={{ padding: '4px 10px', background: '#064E3B', color: '#fff', borderRadius: '6px', border: 'none', cursor: 'pointer', fontSize: '11px', fontWeight: '600' }}>Sounds Good</button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
 
-      {micTestState === 'recording' && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-          <span style={{ color: 'var(--rec)', fontSize: '12px', fontWeight: 'bold' }}>🎤 Recording... ({micTestTimer}s)</span>
-          <span style={{ fontSize: '12px', color: '#EDF4F0' }}>Please say: "This is a microphone test."</span>
-          <button className="btn primary sm" onClick={stopMicTest} style={{ background: 'var(--rec)', color: '#fff' }}>
-            Stop Recording
-          </button>
-        </div>
-      )}
+                  {/* Card 3: Speaker Test */}
+                  <div style={{ background: '#FFFFFF', border: '1px solid #E5E7EB', borderLeft: speakerState === 'verified' ? '6px solid #10B981' : (speakerState === 'tested' || (speakerState === 'untested' && micTestState === 'verified') ? '6px solid #064E3B' : '6px solid #E5E7EB'), borderRadius: '16px', padding: '20px', display: 'flex', gap: '16px', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' }}>
+                    <div style={{ background: '#E8F5E9', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', flexShrink: 0, color: '#10B981' }}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px' }}>
+                        <h4 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: '#064E3B' }}>Speaker Test</h4>
+                        {speakerState === 'verified' ? (
+                          <div style={{ background: '#E8F5E9', color: '#065F46', padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '4px' }}>✓ Working</div>
+                        ) : speakerState === 'tested' ? (
+                          <div style={{ background: '#E8F5E9', color: '#065F46', padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            ↻ Testing
+                          </div>
+                        ) : (
+                          <div style={{ background: '#F3F4F6', color: '#6B7280', padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: '700' }}>Untested</div>
+                        )}
+                      </div>
+                      <p style={{ margin: 0, fontSize: '13px', color: '#6B7280', lineHeight: 1.4 }}>
+                        {speakerState === 'tested' ? 'Playing test sound...' : 'Verify your speaker output'}
+                      </p>
+                      
+                      {/* Bar */}
+                      <div style={{ width: '100%', height: '8px', background: '#E8F5E9', borderRadius: '4px', marginTop: '12px', marginBottom: '12px', overflow: 'hidden' }}>
+                        <div style={{ height: '100%', background: '#10B981', width: speakerState === 'tested' ? '60%' : (speakerState === 'verified' ? '100%' : '0%'), transition: 'width 0.3s ease' }}></div>
+                      </div>
 
-      {micTestState === 'recorded' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-            <audio src={micTestUrl} controls style={{ height: '30px', flex: 1 }} />
-          </div>
-          <p style={{ fontSize: '12px', color: 'var(--muted)', margin: 0 }}>Did you hear your recorded voice clearly?</p>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button className="btn ghost sm" onClick={startMicTest} style={{ padding: '6px 12px', fontSize: '11.5px' }}>
-              Record Again
-            </button>
-            <button className="btn primary sm" onClick={() => { setMicTestState('verified'); }} style={{ padding: '6px 12px', fontSize: '11.5px', backgroundColor: 'var(--ok)', color: '#fff', borderColor: 'var(--ok)' }}>
-              Yes, it sounds good ✓
-            </button>
-          </div>
-        </div>
-      )}
+                      {speakerState === 'untested' && (
+                        <button onClick={() => { playTestSound(); setSpeakerState('tested'); }} disabled={micTestState !== 'verified'} style={{ padding: '6px 12px', background: micTestState === 'verified' ? '#10B981' : '#E5E7EB', color: micTestState === 'verified' ? '#fff' : '#9CA3AF', borderRadius: '8px', border: 'none', cursor: micTestState === 'verified' ? 'pointer' : 'not-allowed', fontSize: '12px', fontWeight: '600' }}>
+                          Play Sound
+                        </button>
+                      )}
 
-      {micTestState === 'verified' && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <button className="linkbtn" onClick={startMicTest} style={{ fontSize: '11px' }}>
-            Retest Microphone
-          </button>
-        </div>
-      )}
+                      {speakerState === 'tested' && (
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button onClick={() => { playTestSound(); setSpeakerState('tested'); }} style={{ padding: '4px 10px', background: '#F3F4F6', color: '#374151', borderRadius: '6px', border: 'none', cursor: 'pointer', fontSize: '11px', fontWeight: '600' }}>Replay</button>
+                          <button onClick={() => setSpeakerState('verified')} style={{ padding: '4px 10px', background: '#064E3B', color: '#fff', borderRadius: '6px', border: 'none', cursor: 'pointer', fontSize: '11px', fontWeight: '600' }}>I hear it</button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
 
-      {micTestError && (
-        <div style={{ marginTop: '8px', color: 'var(--rec)', fontSize: '12px', fontWeight: '600' }}>
-          {micTestError}
-          <button className="linkbtn" onClick={startMicTest} style={{ fontSize: '11px', marginLeft: '12px', color: 'var(--amber)' }}>
-            Try Again
-          </button>
-        </div>
-      )}
-    </div>
+                  {/* Card 4: Network Test */}
+                  <div style={{ background: latency !== null ? '#D1FAE5' : '#FFFFFF', border: '1px solid #E5E7EB', borderLeft: latency !== null ? '6px solid #10B981' : (speakerState === 'verified' ? '6px solid #064E3B' : '6px solid #E5E7EB'), borderRadius: '16px', padding: '20px', display: 'flex', gap: '16px', boxShadow: '0 4px 6px rgba(0,0,0,0.02)', transition: 'all 0.3s' }}>
+                    <div style={{ background: latency !== null ? 'transparent' : '#E8F5E9', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', flexShrink: 0, color: latency !== null ? '#064E3B' : '#10B981' }}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm-4.6-4.6c.77-.77 1.77-1.17 2.76-1.19.01-.01.02-.01.03-.01h1.62c.01 0 .02 0 .03.01.99.02 1.99.42 2.76 1.19l1.41-1.41C14.7 13.68 13.35 13.21 12 13.2c-.01 0-.02 0-.03 0h-.01c-.01 0-.02 0-.03 0C10.65 13.21 9.3 13.68 7.99 14.99L9.4 16.4zm-4.6-4.6C7.54 9.06 10.71 7.79 14.15 8.16l2.36-2.36C12.87 3.53 8.12 4.41 4.54 7.54l1.41 1.41zM20.24 6.76C18.66 5.56 16.88 4.79 15 4.5l-1.4 1.4c1.39.29 2.73.91 3.93 1.83l2.71-2.97z"/></svg>
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px' }}>
+                        <h4 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: '#064E3B' }}>Network Test</h4>
+                        {latency !== null ? (
+                          <div style={{ background: 'transparent', color: '#065F46', padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '4px' }}>✓ Stable</div>
+                        ) : (
+                          <div style={{ background: '#F3F4F6', color: '#6B7280', padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: '700' }}>Pending</div>
+                        )}
+                      </div>
+                      <p style={{ margin: 0, fontSize: '13px', color: latency !== null ? '#065F46' : '#6B7280', lineHeight: 1.4 }}>
+                        {latency !== null ? `Stable Connection (${latency}ms Latency)` : 'Waiting for network check...'}
+                      </p>
+                    </div>
+                  </div>
 
-    {/* Step 3: Speaker */}
-    <div style={{ padding: '16px', border: speakerState === 'verified' ? '1.5px solid var(--ok)' : '1.5px solid var(--amber)', borderRadius: '12px', background: speakerState === 'verified' ? 'rgba(76,175,80,0.05)' : 'transparent', opacity: 1, pointerEvents: (cameraConfirmed && micTestState === 'verified') ? 'auto' : 'none' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-          <h4 style={{ fontSize: '13.5px', fontWeight: 600, margin: 0, color: '#fff' }}>Step 3: Speaker Test</h4>
-          {speakerState === 'verified' && <span className="badge b-ok" style={{ fontSize: '10px' }}>✓ Verified</span>}
-      </div>
-      {speakerState === 'untested' && (
-        <button className="btn primary sm" onClick={() => { playTestSound(); setSpeakerState('tested'); }} disabled={!(cameraConfirmed && micTestState === 'verified')} style={{ background: (cameraConfirmed && micTestState === 'verified') ? 'var(--amber)' : 'rgba(255,255,255,0.1)', color: (cameraConfirmed && micTestState === 'verified') ? '#231a06' : '#fff' }}>
-          🔊 Play Test Beep
-        </button>
-      )}
-      {speakerState === 'tested' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <p style={{ fontSize: '12px', color: 'var(--muted)', margin: 0 }}>Did you hear the test beep from your speaker/headphones?</p>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button className="btn ghost sm" onClick={playTestSound} style={{ padding: '6px 12px', fontSize: '11.5px' }}>
-              🔊 Replay Beep
-            </button>
-            <button className="btn primary sm" onClick={() => setSpeakerState('verified')} style={{ padding: '6px 12px', fontSize: '11.5px', backgroundColor: 'var(--ok)', color: '#fff', borderColor: 'var(--ok)' }}>
-              Yes, I heard it ✓
-            </button>
-          </div>
-        </div>
-      )}
-      {speakerState === 'verified' && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '8px' }}>
-          <button className="linkbtn" onClick={playTestSound} style={{ fontSize: '11px' }}>
-            Retest
-          </button>
-        </div>
-      )}
-    </div>
+                </div>
+              </div>
 
-    {/* Step 4: Network */}
-    <div style={{ padding: '16px', border: latency !== null ? '1.5px solid var(--ok)' : '1.5px solid var(--amber)', borderRadius: '12px', background: latency !== null ? 'rgba(76,175,80,0.05)' : 'transparent', opacity: 1, pointerEvents: (cameraConfirmed && micTestState === 'verified' && speakerState === 'verified') ? 'auto' : 'none' }}>
-      <h4 style={{ fontSize: '13.5px', fontWeight: 600, marginBottom: '8px', color: '#fff' }}>Step 4: Network Test</h4>
-      {latency === null ? (
-        <span className="mono" style={{ fontSize: '11px', color: (cameraConfirmed && micTestState === 'verified' && speakerState === 'verified') ? 'var(--amber)' : 'rgba(255,255,255,0.4)' }}>{networkStatus}</span>
-      ) : (
-        <span className="badge b-ok" style={{ fontSize: '10px' }}>{networkStatus}</span>
-      )}
-    </div>
-  </div>
-</div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '32px' }}>
-                <button className="btn ghost" onClick={() => setScreen(4)}>← Back</button>
-                <button className="btn primary" onClick={handleSaveAndContinue} disabled={!(hasCameraPermission && hasMicPermission && micTestState === 'verified' && speakerState === 'verified' && cameraConfirmed)} style={{ background: (hasCameraPermission && hasMicPermission && micTestState === 'verified' && speakerState === 'verified' && cameraConfirmed) ? 'var(--ok)' : 'rgba(255,255,255,0.1)', color: (hasCameraPermission && hasMicPermission && micTestState === 'verified' && speakerState === 'verified' && cameraConfirmed) ? '#fff' : 'rgba(255,255,255,0.3)' }}>
-                  Save &amp; Continue →
+              {/* Footer Actions */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '40px', paddingTop: '24px', borderTop: '1px solid #E5E7EB' }}>
+                <button onClick={() => setScreen(4)} style={{ padding: '12px 24px', background: '#FFFFFF', border: '1px solid #10B981', color: '#064E3B', borderRadius: '12px', fontSize: '14px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  ← Back
+                </button>
+                <button 
+                  onClick={handleSaveAndContinue} 
+                  disabled={!(hasCameraPermission && hasMicPermission && micTestState === 'verified' && speakerState === 'verified' && cameraConfirmed)} 
+                  style={{ 
+                    padding: '12px 24px', 
+                    background: (hasCameraPermission && hasMicPermission && micTestState === 'verified' && speakerState === 'verified' && cameraConfirmed) ? '#064E3B' : '#9CA3AF', 
+                    color: '#fff', 
+                    border: 'none', 
+                    borderRadius: '12px', 
+                    fontSize: '14px', 
+                    fontWeight: '700', 
+                    cursor: (hasCameraPermission && hasMicPermission && micTestState === 'verified' && speakerState === 'verified' && cameraConfirmed) ? 'pointer' : 'not-allowed', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '8px',
+                    transition: 'background 0.3s'
+                  }}
+                >
+                  Next Step →
                 </button>
               </div>
+
             </div>
           )}
 
