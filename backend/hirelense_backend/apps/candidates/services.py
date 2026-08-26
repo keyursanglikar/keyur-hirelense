@@ -193,7 +193,7 @@ class CandidateEvaluationService:
                     clean_ans = str(ans_text).strip() if ans_text else ""
                     # Use real candidate answer only — never inject fake content
                     if not clean_ans or clean_ans.lower().startswith("candidate's verbal explanation for"):
-                        clean_ans = "[No verbal response recorded]"
+                        clean_ans = "No answer given"
 
                     if not expected_text:
                         expected_text = "[No expected answer configured]"

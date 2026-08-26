@@ -2922,20 +2922,21 @@ Your Student ID/Exam ID is: ${newCand.student_id || newCand.id}`
                             const scoreVal = t.score_value !== undefined ? t.score_value : (t.sc || 0);
                             const isMCQ = tsText === 'MCQ';
                             const scoreGood = scoreVal >= 7;
-                            const noAnswer = aText === '[No verbal response recorded]' || aText === '[No Answer / Skipped]';
+                            const noAnswer = aText === '[No verbal response recorded]' || aText === '[No Answer / Skipped]' || aText === 'No answer given' || !aText.trim();
+                            const displayAnswer = !aText.trim() ? 'No answer given' : aText;
                             return (
                               <div className="tr-block" key={`${roundKey}-${ridx}`} id={`tr${t._origIdx}`}>
                                 <div className="tr-q">
                                   <b>{qText}</b>
                                   <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '4px', flexWrap: 'wrap' }}>
-                                    {isMCQ && <span style={{ fontSize: '10px', fontWeight: 700, padding: '2px 6px', borderRadius: '4px', backgroundColor: 'rgba(99,102,241,0.12)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.25)' }}>MCQ</span>}
-                                    <span className="badge" style={{ backgroundColor: scoreGood ? 'rgba(46,125,91,0.1)' : 'rgba(220,80,69,0.1)', color: scoreGood ? 'var(--ok)' : 'var(--rec)', fontWeight: 600, border: `1px solid ${scoreGood ? 'rgba(46,125,91,0.2)' : 'rgba(220,80,69,0.2)'}`, padding: '2px 6px', borderRadius: '4px', fontSize: '11px' }}>Score: {scoreVal}/10</span>
+                                    {isMCQ && <span className="badge b-blue" style={{ fontSize: '10px', padding: '2px 6px' }}>MCQ</span>}
+                                    <span className={`badge ${scoreGood ? 'b-green' : 'b-red'}`} style={{ fontSize: '10px', padding: '2px 6px' }}>Score: {scoreVal}/10</span>
                                   </div>
                                 </div>
                                 <div style={{ display: 'flex', gap: '14px', marginTop: '12px', flexDirection: 'column' }}>
                                   <div>
                                     <strong style={{ fontSize: '11px', color: noAnswer ? 'var(--rec)' : 'var(--faint)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Candidate Answer</strong>
-                                    <p className="tr-a" style={{ marginTop: '4px', fontStyle: noAnswer ? 'italic' : 'normal', opacity: noAnswer ? 0.6 : 1 }}>{aText || '[No response]'}</p>
+                                    <p className="tr-a" style={{ marginTop: '4px', fontStyle: noAnswer ? 'italic' : 'normal', opacity: noAnswer ? 0.6 : 1 }}>{displayAnswer}</p>
                                   </div>
                                   {expectedText && expectedText !== '[No expected answer configured]' && (
                                     <div>

@@ -130,3 +130,5 @@ protobuf==4.25.3
 google-api-python-client
 google-auth-httplib2
 google-auth-oauthlib
+
+faster-whisper==1.2.1

@@ -147,9 +147,6 @@ export default function CandidateFlow() {
   const [showIntegrityPanel, setShowIntegrityPanel] = useState(false);
   const [integrityScreenshots, setIntegrityScreenshots] = useState([]);
   const [isSavingQuestion, setIsSavingQuestion] = useState(false);
-  const [isTranscribing, setIsTranscribing] = useState(false);
-  const mediaRecorderRef = useRef(null);
-  const audioChunksRef = useRef([]);
   const [indianVoice, setIndianVoice] = useState(null);
   const [speakerState, setSpeakerState] = useState('untested'); // 'untested', 'playing', 'tested', 'verified'
   const [latency, setLatency] = useState(null);
@@ -1488,41 +1485,8 @@ export default function CandidateFlow() {
   };
 
   // Save Interview Question
-  const handleSaveAndNextQuestion = async () => {
-    if (isSavingQuestion || isTranscribing) return; // Prevent double-clicks
-    
-    let finalTranscript = currentTranscriptRef.current;
-    
-    // Stop recorder and transcribe if recording
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
-        setIsTranscribing(true);
-        const stopPromise = new Promise(resolve => {
-            mediaRecorderRef.current.onstop = resolve;
-            mediaRecorderRef.current.stop();
-        });
-        await stopPromise;
-        
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        if (audioBlob.size > 0) {
-            const formData = new FormData();
-            formData.append('audio', audioBlob);
-            try {
-                const res = await mockClient.post('/api/candidates/transcribe/', formData, {
-                    headers: { 'Content-Type': 'multipart/form-data' }
-                });
-                if (res.data && res.data.transcript !== undefined) {
-                    finalTranscript = res.data.transcript;
-                    setCurrentTranscript(finalTranscript);
-                    currentTranscriptRef.current = finalTranscript;
-                }
-            } catch (err) {
-                console.error("Transcription failed", err);
-            }
-        }
-        setIsTranscribing(false);
-    }
-    
-    setIsSavingQuestion(true);
+  const handleSaveAndNextQuestion = () => {
+    if (isSavingQuestion) return; // Prevent double-clicks
     const round = roundsList[currentRoundIdx];
     const question = round.questions[currentQuestionIdx];
     const currentLimit = getQuestionTimeLimitSeconds(currentRoundIdx, currentQuestionIdx);
@@ -1544,7 +1508,7 @@ export default function CandidateFlow() {
       }
     } else {
       // For voice/descriptive questions, use the speech transcript
-      capturedAnswer = finalTranscript.trim() || '';
+      capturedAnswer = currentTranscriptRef.current.trim() || '';
     }
 
     // Save response to local map
@@ -1642,41 +1606,7 @@ export default function CandidateFlow() {
     }
   };
 
-  const handleFinishCaseAnswer = async () => {
-    if (isSavingQuestion || isTranscribing) return; // Prevent double clicks
-    
-    let finalTranscript = currentTranscriptRef.current;
-    
-    // Stop recorder and transcribe if recording
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
-        setIsTranscribing(true);
-        const stopPromise = new Promise(resolve => {
-            mediaRecorderRef.current.onstop = resolve;
-            mediaRecorderRef.current.stop();
-        });
-        await stopPromise;
-        
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        if (audioBlob.size > 0) {
-            const formData = new FormData();
-            formData.append('audio', audioBlob);
-            try {
-                const res = await mockClient.post('/api/candidates/transcribe/', formData, {
-                    headers: { 'Content-Type': 'multipart/form-data' }
-                });
-                if (res.data && res.data.transcript !== undefined) {
-                    finalTranscript = res.data.transcript;
-                    setCurrentTranscript(finalTranscript);
-                    currentTranscriptRef.current = finalTranscript;
-                }
-            } catch (err) {
-                console.error("Transcription failed", err);
-            }
-        }
-        setIsTranscribing(false);
-    }
-    
-    setIsSavingQuestion(true);
+  const handleFinishCaseAnswer = () => {
     const round = roundsList[currentRoundIdx];
     const question = round.questions[currentQuestionIdx];
     const currentLimit = getQuestionTimeLimitSeconds(currentRoundIdx, currentQuestionIdx);
@@ -1689,7 +1619,7 @@ export default function CandidateFlow() {
         question: question.text,
         timeTaken: currentLimit - caseAnswerTimer,
         videoCaptured: true,
-        answer: finalTranscript.trim() || ''
+        answer: currentTranscriptRef.current.trim() || ''
       }
     }));
     setCurrentTranscript(''); currentTranscriptRef.current = '';
@@ -1708,7 +1638,6 @@ export default function CandidateFlow() {
       setCaseStudyStage('done');
       setScreen(9);
     }
-    setIsSavingQuestion(false);
   };
 
   // --- PROGRAMMATICAL PATH SWITCH BACK TO DEVELOPER WORKSPACE ---
@@ -3858,8 +3787,8 @@ export default function CandidateFlow() {
                         <p style={{ fontSize: '12px', color: '#7E978E', marginBottom: '10px' }}>Your response is being recorded. Clicks finish when you have stated your investigation workflow.</p>
 
 
-                        <button className="btn primary sm" style={{ backgroundColor: 'var(--rec)', color: '#fff' }} onClick={handleFinishCaseAnswer} disabled={isTranscribing}>
-                          {isTranscribing ? 'Transcribing...' : 'Finish Answer'}
+                        <button className="btn primary sm" style={{ backgroundColor: 'var(--rec)', color: '#fff' }} onClick={handleFinishCaseAnswer}>
+                          Finish Answer
                         </button>
                       </div>
                     )}
