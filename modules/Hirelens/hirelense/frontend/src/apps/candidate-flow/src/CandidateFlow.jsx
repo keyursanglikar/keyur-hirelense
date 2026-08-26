@@ -148,7 +148,7 @@ export default function CandidateFlow() {
   const [integrityScreenshots, setIntegrityScreenshots] = useState([]);
   const [isSavingQuestion, setIsSavingQuestion] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
-  const mediaRecorderRef = useRef(null);
+  const audioRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const [indianVoice, setIndianVoice] = useState(null);
   const [speakerState, setSpeakerState] = useState('untested'); // 'untested', 'playing', 'tested', 'verified'
@@ -1494,11 +1494,11 @@ export default function CandidateFlow() {
     let finalTranscript = currentTranscriptRef.current;
     
     // Stop recorder and transcribe if recording
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+    if (audioRecorderRef.current && audioRecorderRef.current.state === 'recording') {
         setIsTranscribing(true);
         const stopPromise = new Promise(resolve => {
-            mediaRecorderRef.current.onstop = resolve;
-            mediaRecorderRef.current.stop();
+            audioRecorderRef.current.onstop = resolve;
+            audioRecorderRef.current.stop();
         });
         await stopPromise;
         
@@ -1648,11 +1648,11 @@ export default function CandidateFlow() {
     let finalTranscript = currentTranscriptRef.current;
     
     // Stop recorder and transcribe if recording
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+    if (audioRecorderRef.current && audioRecorderRef.current.state === 'recording') {
         setIsTranscribing(true);
         const stopPromise = new Promise(resolve => {
-            mediaRecorderRef.current.onstop = resolve;
-            mediaRecorderRef.current.stop();
+            audioRecorderRef.current.onstop = resolve;
+            audioRecorderRef.current.stop();
         });
         await stopPromise;
         
