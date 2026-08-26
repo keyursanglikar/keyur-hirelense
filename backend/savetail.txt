@@ -1,0 +1,50 @@
+        const recorder = new MediaRecorder(new MediaStream(audioTracks), { mimeType: 'audio/webm' });
+        recorder.ondataavailable = (e) => {
+          if (e.data.size > 0) audioChunksRef.current.push(e.data);
+        };
+        audioRecorderRef.current = recorder;
+        recorder.start(2000);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  };
+
+  // Save Interview Question
+  const handleSaveAndNextQuestion = async () => {
+    if (isSavingQuestion || isTranscribing) return; // Prevent double-clicks
+    
+    let finalTranscript = currentTranscriptRef.current;
+    
+    // Stop recorder and transcribe if recording
+    if (audioRecorderRef.current && audioRecorderRef.current.state === 'recording') {
+        setIsTranscribing(true);
+        const stopPromise = new Promise(resolve => {
+            audioRecorderRef.current.onstop = resolve;
+            audioRecorderRef.current.stop();
+        });
+        await stopPromise;
+        
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        if (audioBlob.size > 0) {
+            const formData = new FormData();
+            formData.append('audio', audioBlob);
+            try {
+                const res = await mockClient.post('/api/candidates/transcribe/', formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
+                if (res.data && res.data.transcript !== undefined) {
+                    finalTranscript = res.data.transcript;
+                    setCurrentTranscript(finalTranscript);
+                    currentTranscriptRef.current = finalTranscript;
+                }
+            } catch (err) {
+                console.error("Transcription failed", err);
+            }
+        }
+        setIsTranscribing(false);
+    }
+    
+    setIsSavingQuestion(true);
+    const round = roundsList[currentRoundIdx];
+    const question = round.questions[currentQuestionIdx];
